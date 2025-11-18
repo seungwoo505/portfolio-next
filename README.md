@@ -688,23 +688,10 @@ console.log(process.env.NEXT_PUBLIC_API_URL);
 - **관리자 페이지**: < 500KB (gzipped)
 - **이미지 최적화**: WebP/AVIF 포맷 사용
 
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
-
 ## 📞 지원
 
-- **이메일**: support@portfolio.com
+- **이메일**: seungwoo505@naver.com
 - **이슈 트래커**: GitHub Issues
-- **문서**: [Wiki](https://github.com/your-repo/wiki)
 
 ---
 
