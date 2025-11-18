@@ -1,0 +1,378 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import { useAdmin } from '@/contexts/AdminContext';
+import ConfirmModal from '@/components/ConfirmModal';
+
+import { 
+  Search,
+  Plus,
+  Edit3,
+  Trash2,
+  Tag,
+  Hash,
+  Type
+} from 'lucide-react';
+import { authApi } from '@/lib/api';
+import TagModal from './components/TagModal';
+
+interface BlogTag {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string;
+  type: 'blog' | 'project' | 'general';
+  usage_count?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export default function TagsManagement() {
+  const { isAuthenticated, isLoading } = useAdmin();
+  const [tags, setTags] = useState<BlogTag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'blog' | 'project' | 'general'>('all');
+  const [showNewTagModal, setShowNewTagModal] = useState(false);
+  const [editingTag, setEditingTag] = useState<BlogTag | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; tagId: string | null }>({
+    isOpen: false,
+    tagId: null
+  });
+  const router = useRouter();
+  // URL 파라미터에서 초기 필터 설정
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const type = urlParams.get('type');
+      if (type && ['blog', 'project', 'general'].includes(type)) {
+        setTypeFilter(type as 'blog' | 'project' | 'general');
+      }
+    }
+  }, []);
+
+  // 인증 확인
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/admin-login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // 태그 목록 가져오기
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        setLoading(true);
+        const response = await authApi.get('/admin/tags');
+        if (response.success && response.data) {
+          const tagsData = response.data as BlogTag[];
+          setTags(tagsData);
+        }
+      } catch {
+        setTags([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTags();
+  }, [isAuthenticated]);
+
+  // 태그 삭제 모달 열기
+  const openDeleteModal = (tagId: string) => {
+    setDeleteModal({ isOpen: true, tagId });
+  };
+
+  // 태그 삭제 모달 닫기
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, tagId: null });
+  };
+
+  // 태그 삭제 실행
+  const deleteTag = async () => {
+    if (!deleteModal.tagId) return;
+    
+    try {
+      await authApi.delete(`/admin/tags/${deleteModal.tagId}`);
+      setTags(prev => prev.filter(tag => tag.id !== deleteModal.tagId));
+      toast.success('태그가 삭제되었습니다.');
+    } catch {
+      toast.error('태그 삭제에 실패했습니다.');
+    }
+  };
+
+  // 태그 생성/수정 후 목록에 반영
+  const handleTagSaved = (savedTag: BlogTag) => {
+    if (editingTag) {
+      // 수정
+      setTags(prev => prev.map(tag => 
+        tag.id === savedTag.id ? savedTag : tag
+      ));
+      setEditingTag(null);
+      toast.success('태그가 수정되었습니다.');
+    } else {
+      // 생성
+      setTags(prev => [savedTag, ...prev]);
+      toast.success('태그가 생성되었습니다.');
+    }
+    setShowNewTagModal(false);
+  };
+
+  // 모달 닫기
+  const handleCloseModal = () => {
+    setShowNewTagModal(false);
+    setEditingTag(null);
+  };
+
+  // 태그 타입 정보
+  const getTypeInfo = (type: string) => {
+    switch (type) {
+      case 'blog':
+        return { 
+          label: '블로그', 
+          color: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+          icon: Tag 
+        };
+
+      case 'project':
+        return { 
+          label: '프로젝트', 
+          color: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
+          icon: Hash 
+        };
+      case 'general':
+        return { 
+          label: '일반', 
+          color: 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200',
+          icon: Type 
+        };
+      default:
+        return { 
+          label: '알 수 없음', 
+          color: 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200',
+          icon: Tag 
+        };
+    }
+  };
+
+  // 필터링된 태그
+  const filteredTags = tags.filter(tag => {
+    const matchesSearch = !searchQuery || 
+      tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tag.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tag.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesType = typeFilter === 'all' || tag.type === typeFilter;
+    
+    return matchesSearch && matchesType;
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-slate-600 dark:text-slate-400">로딩 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+
+        {/* 액션 바 */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              태그 목록
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              전체 {tags.length}개의 태그 • 필터링된 결과: {filteredTags.length}개
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowNewTagModal(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>새 태그</span>
+          </button>
+        </div>
+
+        {/* 검색 및 필터 */}
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* 검색 */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="태그명, 슬러그, 설명 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
+              />
+            </div>
+
+            {/* 타입 필터 */}
+            <div className="flex flex-wrap space-x-2">
+              {[
+                { key: 'all', label: '전체' },
+                { key: 'blog', label: '블로그' },
+                { key: 'project', label: '프로젝트' },
+                { key: 'general', label: '일반' }
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setTypeFilter(key as 'all' | 'blog' | 'project' | 'general')}
+                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                    typeFilter === key
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-500'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 태그 목록 */}
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="animate-pulse p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-4 h-4 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                    <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20"></div>
+                  </div>
+                  <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-16 mb-2"></div>
+                  <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-12"></div>
+                </div>
+              ))}
+            </div>
+          ) : filteredTags.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredTags.map((tag) => {
+                const typeInfo = getTypeInfo(tag.type);
+                const TypeIcon = typeInfo.icon;
+
+                return (
+                  <div 
+                    key={tag.id} 
+                    className="relative group p-4 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600 transition-all hover:shadow-md"
+                  >
+                    {/* 태그 헤더 */}
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div 
+                        className="w-4 h-4 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: tag.color || '#3b82f6' }}
+                      ></div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          {tag.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* 타입과 사용횟수 */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${typeInfo.color}`}>
+                        <TypeIcon className="w-3 h-3 mr-1" />
+                        {typeInfo.label}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {tag.usage_count || 0}회
+                      </span>
+                    </div>
+
+                    {/* 설명 */}
+                    {tag.description && (
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                        {tag.description}
+                      </p>
+                    )}
+
+                    {/* 하단 정보와 액션 */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">
+                        {new Date(tag.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => setEditingTag(tag)}
+                          className="p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded"
+                          title="편집"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(tag.id)}
+                          className="p-1.5 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Tag className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+                {searchQuery || typeFilter !== 'all' ? '검색 결과가 없습니다' : '태그가 없습니다'}
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400">
+                {searchQuery || typeFilter !== 'all' 
+                  ? '다른 검색어나 필터를 시도해보세요.' 
+                  : '상단의 "새 태그" 버튼으로 첫 번째 태그를 추가해보세요.'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* 삭제 확인 모달 */}
+        <ConfirmModal
+          isOpen={deleteModal.isOpen}
+          onClose={closeDeleteModal}
+          onConfirm={deleteTag}
+          title="태그 삭제"
+          message="정말로 이 태그를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+          confirmText="삭제"
+          cancelText="취소"
+          isDestructive={true}
+        />
+
+        {/* 태그 생성/편집 모달 */}
+        <TagModal 
+          isOpen={showNewTagModal || !!editingTag}
+          onClose={handleCloseModal}
+          onTagSaved={handleTagSaved}
+          editingTag={editingTag}
+          defaultType={typeFilter !== 'all' ? typeFilter : undefined}
+        />
+      </div>
+    </div>
+  );
+}

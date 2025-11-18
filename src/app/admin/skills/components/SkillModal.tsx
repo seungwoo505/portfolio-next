@@ -1,0 +1,331 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Skill } from '@/types';
+import toast from 'react-hot-toast';
+
+interface SkillModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  skill?: Skill | null;
+  onSave: (skill: Partial<Skill>) => Promise<{ success: boolean; message?: string }>;
+  categories: Array<{ id: string; name: string }>;
+  keepOpenOnSuccess?: boolean; // 성공 시 모달 유지 여부
+}
+
+export default function SkillModal({ isOpen, onClose, skill, onSave, categories, keepOpenOnSuccess = false }: SkillModalProps) {
+  const [formData, setFormData] = useState<Partial<Skill>>({
+    name: '',
+    category_id: '',
+    proficiency_level: 50,
+    display_order: 0,
+    is_featured: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showDisplayOrder, setShowDisplayOrder] = useState(false);
+
+  useEffect(() => {
+    if (skill) {
+      // 수정 모드: 기존 데이터로 설정
+      setFormData({
+        name: skill.name,
+        category_id: skill.category_id || '',
+        proficiency_level: skill.proficiency_level,
+        display_order: skill.display_order,
+        is_featured: skill.is_featured,
+      });
+      setShowDisplayOrder(skill.is_featured || false);
+    } else {
+      // 새로 추가 모드: 완전히 초기화
+      setFormData({
+        name: '',
+        category_id: '',
+        proficiency_level: 50,
+        display_order: 0,
+        is_featured: false,
+      });
+      setShowDisplayOrder(false);
+    }
+    setErrors({});
+  }, [isOpen, skill, categories]);
+
+  // 모달 열릴 때 배경 스크롤 막기
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // 컴포넌트 언마운트 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name?.trim()) {
+      newErrors.name = '기술명을 입력해주세요.';
+    }
+
+    if (formData.proficiency_level === undefined || formData.proficiency_level < 0 || formData.proficiency_level > 100) {
+      newErrors.proficiency_level = '숙련도는 0-100 사이여야 합니다.';
+    }
+
+    if (formData.is_featured && (formData.display_order === undefined || formData.display_order < 1 || formData.display_order > 12)) {
+      newErrors.display_order = '추천 기술 스택의 표시 순서는 1~12 사이여야 합니다.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // undefined 값 제거하고 null로 변환
+      const cleanFormData = {
+        name: formData.name || '',
+        category_id: formData.category_id || '',
+        proficiency_level: formData.proficiency_level || 50,
+        display_order: formData.display_order || 0,
+        is_featured: formData.is_featured || false
+      };
+      
+      const result = await onSave(cleanFormData);
+      
+      if (result.success) {
+        toast.success(result.message || (skill ? '기술 스택이 수정되었습니다.' : '기술 스택이 추가되었습니다.'));
+        
+        // 성공 시 모달 유지 여부에 따라 처리
+        if (!keepOpenOnSuccess) {
+          onClose();
+        } else {
+          // 새로 추가 모드인 경우 폼 초기화
+          if (!skill) {
+            setFormData({
+              name: '',
+              category_id: '',
+              proficiency_level: 50,
+              display_order: 0,
+              is_featured: false,
+            });
+            setShowDisplayOrder(false);
+          }
+        }
+      } else {
+        toast.error(result.message || '저장에 실패했습니다.');
+      }
+    } catch {
+      toast.error('기술 스택 저장 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (field: keyof Skill, value: string | number | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {skill ? '기술 스택 수정' : '새 기술 스택 추가'}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 기술명 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                기술명 *
+              </label>
+              <input
+                type="text"
+                value={formData.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.name 
+                    ? 'border-red-500 dark:border-red-400' 
+                    : 'border-gray-300 dark:border-slate-600'
+                } bg-white dark:bg-slate-700 text-gray-900 dark:text-white`}
+                placeholder="예: React, TypeScript, Node.js"
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+              )}
+            </div>
+
+            {/* 카테고리 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                카테고리 *
+              </label>
+              <select
+                value={formData.category_id || ''}
+                onChange={(e) => handleChange('category_id', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.category_id 
+                    ? 'border-red-500 dark:border-red-400' 
+                    : 'border-gray-300 dark:border-slate-600'
+                } bg-white dark:bg-slate-700 text-gray-900 dark:text-white`}
+                required
+              >
+                <option value="">카테고리 선택</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              {categories.length === 0 && (
+                <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
+                  카테고리가 설정되지 않았습니다. 관리자에게 문의하세요.
+                </p>
+              )}
+              {errors.category_id && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category_id}</p>
+              )}
+            </div>
+
+            {/* 숙련도 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                숙련도: {formData.proficiency_level}%
+              </label>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={formData.proficiency_level || 50}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    handleChange('proficiency_level', value);
+                  }}
+                  className="flex-1 h-2 bg-gray-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(formData.proficiency_level || 50)}%, #E5E7EB ${(formData.proficiency_level || 50)}%, #E5E7EB 100%)`
+                  }}
+                />
+
+              </div>
+              {errors.proficiency_level && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.proficiency_level}</p>
+              )}
+            </div>
+
+
+
+
+
+
+
+                        {/* 추천 여부와 표시 순서를 한 줄에 배치 */}
+            <div className="flex items-center space-x-6">
+              {/* 추천 여부 */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_featured"
+                  checked={formData.is_featured || false}
+                  onChange={(e) => {
+                    const isFeatured = e.target.checked;
+                    handleChange('is_featured', isFeatured);
+                    setShowDisplayOrder(isFeatured);
+                    
+                    // 추천하지 않으면 순서를 0으로, 추천하면 기본값 1로 설정
+                    if (!isFeatured) {
+                      handleChange('display_order', 0);
+                    } else if (!formData.display_order || formData.display_order === 0) {
+                      handleChange('display_order', 1);
+                    }
+                  }}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-slate-600 rounded"
+                />
+                <label htmlFor="is_featured" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  추천 기술 스택으로 설정
+                </label>
+              </div>
+
+              {/* 표시 순서 - 추천 기술 스택일 때만 표시 */}
+              {showDisplayOrder && (
+                <div className="flex items-center space-x-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    표시 순서:
+                  </label>
+                  <select
+                    value={formData.display_order || ''}
+                    onChange={(e) => handleChange('display_order', parseInt(e.target.value) || 1)}
+                    className={`w-20 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.display_order 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-gray-300 dark:border-slate-600'
+                    } bg-white dark:bg-slate-700 text-gray-900 dark:text-white`}
+                  >
+                    {[...Array(12)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* 표시 순서 에러 메시지 */}
+            {showDisplayOrder && errors.display_order && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.display_order}</p>
+            )}
+
+
+
+            {/* 버튼 */}
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+              >
+                {loading ? '저장 중...' : (skill ? '수정' : '추가')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

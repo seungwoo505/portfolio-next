@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+html {
+  max-width: 100vw;
+}
+
+body {
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#__next {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* 스크롤바 숨기기 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,15 +43,1181 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+/* 다크 모드 스타일 */
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.dark body,
+.dark html {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.dark header,
+.dark nav {
+  background-color: #111111;
+  color: #ffffff;
+}
+
+/* 다크 모드에서 배경색 강제 적용 */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-slate-200,
+.dark .bg-slate-300,
+.dark .bg-slate-400,
+.dark .bg-slate-500,
+.dark .bg-slate-600,
+.dark .bg-slate-700,
+.dark .bg-slate-800,
+.dark .bg-slate-900 {
+  background-color: #111111;
+}
+
+/* 토글 버튼 전용 배경색 - 다크 모드에서도 제대로 보이도록 */
+.toggle-bg-off {
+  background-color: #cbd5e1; /* slate-300 */
+}
+
+.dark .toggle-bg-off {
+  background-color: #64748b; /* slate-500 */
+}
+
+.toggle-bg-on {
+  background-color: #2563eb; /* blue-600 */
+}
+
+/* 다크 모드에서 텍스트 색상 강제 적용 */
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400,
+.dark .text-slate-300,
+.dark .text-slate-200,
+.dark .text-slate-100,
+.dark .text-black,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: #ffffff;
+}
+
+/* 다크 모드에서 테두리 색상 강제 적용 */
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-400,
+.dark .border-slate-500,
+.dark .border-slate-600,
+.dark .border-slate-700,
+.dark .border-slate-800,
+.dark .border-slate-900,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-400,
+.dark .border-gray-500,
+.dark .border-gray-600,
+.dark .border-gray-700,
+.dark .border-gray-800,
+.dark .border-gray-900 {
+  border-color: #374151;
+}
+
+
+
+/* 그라데이션 배경 - 다크모드에서만 페이지 배경에만 적용 (갤럭시 섹션과 오버레이 제외) */
+.dark .min-h-screen.bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #000000, #111111, #000000) ;
+}
+
+
+
+/* 카드 및 섹션 - 갤럭시 섹션 제외 */
+.dark article {
+  background-color: #1a1a1a;
+}
+
+/* 갤럭시 섹션 - 검은색 유지 */
+.galaxy-section {
+  background-color: #000000;
+  background: #000000;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Scroll indicator styles */
+.scroll-indicator .bg-slate-400 {
+  background-color: #94a3b8;
+}
+
+.scroll-indicator .border-slate-400 {
+  border-color: #94a3b8;
+}
+
+.dark .scroll-indicator .bg-slate-400 {
+  background-color: #64748b;
+}
+
+.dark .scroll-indicator .border-slate-400 {
+  border-color: #64748b;
+}
+
+
+
+/* Blog prose styling */
+.prose {
+  max-width: none;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold mt-8 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold mt-6 mb-3;
+}
+
+.prose h4 {
+  @apply text-lg font-semibold mt-4 mb-2;
+}
+
+/* 다크모드에서 prose strong 요소 색상 수정 */
+.dark .prose strong {
+  color: #ffffff ;
+}
+
+.dark .prose b {
+  color: #ffffff ;
+}
+
+.dark .prose em {
+  color: #ffffff ;
+}
+
+.dark .prose i {
+  color: #ffffff ;
+}
+
+/* 다크모드에서 태그 스타일 개선 - 더 구체적인 선택자 */
+.dark .bg-slate-100 {
+  background-color: #374151; /* slate-700 */
+}
+
+.dark .bg-gray-100 {
+  background-color: #374151; /* slate-700 */
+}
+
+.dark .text-slate-800 {
+  color: #ffffff; /* 흰색 텍스트로 변경 */
+}
+
+.dark .text-gray-800 {
+  color: #ffffff; /* 흰색 텍스트로 변경 */
+}
+
+.dark .text-slate-700 {
+  color: #ffffff; /* 흰색 텍스트로 변경 */
+}
+
+.dark .text-gray-700 {
+  color: #ffffff; /* 흰색 텍스트로 변경 */
+}
+
+/* 태그 패턴에 대한 더 구체적인 규칙 */
+.dark span.bg-slate-100,
+.dark span.bg-gray-100 {
+  background-color: #374151;
+  color: #ffffff;
+}
+
+.dark .px-2.py-1.bg-slate-100,
+.dark .px-3.py-1.bg-slate-100,
+.dark .px-2.py-1.bg-gray-100,
+.dark .px-3.py-1.bg-gray-100 {
+  background-color: #374151;
+  color: #ffffff;
+}
+
+/* 다크모드에서 밝은 배경색과 텍스트 색상 강제 오버라이드 */
+.dark .bg-blue-50 {
+  background-color: #1e40af !important; /* blue-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-green-50 {
+  background-color: #166534 !important; /* green-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-red-50 {
+  background-color: #991b1b !important; /* red-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-yellow-50 {
+  background-color: #a16207 !important; /* yellow-700 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-purple-50 {
+  background-color: #6b21a8 !important; /* purple-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-pink-50 {
+  background-color: #9d174d !important; /* pink-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-indigo-50 {
+  background-color: #3730a3 !important; /* indigo-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-orange-50 {
+  background-color: #9a3412 !important; /* orange-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-teal-50 {
+  background-color: #155e75 !important; /* teal-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-cyan-50 {
+  background-color: #155e75 !important; /* cyan-800 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+.dark .bg-gray-50 {
+  background-color: #374151 !important; /* slate-700 */
+  color: #ffffff !important; /* 흰색 텍스트 */
+}
+
+/* 다크모드 호버 효과 강제 오버라이드 */
+.dark .hover\:bg-gray-50:hover {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+.dark .hover\:bg-slate-200:hover {
+  background-color: #64748b !important; /* slate-500 */
+}
+
+.dark .hover\:bg-slate-600:hover {
+  background-color: #64748b !important; /* slate-500 */
+}
+
+.dark .hover\:bg-slate-700:hover {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+.dark .hover\:bg-slate-900:hover {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+.prose p {
+  @apply leading-relaxed mb-4;
+}
+
+.prose ul {
+  @apply list-disc list-inside space-y-2 mb-4;
+}
+
+.prose ol {
+  @apply list-decimal list-inside space-y-2 mb-4;
+}
+
+.prose li {
+  @apply leading-relaxed;
+}
+
+.prose strong {
+  @apply font-semibold;
+}
+
+.prose code {
+  @apply bg-slate-100 px-2 py-1 rounded text-sm font-mono;
+}
+
+.prose pre {
+  @apply  text-slate-100 p-4 rounded-lg overflow-x-auto mb-4;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-blue-500 pl-4 italic my-4;
+}
+
+/* 마크다운 링크 스타일링 */
+.markdown-link {
+  @apply text-blue-600 hover:text-blue-800 underline transition-colors duration-200 font-medium;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.dark .markdown-link {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+/* 외부 링크 스타일 (아이콘 없음) */
+.markdown-link.external-link {
+  /* 외부 링크 특별 스타일이 필요한 경우 여기에 추가 */
+}
+
+/* 마크다운 코드 스타일링 */
+.markdown-code-block {
+  @apply bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto my-4;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+}
+
+.markdown-inline-code {
+  @apply bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-sm font-mono;
+  color: #e11d48; /* rose-600 */
+  border: 1px solid #e2e8f0; /* slate-200 */
+}
+
+.dark .markdown-inline-code {
+  color: #fb7185; /* rose-400 */
+  border-color: #475569; /* slate-600 */
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid rgb(59 130 246);
+  outline-offset: 2px;
+}
+
+/* Animation classes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Mobile menu animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Spectacular animations for hero section */
+@keyframes blob {
+  0% {
+    transform: translate3d(0px, 0px, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(30px, -50px, 0) scale(1.1);
+  }
+  66% {
+    transform: translate3d(-20px, 20px, 0) scale(0.9);
+  }
+  100% {
+    transform: translate3d(0px, 0px, 0) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate3d(0, 0px, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6), 0 0 60px rgba(147, 51, 234, 0.3);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Animation delays */
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}
+
+.animation-delay-700 {
+  animation-delay: 0.7s;
+}
+
+.animation-delay-900 {
+  animation-delay: 0.9s;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.animation-delay-1100 {
+  animation-delay: 1.1s;
+}
+
+.animation-delay-1300 {
+  animation-delay: 1.3s;
+}
+
+.animation-delay-1500 {
+  animation-delay: 1.5s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-gradient-animated {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #3b82f6;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Typing animation */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink {
+  from, to { border-color: transparent }
+  50% { border-color: rgb(59, 130, 246); }
+}
+
+.animate-typing {
+  overflow: hidden;
+  border-right: 2px solid rgb(59, 130, 246);
+  white-space: nowrap;
+  animation: typing 3.5s steps(40, end), blink .75s step-end infinite;
+}
+
+/* Pulse variations */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* uiw 마크다운 에디터 스타일 */
+.w-md-editor {
+  border-radius: 8px ;
+}
+
+.w-md-editor.w-md-editor-focus {
+  border-color: rgb(59 130 246) ;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) ;
+}
+
+.w-md-editor-text-pre,
+.w-md-editor-text-input, 
+.w-md-editor-text-textarea {
+  font-size: 14px ;
+  line-height: 1.6 ;
+}
+
+/* 다크모드 지원 */
+.dark .w-md-editor {
+  border-color: rgb(51 65 85) ;
+}
+
+.dark .w-md-editor.w-md-editor-focus {
+  border-color: rgb(59 130 246) ;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) ;
+}
+
+/* 숙련도 슬라이더 스타일 */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3B82F6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3B82F6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 다크모드 슬라이더 */
+.dark .slider::-webkit-slider-thumb {
+  background: #3B82F6;
+  border-color: #1e293b;
+}
+
+.dark .slider::-moz-range-thumb {
+  background: #3B82F6;
+  border-color: #1e293b;
+}
+
+/* Accessibility Styles */
+.accessibility-provider {
+  --reduced-motion: 0;
+  --high-contrast: 0;
+  --font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms ;
+  animation-iteration-count: 1 ;
+  transition-duration: 0.01ms ;
+}
+
+/* High Contrast */
+.high-contrast {
+  --tw-bg-opacity: 1;
+  --tw-text-opacity: 1;
+}
+
+.high-contrast * {
+  border-color: currentColor ;
+}
+
+/* Keyboard Navigation */
+.keyboard-navigation *:focus {
+  outline: 2px solid #3b82f6 ;
+  outline-offset: 2px ;
+}
+
+/* Focus Visible */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #3b82f6;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+}
+
+/* 사파리 호환성을 위한 추가 스타일 */
+.safari-header-light {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.safari-header-dark {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* 사파리에서 라이트 모드 강제 적용 */
+@supports (-webkit-appearance: none) {
+  :root:not(.dark) {
+    --background: #ffffff !important;
+    --foreground: #171717 !important;
+  }
+  
+  :root:not(.dark) body {
+    background-color: #ffffff !important;
+    color: #171717 !important;
+  }
+  
+  :root:not(.dark) .bg-slate-50 {
+    background-color: #f8fafc !important;
+  }
+  
+  :root:not(.dark) .bg-white {
+    background-color: #ffffff !important;
+  }
+  
+  :root:not(.dark) .text-slate-900 {
+    color: #0f172a !important;
+  }
+  
+  :root:not(.dark) .text-slate-700 {
+    color: #334155 !important;
+  }
+  
+  :root:not(.dark) .text-slate-600 {
+    color: #475569 !important;
+  }
+  
+  :root:not(.dark) .border-slate-200 {
+    border-color: #e2e8f0 !important;
+  }
+  
+  :root:not(.dark) .border-slate-300 {
+    border-color: #cbd5e1 !important;
+  }
+  
+  /* 사파리 어드민 레이아웃 강제 적용 */
+  :root:not(.dark) .safari-admin-layout {
+    background-color: #f8fafc !important;
+  }
+  
+  :root:not(.dark) .safari-admin-main {
+    background-color: #f8fafc !important;
+  }
+}
+
+/* 사파리 다크 모드 완전 비활성화 - 최고 우선순위 */
+@supports (-webkit-appearance: none) {
+  /* 사파리에서 시스템 다크 모드 완전 무시 */
+  @media (prefers-color-scheme: dark) {
+    /* 라이트 모드일 때는 모든 다크 모드 스타일을 완전히 무시 */
+    :root:not(.dark) {
+      --background: #ffffff !important;
+      --foreground: #171717 !important;
+    }
+    
+    :root:not(.dark) body {
+      background-color: #ffffff !important;
+      color: #171717 !important;
+    }
+    
+    :root:not(.dark) header, 
+    :root:not(.dark) nav {
+      background-color: #ffffff !important;
+      color: #171717 !important;
+    }
+    
+    /* 모든 다크 모드 클래스를 라이트 모드로 강제 오버라이드 */
+    :root:not(.dark) .dark\:bg-slate-900,
+    :root:not(.dark) .dark\:bg-slate-800,
+    :root:not(.dark) .dark\:bg-slate-700,
+    :root:not(.dark) .dark\:bg-slate-600,
+    :root:not(.dark) .dark\:bg-slate-500,
+    :root:not(.dark) .dark\:bg-slate-400,
+    :root:not(.dark) .dark\:bg-slate-300,
+    :root:not(.dark) .dark\:bg-slate-200,
+    :root:not(.dark) .dark\:bg-slate-100,
+    :root:not(.dark) .dark\:bg-slate-50,
+    :root:not(.dark) .dark\:bg-white {
+      background-color: #ffffff !important;
+    }
+    
+    :root:not(.dark) .dark\:text-white,
+    :root:not(.dark) .dark\:text-slate-100,
+    :root:not(.dark) .dark\:text-slate-200,
+    :root:not(.dark) .dark\:text-slate-300,
+    :root:not(.dark) .dark\:text-slate-400,
+    :root:not(.dark) .dark\:text-slate-500,
+    :root:not(.dark) .dark\:text-slate-600,
+    :root:not(.dark) .dark\:text-slate-700,
+    :root:not(.dark) .dark\:text-slate-800,
+    :root:not(.dark) .dark\:text-slate-900 {
+      color: #171717 !important;
+    }
+    
+    /* 특별히 문제가 되는 blue-300 클래스 오버라이드 */
+    :root:not(.dark) .dark\:text-blue-300 {
+      color: #1e40af !important; /* blue-800 */
+    }
+    
+    /* 모든 blue 계열 다크 모드 클래스 오버라이드 */
+    :root:not(.dark) .dark\:text-blue-100,
+    :root:not(.dark) .dark\:text-blue-200,
+    :root:not(.dark) .dark\:text-blue-300,
+    :root:not(.dark) .dark\:text-blue-400,
+    :root:not(.dark) .dark\:text-blue-500,
+    :root:not(.dark) .dark\:text-blue-600,
+    :root:not(.dark) .dark\:text-blue-700,
+    :root:not(.dark) .dark\:text-blue-800,
+    :root:not(.dark) .dark\:text-blue-900 {
+      color: #1e40af !important; /* blue-800 */
+    }
+  }
+}
+
+/* Tailwind CSS 오버라이드 - 시스템 다크 모드 완전 비활성화 */
+/* 모든 @media (prefers-color-scheme: dark) 스타일을 오버라이드 */
+@media (prefers-color-scheme: dark) {
+  /* 라이트 모드일 때는 시스템 다크 모드를 완전히 무시하고 라이트 모드 유지 */
+  :root:not(.dark) {
+    --background: #ffffff !important;
+    --foreground: #171717 !important;
+  }
+  :root:not(.dark) body {
+    background-color: #ffffff !important;
+    color: #171717 !important;
+  }
+  :root:not(.dark) header, 
+  :root:not(.dark) nav {
+    background-color: #ffffff !important;
+    color: #171717 !important;
+  }
+  
+  /* 모든 Tailwind 다크 모드 클래스를 라이트 모드로 강제 오버라이드 */
+  :root:not(.dark) .dark\:bg-slate-900,
+  :root:not(.dark) .dark\:bg-slate-800,
+  :root:not(.dark) .dark\:bg-slate-700,
+  :root:not(.dark) .dark\:bg-slate-600,
+  :root:not(.dark) .dark\:bg-slate-500,
+  :root:not(.dark) .dark\:bg-slate-400,
+  :root:not(.dark) .dark\:bg-slate-300,
+  :root:not(.dark) .dark\:bg-slate-200,
+  :root:not(.dark) .dark\:bg-slate-100,
+  :root:not(.dark) .dark\:bg-slate-50,
+  :root:not(.dark) .dark\:bg-white {
+    background-color: #ffffff !important;
+  }
+  
+  :root:not(.dark) .dark\:text-white,
+  :root:not(.dark) .dark\:text-slate-100,
+  :root:not(.dark) .dark\:text-slate-200,
+  :root:not(.dark) .dark\:text-slate-300,
+  :root:not(.dark) .dark\:text-slate-400,
+  :root:not(.dark) .dark\:text-slate-500,
+  :root:not(.dark) .dark\:text-slate-600,
+  :root:not(.dark) .dark\:text-slate-700,
+  :root:not(.dark) .dark\:text-slate-800,
+  :root:not(.dark) .dark\:text-slate-900 {
+    color: #171717 !important;
+  }
+  
+  /* 특별히 문제가 되는 blue-300 클래스 오버라이드 */
+  :root:not(.dark) .dark\:text-blue-300 {
+    color: #1e40af !important; /* blue-800 */
+  }
+  
+  /* 모든 blue 계열 다크 모드 클래스 오버라이드 */
+  :root:not(.dark) .dark\:text-blue-100,
+  :root:not(.dark) .dark\:text-blue-200,
+  :root:not(.dark) .dark\:text-blue-300,
+  :root:not(.dark) .dark\:text-blue-400,
+  :root:not(.dark) .dark\:text-blue-500,
+  :root:not(.dark) .dark\:text-blue-600,
+  :root:not(.dark) .dark\:text-blue-700,
+  :root:not(.dark) .dark\:text-blue-800,
+  :root:not(.dark) .dark\:text-blue-900 {
+    color: #1e40af !important; /* blue-800 */
+  }
+  
+  /* 모든 green 계열 다크 모드 클래스 오버라이드 */
+  :root:not(.dark) .dark\:text-green-100,
+  :root:not(.dark) .dark\:text-green-200,
+  :root:not(.dark) .dark\:text-green-300,
+  :root:not(.dark) .dark\:text-green-400,
+  :root:not(.dark) .dark\:text-green-500,
+  :root:not(.dark) .dark\:text-green-600,
+  :root:not(.dark) .dark\:text-green-700,
+  :root:not(.dark) .dark\:text-green-800,
+  :root:not(.dark) .dark\:text-green-900 {
+    color: #166534 !important; /* green-800 */
+  }
+  
+  /* 그라디언트 관련 다크 모드 클래스 오버라이드 */
+  :root:not(.dark) .dark\:from-slate-900,
+  :root:not(.dark) .dark\:from-slate-800,
+  :root:not(.dark) .dark\:from-slate-700,
+  :root:not(.dark) .dark\:from-slate-600,
+  :root:not(.dark) .dark\:from-slate-500,
+  :root:not(.dark) .dark\:from-slate-400,
+  :root:not(.dark) .dark\:from-slate-300,
+  :root:not(.dark) .dark\:from-slate-200,
+  :root:not(.dark) .dark\:from-slate-100,
+  :root:not(.dark) .dark\:from-slate-50,
+  :root:not(.dark) .dark\:from-white,
+  :root:not(.dark) .dark\:from-gray-900,
+  :root:not(.dark) .dark\:from-gray-800,
+  :root:not(.dark) .dark\:from-gray-700,
+  :root:not(.dark) .dark\:from-gray-600,
+  :root:not(.dark) .dark\:from-gray-500,
+  :root:not(.dark) .dark\:from-gray-400,
+  :root:not(.dark) .dark\:from-gray-300,
+  :root:not(.dark) .dark\:from-gray-200,
+  :root:not(.dark) .dark\:from-gray-100,
+  :root:not(.dark) .dark\:from-gray-50,
+  :root:not(.dark) .dark\:from-black {
+    --tw-gradient-from: #ffffff !important;
+  }
+  
+  :root:not(.dark) .dark\:via-slate-900,
+  :root:not(.dark) .dark\:via-slate-800,
+  :root:not(.dark) .dark\:via-slate-700,
+  :root:not(.dark) .dark\:via-slate-600,
+  :root:not(.dark) .dark\:via-slate-500,
+  :root:not(.dark) .dark\:via-slate-400,
+  :root:not(.dark) .dark\:via-slate-300,
+  :root:not(.dark) .dark\:via-slate-200,
+  :root:not(.dark) .dark\:via-slate-100,
+  :root:not(.dark) .dark\:via-slate-50,
+  :root:not(.dark) .dark\:via-white,
+  :root:not(.dark) .dark\:via-gray-900,
+  :root:not(.dark) .dark\:via-gray-800,
+  :root:not(.dark) .dark\:via-gray-700,
+  :root:not(.dark) .dark\:via-gray-600,
+  :root:not(.dark) .dark\:via-gray-500,
+  :root:not(.dark) .dark\:via-gray-400,
+  :root:not(.dark) .dark\:via-gray-300,
+  :root:not(.dark) .dark\:via-gray-200,
+  :root:not(.dark) .dark\:via-gray-100,
+  :root:not(.dark) .dark\:via-gray-50,
+  :root:not(.dark) .dark\:via-black {
+    --tw-gradient-via: #ffffff !important;
+  }
+  
+  :root:not(.dark) .dark\:to-slate-900,
+  :root:not(.dark) .dark\:to-slate-800,
+  :root:not(.dark) .dark\:to-slate-700,
+  :root:not(.dark) .dark\:to-slate-600,
+  :root:not(.dark) .dark\:to-slate-500,
+  :root:not(.dark) .dark\:to-slate-400,
+  :root:not(.dark) .dark\:to-slate-300,
+  :root:not(.dark) .dark\:to-slate-200,
+  :root:not(.dark) .dark\:to-slate-100,
+  :root:not(.dark) .dark\:to-slate-50,
+  :root:not(.dark) .dark\:to-white,
+  :root:not(.dark) .dark\:to-gray-900,
+  :root:not(.dark) .dark\:to-gray-800,
+  :root:not(.dark) .dark\:to-gray-700,
+  :root:not(.dark) .dark\:to-gray-600,
+  :root:not(.dark) .dark\:to-gray-500,
+  :root:not(.dark) .dark\:to-gray-400,
+  :root:not(.dark) .dark\:to-gray-300,
+  :root:not(.dark) .dark\:to-gray-200,
+  :root:not(.dark) .dark\:to-gray-100,
+  :root:not(.dark) .dark\:to-gray-50,
+  :root:not(.dark) .dark\:to-black {
+    --tw-gradient-to: #ffffff !important;
+  }
+  
+  /* 다크 모드일 때만 시스템 다크 모드 적용 */
+  :root.dark {
+    --background: #000000 !important;
+    --foreground: #ffffff !important;
+  }
+  :root.dark body {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+  :root.dark header, 
+  :root.dark nav {
+    background-color: #111111 !important;
+    color: #ffffff !important;
+  }
+}
+
+/* 다크 모드에서 날짜 입력 필드 */
+.dark input[type="date"] {
+  color-scheme: dark;
+}
+
+/* 사파리 전용 강제 오버라이드 - 최고 우선순위 */
+@supports (-webkit-appearance: none) {
+  /* 사파리에서 시스템 다크 모드가 강제로 적용되는 것을 완전히 차단 */
+  :root:not(.dark) * {
+    /* 모든 요소에 대해 시스템 다크 모드 스타일 무시 */
+    -webkit-color-scheme: light !important;
+    color-scheme: light !important;
+  }
+  
+  /* 사파리에서 다크 모드 미디어 쿼리 완전 무시 */
+  @media (prefers-color-scheme: dark) {
+    /* 라이트 모드일 때는 모든 다크 모드 스타일을 완전히 무시 */
+    :root:not(.dark) {
+      --background: #ffffff !important;
+      --foreground: #171717 !important;
+      -webkit-color-scheme: light !important;
+      color-scheme: light !important;
+    }
+    
+    :root:not(.dark) body {
+      background-color: #ffffff !important;
+      color: #171717 !important;
+    }
+    
+    :root:not(.dark) html {
+      background-color: #ffffff !important;
+      color: #171717 !important;
+    }
+    
+    /* 모든 다크 모드 클래스를 라이트 모드로 강제 오버라이드 */
+    :root:not(.dark) .dark\:text-blue-300 {
+      color: #1e40af !important; /* blue-800 */
+    }
+    
+    :root:not(.dark) .dark\:text-blue-100,
+    :root:not(.dark) .dark\:text-blue-200,
+    :root:not(.dark) .dark\:text-blue-300,
+    :root:not(.dark) .dark\:text-blue-400,
+    :root:not(.dark) .dark\:text-blue-500,
+    :root:not(.dark) .dark\:text-blue-600,
+    :root:not(.dark) .dark\:text-blue-700,
+    :root:not(.dark) .dark\:text-blue-800,
+    :root:not(.dark) .dark\:text-blue-900 {
+      color: #1e40af !important; /* blue-800 */
+    }
+    
+    /* 모든 slate 계열 다크 모드 텍스트 클래스 */
+    :root:not(.dark) .dark\:text-slate-100,
+    :root:not(.dark) .dark\:text-slate-200,
+    :root:not(.dark) .dark\:text-slate-300,
+    :root:not(.dark) .dark\:text-slate-400,
+    :root:not(.dark) .dark\:text-slate-500,
+    :root:not(.dark) .dark\:text-slate-600,
+    :root:not(.dark) .dark\:text-slate-700,
+    :root:not(.dark) .dark\:text-slate-800,
+    :root:not(.dark) .dark\:text-slate-900 {
+      color: #171717 !important;
+    }
+    
+    /* 모든 green 계열 다크 모드 텍스트 클래스 */
+    :root:not(.dark) .dark\:text-green-100,
+    :root:not(.dark) .dark\:text-green-200,
+    :root:not(.dark) .dark\:text-green-300,
+    :root:not(.dark) .dark\:text-green-400,
+    :root:not(.dark) .dark\:text-green-500,
+    :root:not(.dark) .dark\:text-green-600,
+    :root:not(.dark) .dark\:text-green-700,
+    :root:not(.dark) .dark\:text-green-800,
+    :root:not(.dark) .dark\:text-green-900 {
+      color: #166534 !important; /* green-800 */
+    }
+    
+    /* 모든 배경색 다크 모드 클래스 */
+    :root:not(.dark) .dark\:bg-slate-100,
+    :root:not(.dark) .dark\:bg-slate-200,
+    :root:not(.dark) .dark\:bg-slate-300,
+    :root:not(.dark) .dark\:bg-slate-400,
+    :root:not(.dark) .dark\:bg-slate-500,
+    :root:not(.dark) .dark\:bg-slate-600,
+    :root:not(.dark) .dark\:bg-slate-700,
+    :root:not(.dark) .dark\:bg-slate-800,
+    :root:not(.dark) .dark\:bg-slate-900 {
+      background-color: #ffffff !important;
+    }
+    
+    /* blue 계열 배경색 */
+    :root:not(.dark) .dark\:bg-blue-100,
+    :root:not(.dark) .dark\:bg-blue-200,
+    :root:not(.dark) .dark\:bg-blue-300,
+    :root:not(.dark) .dark\:bg-blue-400,
+    :root:not(.dark) .dark\:bg-blue-500,
+    :root:not(.dark) .dark\:bg-blue-600,
+    :root:not(.dark) .dark\:bg-blue-700,
+    :root:not(.dark) .dark\:bg-blue-800,
+    :root:not(.dark) .dark\:bg-blue-900 {
+      background-color: #dbeafe !important; /* blue-100 */
+    }
+    
+    /* green 계열 배경색 */
+    :root:not(.dark) .dark\:bg-green-100,
+    :root:not(.dark) .dark\:bg-green-200,
+    :root:not(.dark) .dark\:bg-green-300,
+    :root:not(.dark) .dark\:bg-green-400,
+    :root:not(.dark) .dark\:bg-green-500,
+    :root:not(.dark) .dark\:bg-green-600,
+    :root:not(.dark) .dark\:bg-green-700,
+    :root:not(.dark) .dark\:bg-green-800,
+    :root:not(.dark) .dark\:bg-green-900 {
+      background-color: #dcfce7 !important; /* green-100 */
+    }
+  }
+}
+
+/* 추가 사파리 특화 규칙 */
+@supports (-webkit-appearance: none) {
+  /* 사파리에서 강제로 라이트 모드 유지 */
+  :root:not(.dark) {
+    -webkit-color-scheme: light !important;
+    color-scheme: light !important;
+  }
+  
+  /* 사파리에서 모든 다크 모드 클래스 강제 오버라이드 */
+  :root:not(.dark) .dark\:text-blue-300 {
+    color: #1e40af !important; /* blue-800 */
+  }
+  
+  :root:not(.dark) .dark\:text-green-200 {
+    color: #166534 !important; /* green-800 */
+  }
+  
+  :root:not(.dark) .dark\:bg-blue-900 {
+    background-color: #dbeafe !important; /* blue-100 */
+  }
+  
+  :root:not(.dark) .dark\:bg-green-900 {
+    background-color: #dcfce7 !important; /* green-100 */
+  }
 }
