@@ -3,7 +3,6 @@ import Link from "next/link";
 
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
 import Head from "next/head";
 import toast from "react-hot-toast";
 import { blogApi } from "@/lib/api";
@@ -12,6 +11,9 @@ import DynamicHead from "@/components/DynamicHead";
 import ScrollProgress from "../../components/ScrollProgress";
 import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
+
+const POST_CARD_REVEAL_INTERVAL = 120;
+const POSTS_PAGE_SIZE = 6;
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -24,6 +26,7 @@ export default function Blog() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalPosts, setTotalPosts] = useState(0);
+  const [postRevealCount, setPostRevealCount] = useState(0);
   type SiteSettings = {
     site_title?: string;
     site_description?: string;
@@ -40,6 +43,18 @@ export default function Blog() {
   const filteredPosts = useMemo(() => {
     return blogPosts || [];
   }, [blogPosts]);
+
+  const postSkeletonCount = useMemo(() => {
+    if (filteredPosts.length > 0) {
+      return filteredPosts.length;
+    }
+
+    if (totalPosts > 0) {
+      return Math.max(Math.min(totalPosts, POSTS_PAGE_SIZE), 1);
+    }
+
+    return 1;
+  }, [filteredPosts, totalPosts]);
 
   // 사이트 설정 가져오기
   useEffect(() => {
@@ -130,6 +145,26 @@ export default function Blog() {
     fetchData();
   }, [currentPage, searchQuery, selectedTags, sortOrder]);
 
+  useEffect(() => {
+    if (loading || filteredPosts.length === 0) {
+      setPostRevealCount(0);
+      return;
+    }
+
+    setPostRevealCount(0);
+    const interval = window.setInterval(() => {
+      setPostRevealCount((prev) => {
+        const next = Math.min(prev + 1, filteredPosts.length);
+        if (next === filteredPosts.length) {
+          window.clearInterval(interval);
+        }
+        return next;
+      });
+    }, POST_CARD_REVEAL_INTERVAL);
+
+    return () => window.clearInterval(interval);
+  }, [loading, filteredPosts]);
+ 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -195,6 +230,27 @@ export default function Blog() {
     });
   }, []);
 
+  const PostSkeletonCard = () => (
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden border border-slate-200 dark:border-slate-700">
+      <div className="p-6 animate-pulse">
+        <div className="flex items-center justify-between mb-3">
+          <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20" />
+          <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-12" />
+        </div>
+        <div className="h-6 bg-slate-300 dark:bg-slate-600 rounded mb-3" />
+        <div className="space-y-2 mb-4">
+          <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-full" />
+          <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-2/3" />
+        </div>
+        <div className="flex gap-1 mb-4">
+          <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-12" />
+          <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-16" />
+        </div>
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-16" />
+      </div>
+    </div>
+  );
+
   // const featuredPosts = blogPosts.filter((_, index) => index < 2);
   // const recentPosts = blogPosts.filter((_, index) => index >= 2);
 
@@ -233,36 +289,18 @@ export default function Blog() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Hero Section */}
-        <motion.section 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.h1 
-            className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
+        <section className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
             개발 블로그
-          </motion.h1>
-          <motion.p 
-            className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8">
             웹 개발 경험과 새로운 기술에 대한 인사이트를 공유합니다
-          </motion.p>
+          </p>
           
           {/* Search and Filter */}
           {settings?.search_enabled !== false && (
-            <motion.div 
+            <div 
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
             >
               <div className="relative">
                 <input 
@@ -277,15 +315,12 @@ export default function Blog() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-            </motion.div>
+            </div>
           )}
           
           {/* Categories */}
-          <motion.div 
+          <div 
             className="flex flex-wrap justify-center gap-2 mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
           >
             <button
               onClick={clearAllTags}
@@ -310,10 +345,10 @@ export default function Blog() {
                 {tag.name} {tag.post_count && `(${tag.post_count})`}
               </button>
             ))}
-          </motion.div>
+          </div>
 
           
-        </motion.section>
+        </section>
 
         {/* Featured Posts */}
         {/* 포스트 목록 */}
@@ -323,25 +358,8 @@ export default function Blog() {
               포스트
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden border border-slate-200 dark:border-slate-700 animate-pulse">
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20"></div>
-                      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-12"></div>
-                    </div>
-                    <div className="h-6 bg-slate-300 dark:bg-slate-600 rounded mb-3"></div>
-                    <div className="space-y-2 mb-4">
-                      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded"></div>
-                      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-2/3"></div>
-                    </div>
-                    <div className="flex gap-1 mb-4">
-                      <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-12"></div>
-                      <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-16"></div>
-                    </div>
-                    <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-16"></div>
-                  </div>
-                </div>
+              {Array.from({ length: postSkeletonCount }).map((_, index) => (
+                <PostSkeletonCard key={`blog-loading-${index}`} />
               ))}
             </div>
           </section>
@@ -367,11 +385,7 @@ export default function Blog() {
             </div>
           </section>
         ) : (
-          <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
+          <section>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 포스트 ({filteredPosts.length}개)
@@ -404,64 +418,71 @@ export default function Blog() {
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPosts.length > 0 ? (
-                filteredPosts.map((post, index) => (
-                  <motion.article 
-                    key={post.id} 
-                    className="bg-white dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 group cursor-pointer"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => window.location.href = `/blog/post?slug=${encodeURIComponent(post.slug)}`}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
-                        <time>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time>
-                      </div>
-                      
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        <Link 
-                          href={`/blog/post?slug=${post.slug}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {post.title}
-                        </Link>
-                      </h3>
-                      
-                      <p className="text-slate-600 dark:text-slate-300 mb-4 text-sm line-clamp-3">
-                        {post.excerpt || post.content.substring(0, 120) + '...'}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {post.tags && post.tags.length > 0 ? (
-                          post.tags.slice(0, 3).map((tag) => (
-                            <span key={`${post.id}-${tag.id}`} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                              {tag.name}
+                filteredPosts.map((post, index) => {
+                  const isRevealed = index < postRevealCount;
+                  const baseClass = "bg-white dark:bg-slate-800 rounded-lg shadow-sm transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 group";
+                  const stateClass = isRevealed
+                    ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02]"
+                    : "cursor-default pointer-events-none";
+
+                  return (
+                    <article
+                      key={post.id}
+                      className={`${baseClass} ${stateClass}`}
+                      onClick={isRevealed ? () => (window.location.href = `/blog/post?slug=${encodeURIComponent(post.slug)}`) : undefined}
+                    >
+                      {isRevealed ? (
+                        <div className="p-6">
+                          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
+                            <time>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time>
+                          </div>
+
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <Link
+                              href={`/blog/post?slug=${post.slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {post.title}
+                            </Link>
+                          </h3>
+
+                          <p className="text-slate-600 dark:text-slate-300 mb-4 text-sm line-clamp-3">
+                            {post.excerpt || post.content.substring(0, 120) + '...'}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {post.tags && post.tags.length > 0 ? (
+                              post.tags.slice(0, 3).map((tag) => (
+                                <span key={`${post.id}-${tag.id}`} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                                  {tag.name}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs rounded-full">
+                                태그 없음
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Link
+                              href={`/blog/post?slug=${post.slug}`}
+                              className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              자세히 보기 →
+                            </Link>
+                            <span className="text-xs text-slate-400">
+                              조회 {post.view_count}
                             </span>
-                          ))
-                        ) : (
-                          <span key={`${post.id}-no-tags`} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs rounded-full">
-                            태그 없음
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Link 
-                          href={`/blog/post?slug=${post.slug}`} 
-                          className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          자세히 보기 →
-                        </Link>
-                        <span className="text-xs text-slate-400">
-                          조회 {post.view_count}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.article>
-                ))
+                          </div>
+                        </div>
+                      ) : (
+                        <PostSkeletonCard />
+                      )}
+                    </article>
+                  );
+                })
               ) : (
                 <div className="col-span-full text-center py-12">
                   <p className="text-slate-500 dark:text-slate-400 text-lg">
@@ -486,7 +507,7 @@ export default function Blog() {
                 </div>
               </div>
             )}
-          </motion.section>
+          </section>
         )}
 
 

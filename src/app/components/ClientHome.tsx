@@ -12,6 +12,13 @@ import toast from "react-hot-toast";
 
 import { BlogPost } from "@/types";
 
+const BLOG_PLACEHOLDER_COUNT = 1;
+const PROJECT_PLACEHOLDER_COUNT = 1;
+const SKILL_PLACEHOLDER_COUNT = 1;
+const CARD_REVEAL_INTERVAL = 120;
+const SKILL_REVEAL_INTERVAL = 80;
+const SKILL_REVEAL_STEP = 3;
+
 // 동적 import로 OptimizedGalaxy 컴포넌트 지연 로딩
 const Galaxy = lazy(() => import("./OptimizedGalaxy"));
 
@@ -75,6 +82,9 @@ export default function ClientHome({
   const [skills, setSkills] = useState<Skill[]>(initialSkills);
   const [loading, setLoading] = useState(initialLoading);
   const [_dataError, setDataError] = useState(false);
+  const [blogRevealCount, setBlogRevealCount] = useState(0);
+  const [projectRevealCount, setProjectRevealCount] = useState(0);
+  const [skillsRevealCount, setSkillsRevealCount] = useState(0);
 
 
   // 클라이언트 사이드에서 데이터 로딩
@@ -282,15 +292,80 @@ export default function ClientHome({
     return categorizedSkills[activeSkillTab] || [];
   }, [activeSkillTab, skills, categorizedSkills]);
 
+  const featuredProjectItems = useMemo(() => {
+    if (!projects || projects.length === 0) return [];
+    return projects.filter((project) => project.featured);
+  }, [projects]);
 
+  const blogSkeletonCount = blogPosts.length > 0 ? blogPosts.length : BLOG_PLACEHOLDER_COUNT;
+  const projectSkeletonCount = featuredProjectItems.length > 0 ? featuredProjectItems.length : PROJECT_PLACEHOLDER_COUNT;
+  const skillSkeletonCount = currentSkills.length > 0 ? currentSkills.length : SKILL_PLACEHOLDER_COUNT;
 
+  useEffect(() => {
+    if (loading || !blogPosts || blogPosts.length === 0) {
+      setBlogRevealCount(0);
+      return;
+    }
 
+    setBlogRevealCount(0);
+    const interval = window.setInterval(() => {
+      setBlogRevealCount((prev) => {
+        const next = Math.min(prev + 1, blogPosts.length);
+        if (next === blogPosts.length) {
+          window.clearInterval(interval);
+        }
+        return next;
+      });
+    }, CARD_REVEAL_INTERVAL);
 
+    return () => window.clearInterval(interval);
+  }, [loading, blogPosts]);
 
+  useEffect(() => {
+    if (loading || featuredProjectItems.length === 0) {
+      setProjectRevealCount(0);
+      return;
+    }
 
+    setProjectRevealCount(0);
+    const interval = window.setInterval(() => {
+      setProjectRevealCount((prev) => {
+        const next = Math.min(prev + 1, featuredProjectItems.length);
+        if (next === featuredProjectItems.length) {
+          window.clearInterval(interval);
+        }
+        return next;
+      });
+    }, CARD_REVEAL_INTERVAL);
 
+    return () => window.clearInterval(interval);
+  }, [loading, featuredProjectItems]);
 
+  useEffect(() => {
+    if (loading || !currentSkills || currentSkills.length === 0) {
+      setSkillsRevealCount(0);
+      return;
+    }
 
+    setSkillsRevealCount(0);
+    const interval = window.setInterval(() => {
+      setSkillsRevealCount((prev) => {
+        const next = Math.min(prev + SKILL_REVEAL_STEP, currentSkills.length);
+        if (next >= currentSkills.length) {
+          window.clearInterval(interval);
+        }
+        return next;
+      });
+    }, SKILL_REVEAL_INTERVAL);
+
+    return () => window.clearInterval(interval);
+  }, [loading, currentSkills, activeSkillTab]);
+
+ 
+ 
+ 
+ 
+ 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -340,29 +415,45 @@ export default function ClientHome({
   };
 
   // 스켈레톤 UI 컴포넌트 - 실제 UI와 유사하게 개선
-  const SkeletonCard = () => (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 animate-pulse">
-      <div className="h-6 bg-slate-300 dark:bg-slate-600 rounded w-3/4 mb-3"></div>
+  const CardSkeletonContent = () => (
+    <div className="p-6 animate-pulse">
+      <div className="flex items-center justify-between mb-3">
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-24" />
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-12" />
+      </div>
+      <div className="h-6 bg-slate-300 dark:bg-slate-600 rounded w-3/4 mb-3" />
       <div className="space-y-2 mb-4">
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-5/6"></div>
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-4/5"></div>
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-full" />
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-5/6" />
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-4/5" />
       </div>
       <div className="flex gap-2 mb-4">
-        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-12"></div>
-        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-16"></div>
-        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-14"></div>
+        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-12" />
+        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-16" />
+        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-14" />
       </div>
       <div className="flex justify-between items-center">
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20"></div>
-        <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded w-20"></div>
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20" />
+        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-12" />
       </div>
     </div>
   );
 
+  const SkeletonCard = () => (
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+      <CardSkeletonContent />
+    </div>
+  );
+
+  const SkillSkeletonContent = () => (
+    <div className="animate-pulse">
+      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-16 mx-auto" />
+    </div>
+  );
+
   const SkeletonSkill = () => (
-    <div className="p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 text-center animate-pulse">
-      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-16 mx-auto"></div>
+    <div className="p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+      <SkillSkeletonContent />
     </div>
   );
 
@@ -705,12 +796,7 @@ export default function ClientHome({
       <section id="latest-content" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-x-hidden">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* 블로그 포스트 */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
+          <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 대표 블로그 포스트
@@ -722,97 +808,75 @@ export default function ClientHome({
             
             <div className="space-y-4">
               {loading ? (
-                <>
-                  {[...Array(3)].map((_, index) => (
-                  <motion.div 
-                    key={index} 
-                    className="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                  >
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <motion.div 
-                          className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-16"
-                          animate={{ opacity: [0.5, 1, 0.5] }}
-                          transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.2 }}
-                        />
-                        <motion.div 
-                          className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-8"
-                          animate={{ opacity: [0.5, 1, 0.5] }}
-                          transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.3 }}
-                        />
-                      </div>
-                      <motion.div 
-                        className="h-4 bg-slate-300 dark:bg-slate-600 rounded mb-2"
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.4 }}
-                      />
-                      <motion.div 
-                        className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-3/4"
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.5 }}
-                      />
-                    </div>
-                  </motion.div>
-                  ))}
-                </>
-              ) : blogPosts && blogPosts.length > 0 ? (
-                blogPosts.map((post, index) => (
-                  <motion.article 
-                    key={post.id} 
-                    className="rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 dark:border-slate-700 cursor-pointer"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => window.location.href = `/blog/post?slug=${encodeURIComponent(post.slug)}`}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
-                        <time>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time>
-                        <span className="text-sm text-slate-400">블로그</span>
-                      </div>
-                      
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
-                        {post.title}
-                      </h3>
-                      
-                      <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
-                        {post.excerpt || post.content.substring(0, 100) + '...'}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {post.tags && Array.isArray(post.tags) && post.tags.length > 0 ? (
-                          post.tags.slice(0, 2).map((tag, index) => (
-                            <span 
-                              key={tag.id || `${tag.name}-${index}`} 
-                              className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                            >
-                              {typeof tag === 'string' ? tag : tag.name}
-                            </span>
-                          ))
-                        ) : null}
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Link 
-                          href={`/blog/post?slug=${post.slug}`} 
-                          className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          자세히 보기 →
-                        </Link>
-                        <span className="text-xs text-slate-400">
-                          조회 {post.view_count || 0}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.article>
+                Array.from({ length: blogSkeletonCount }).map((_, index) => (
+                  <SkeletonCard key={`blog-loading-skeleton-${index}`} />
                 ))
+              ) : blogPosts && blogPosts.length > 0 ? (
+                blogPosts.map((post, index) => {
+                  const isRevealed = index < blogRevealCount;
+                  const cardBaseClass = "bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 group overflow-hidden";
+                  const stateClass = isRevealed
+                    ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
+                    : "cursor-default pointer-events-none";
+
+                  return (
+                    <article
+                      key={post.id}
+                      className={`${cardBaseClass} ${stateClass}`}
+                      onClick={isRevealed ? () => (window.location.href = `/blog/post?slug=${encodeURIComponent(post.slug)}`) : undefined}
+                    >
+                      {isRevealed ? (
+                        <div className="p-6">
+                          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
+                            <time>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time>
+                            <span className="text-sm text-slate-400">블로그</span>
+                          </div>
+
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <Link
+                              href={`/blog/post?slug=${post.slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {post.title}
+                            </Link>
+                          </h3>
+
+                          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
+                            {post.excerpt || post.content.substring(0, 100) + '...'}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {post.tags && post.tags.length > 0
+                              ? post.tags.slice(0, 2).map((tag, tagIndex) => (
+                                  <span
+                                    key={tag.id || `${tag.name}-${tagIndex}`}
+                                    className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                                  >
+                                    {typeof tag === 'string' ? tag : tag.name}
+                                  </span>
+                                ))
+                              : null}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Link
+                              href={`/blog/post?slug=${post.slug}`}
+                              className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              자세히 보기 →
+                            </Link>
+                            <span className="text-xs text-slate-400">
+                              조회 {post.view_count || 0}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <CardSkeletonContent />
+                      )}
+                    </article>
+                  );
+                })
               ) : (
                 <div className="text-center py-8">
                   <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -821,15 +885,10 @@ export default function ClientHome({
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
 
           {/* 프로젝트 */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            viewport={{ once: true }}
-          >
+          <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 대표 프로젝트
@@ -841,85 +900,79 @@ export default function ClientHome({
             
             <div className="space-y-4">
               {loading ? (
-                <>
-                  {[...Array(3)].map((_, index) => (
-                  <div key={index} className="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 animate-pulse">
-                    <div className="p-4">
-                      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded mb-2"></div>
-                      <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-3/4 mb-3"></div>
-                      <div className="flex gap-2 mb-3">
-                        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded-full w-12"></div>
-                        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded-full w-16"></div>
-                      </div>
-                      <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-20"></div>
-                    </div>
-                  </div>
-                  ))}
-                </>
-              ) : projects && projects.length > 0 ? (
-                projects.filter(project => project.featured).map((project, index) => (
-                  <motion.article 
-                    key={project.id} 
-                    className="rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 dark:border-slate-700 cursor-pointer"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => window.location.href = `/projects/detail?slug=${encodeURIComponent(project.slug)}`}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
-                        <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
-                        <span className="text-sm text-slate-400">프로젝트</span>
-                      </div>
-                      
-                      <h3 className="text-lg font-semibold text-slate-900 mb-3 line-clamp-2">
-                        {project.title}
-                      </h3>
-                      
-                      <p className="text-sm text-slate-600 mb-4 line-clamp-2">
-                        {project.excerpt || project.detailed_description || project.description || '프로젝트 설명이 없습니다.'}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {project.skills && Array.isArray(project.skills) && project.skills.length > 0 ? (
-                          project.skills.slice(0, 3).map((skill: string, index: number) => (
-                            <span 
-                              key={`${skill}-${index}`} 
-                              className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-                            >
-                              {skill}
-                            </span>
-                          ))
-                        ) : project.tags && Array.isArray(project.tags) && project.tags.length > 0 ? (
-                          project.tags.slice(0, 3).map((tag: string, index: number) => (
-                            <span 
-                              key={`${tag}-${index}`} 
-                              className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))
-                        ) : null}
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Link 
-                          href={`/projects/detail?slug=${encodeURIComponent(project.slug)}`} 
-                          className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          자세히 보기 →
-                        </Link>
-                        <span className="text-xs text-slate-400">
-                          조회 {project.view_count || 0}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.article>
+                Array.from({ length: projectSkeletonCount }).map((_, index) => (
+                  <SkeletonCard key={`project-loading-skeleton-${index}`} />
                 ))
+              ) : featuredProjectItems.length > 0 ? (
+                featuredProjectItems.map((project, index) => {
+                  const isRevealed = index < projectRevealCount;
+                  const cardBaseClass = "bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 overflow-hidden";
+                  const stateClass = isRevealed
+                    ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
+                    : "cursor-default pointer-events-none";
+
+                  return (
+                    <article
+                      key={project.id}
+                      className={`${cardBaseClass} ${stateClass}`}
+                      onClick={isRevealed ? () => (window.location.href = `/projects/detail?slug=${encodeURIComponent(project.slug)}`) : undefined}
+                    >
+                      {isRevealed ? (
+                        <div className="p-6">
+                          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
+                            <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
+                            <span className="text-sm text-slate-400">프로젝트</span>
+                          </div>
+
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
+                            {project.title}
+                          </h3>
+
+                          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
+                            {project.excerpt || project.detailed_description || project.description || '프로젝트 설명이 없습니다.'}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {project.skills && Array.isArray(project.skills) && project.skills.length > 0 ? (
+                              project.skills.slice(0, 3).map((skill: string, skillIndex: number) => (
+                                <span
+                                  key={`${project.id}-skill-${skillIndex}`}
+                                  className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+                                >
+                                  {skill}
+                                </span>
+                              ))
+                            ) : project.tags && Array.isArray(project.tags) && project.tags.length > 0 ? (
+                              project.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
+                                <span
+                                  key={`${project.id}-tag-${tagIndex}`}
+                                  className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-full"
+                                >
+                                  {tag}
+                                </span>
+                              ))
+                            ) : null}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Link
+                              href={`/projects/detail?slug=${encodeURIComponent(project.slug)}`}
+                              className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              자세히 보기 →
+                            </Link>
+                            <span className="text-xs text-slate-400">
+                              조회 {project.view_count || 0}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <CardSkeletonContent />
+                      )}
+                    </article>
+                  );
+                })
               ) : (
                 <div className="text-center py-8">
                   <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -928,17 +981,13 @@ export default function ClientHome({
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Skills Section */}
-      <motion.section 
+      <section 
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        viewport={{ once: true }}
       >
         <h2 className="text-3xl font-bold text-slate-900 dark:text-white text-center mb-12">
           주요 기술 스택
@@ -974,21 +1023,28 @@ export default function ClientHome({
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {currentSkills && currentSkills.length > 0 ? (
-            currentSkills.map((skill, index) => (
-              <motion.div 
-                key={skill.id} 
-                className="p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 text-center hover:shadow-md transition-shadow cursor-pointer"
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="text-slate-700 dark:text-slate-300 font-medium">{skill.name}</span>
-              </motion.div>
+          {loading ? (
+            Array.from({ length: skillSkeletonCount }).map((_, index) => (
+              <SkeletonSkill key={`skill-loading-${index}`} />
             ))
+          ) : currentSkills && currentSkills.length > 0 ? (
+            currentSkills.map((skill, index) => {
+              const isRevealed = index < skillsRevealCount;
+              const baseClass = "p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 text-center transition-all duration-300";
+              const stateClass = isRevealed
+                ? "cursor-pointer transform hover:-translate-y-1 hover:scale-105"
+                : "cursor-default pointer-events-none";
+
+              return (
+                <div key={skill.id} className={`${baseClass} ${stateClass}`}>
+                  {isRevealed ? (
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">{skill.name}</span>
+                  ) : (
+                    <SkillSkeletonContent />
+                  )}
+                </div>
+              );
+            })
           ) : (
             <div className="col-span-full text-center py-8">
               <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -1000,7 +1056,7 @@ export default function ClientHome({
             </div>
           )}
         </div>
-      </motion.section>
+      </section>
 
 
     </div>
