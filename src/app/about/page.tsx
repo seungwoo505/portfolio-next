@@ -14,7 +14,6 @@ import { generateStructuredData } from '@/lib/seo';
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
 const EXPERIENCE_REVEAL_INTERVAL = 120;
-const INTEREST_REVEAL_INTERVAL = 120;
 
 interface PersonalInfo {
   id?: number;
@@ -78,7 +77,6 @@ export default function AboutPage() {
   const [hasApiError, setHasApiError] = useState(false);
   const [skillRevealCount, setSkillRevealCount] = useState(0);
   const [experienceRevealCount, setExperienceRevealCount] = useState(0);
-  const [interestRevealCount, setInterestRevealCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -187,8 +185,6 @@ export default function AboutPage() {
     [interests]
   );
 
-  const interestSkeletonCount = Math.max(technicalInterests.length + personalInterests.length, 1);
-
   useEffect(() => {
     if (isLoading || totalSkillsCount === 0) {
       setSkillRevealCount(0);
@@ -229,43 +225,12 @@ export default function AboutPage() {
     return () => window.clearInterval(interval);
   }, [isLoading, experiences]);
 
-  useEffect(() => {
-    const totalInterestCount = technicalInterests.length + personalInterests.length;
-    if (isLoading || totalInterestCount === 0) {
-      setInterestRevealCount(0);
-      return;
-    }
-
-    setInterestRevealCount(0);
-    const interval = window.setInterval(() => {
-      setInterestRevealCount((prev) => {
-        const next = Math.min(prev + 1, totalInterestCount);
-        if (next === totalInterestCount) {
-          window.clearInterval(interval);
-        }
-        return next;
-      });
-    }, INTEREST_REVEAL_INTERVAL);
-
-    return () => window.clearInterval(interval);
-  }, [isLoading, technicalInterests, personalInterests]);
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
   };
 
   // 스켈레톤 UI 컴포넌트 - 실제 UI와 유사하게 개선
-  const SkeletonCard = () => (
-    <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-pulse">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-2 h-2 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-24"></div>
-      </div>
-      <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-16 ml-5"></div>
-    </div>
-  );
-
   const SkeletonSkill = () => (
     <div className="animate-pulse">
       <div className="flex justify-between mb-2">
@@ -292,16 +257,6 @@ export default function AboutPage() {
         <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
         <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-4/5"></div>
       </div>
-    </div>
-  );
-
-  const InterestSkeleton = () => (
-    <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 animate-pulse">
-      <div className="flex items-center gap-3">
-        <div className="w-2 h-2 bg-slate-400 dark:bg-slate-600 rounded-full" />
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-24" />
-      </div>
-      <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-16" />
     </div>
   );
 
@@ -669,15 +624,13 @@ export default function AboutPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">기술적 관심사</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {interests.filter(interest => interest.category === 'technical').length}개 항목
+                      {technicalInterests.length}개 항목
                     </p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  {interests.filter(interest => interest.category === 'technical').length > 0 ? (
-                    interests
-                      .filter(interest => interest.category === 'technical')
-                      .map((interest) => (
+                  {technicalInterests.length > 0 ? (
+                    technicalInterests.map((interest) => (
                         <div key={interest.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -714,15 +667,13 @@ export default function AboutPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">개인적 관심사</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {interests.filter(interest => interest.category === 'personal').length}개 항목
+                      {personalInterests.length}개 항목
                     </p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  {interests.filter(interest => interest.category === 'personal').length > 0 ? (
-                    interests
-                      .filter(interest => interest.category === 'personal')
-                      .map((interest) => (
+                  {personalInterests.length > 0 ? (
+                    personalInterests.map((interest) => (
                         <div key={interest.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
