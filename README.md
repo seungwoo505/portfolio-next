@@ -701,9 +701,9 @@ console.log(process.env.NEXT_PUBLIC_API_URL);
 
 ## 📚 추가 문서
 
-- [🔐 관리자 시스템 가이드](../portfolio-server/ADMIN_GUIDE.md)
-- [🚀 백엔드 API 문서](../portfolio-server/README.md)
-- [📊 배포 가이드](../portfolio-server/DEPLOYMENT_GUIDE.md)
+- [🔧 백엔드 문서](https://github.com/seungwoo505/Portfolio2/blob/main/portfolio-server/README.md)
+- [🔐 관리자 가이드](https://github.com/seungwoo505/Portfolio2/blob/main/portfolio-server/ADMIN_GUIDE.md)
+- [🚀 배포 가이드](https://github.com/seungwoo505/Portfolio2/blob/main/portfolio-server/DEPLOYMENT_GUIDE.md)
 
 ## 🔄 버전 히스토리
 
