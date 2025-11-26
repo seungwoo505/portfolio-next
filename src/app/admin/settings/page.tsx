@@ -1,31 +1,21 @@
 'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-
-interface Setting {
-  value: string | number | boolean | Record<string, unknown>;
-  type: 'string' | 'number' | 'boolean' | 'json';
-  is_public: boolean;
-  description: string;
-  updated_at: string;
-}
-
-interface Settings {
-  [key: string]: Setting;
-}
-
+import { AdminSettingEntry, AdminSettingsMap } from '@/types';
+/**
+ * @description 사이트 전역 설정을 관리하는 관리자 페이지입니다.
+ * @returns {JSX.Element} 설정 관리 페이지 컴포넌트.
+ */
 export default function SettingsPage() {
   const { isAuthenticated } = useAdmin();
-  const [settings, setSettings] = useState<Settings>({});
+  const [settings, setSettings] = useState<AdminSettingsMap>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [changedSettings, setChangedSettings] = useState<{ [key: string]: string | number | boolean | Record<string, unknown> }>({});
-
-  const getDefaultSettings = (): Settings => {
+  const getDefaultSettings = (): AdminSettingsMap => {
     return {
       site_title: {
         value: '승우.dev',
@@ -442,37 +432,35 @@ export default function SettingsPage() {
       }
     };
   };
-
   const fetchSettings = useCallback(async () => {
     try {
-      const response = await authApi.get<Settings>('/admin/settings');
+      const response = await authApi.get<AdminSettingsMap>('/admin/settings');
       if (response.data && Object.keys(response.data).length > 0) {
-        // 서버 데이터와 기본값을 병합
         const defaultSettings = getDefaultSettings();
         const mergedSettings = { ...defaultSettings, ...response.data };
         setSettings(mergedSettings);
       } else {
-        // 서버에서 설정을 가져올 수 없는 경우 기본값 사용
         setSettings(getDefaultSettings());
       }
     } catch {
-      // 서버에서 설정을 가져올 수 없는 경우 기본값 사용
       setSettings(getDefaultSettings());
     } finally {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     if (isAuthenticated) {
-      // 임시로 기본값을 먼저 설정
       setSettings(getDefaultSettings());
       setLoading(false);
-      // 그 다음 서버에서 가져오기 시도
       fetchSettings();
     }
   }, [isAuthenticated, fetchSettings]);
-
+  /**
+   * @description 설정 값 변경을 반영하고 수정 상태를 기록합니다.
+   * @param {string} key 설정 키.
+   * @param {string | number | boolean | Record<string, unknown>} value 변경할 값.
+   * @returns {void}
+   */
   const handleSettingChange = (key: string, value: string | number | boolean | Record<string, unknown>) => {
     setSettings(prev => ({
       ...prev,
@@ -481,26 +469,23 @@ export default function SettingsPage() {
         value: value
       }
     }));
-    
-    // 변경된 설정 추적
     setChangedSettings(prev => ({
       ...prev,
       [key]: value
     }));
   };
-
+  /**
+   * @description 변경된 설정을 서버에 저장합니다.
+   * @returns {Promise<void>}
+   */
   const handleSave = async () => {
     if (Object.keys(changedSettings).length === 0) {
       toast('변경된 설정이 없습니다.');
       return;
     }
-
     setSaving(true);
-
     try {
       const settingsToUpdate: { [key: string]: { value: string | number | boolean | Record<string, unknown>; type: string; is_public: boolean; description: string } } = {};
-      
-      // 변경된 설정만 업데이트
       Object.entries(changedSettings).forEach(([key]) => {
         const setting = settings?.[key];
         if (setting) {
@@ -512,13 +497,12 @@ export default function SettingsPage() {
           };
         }
       });
-
       await authApi.put('/admin/settings', { settings: settingsToUpdate });
       toast.success(`${Object.keys(changedSettings).length}개 설정이 성공적으로 저장되었습니다!`, {
         duration: 3000,
         icon: '⚙️',
       });
-      setChangedSettings({}); // 변경 추적 초기화
+      setChangedSettings({}); 
     } catch {
       toast.error('설정 저장에 실패했습니다.', {
         duration: 4000,
@@ -528,10 +512,14 @@ export default function SettingsPage() {
       setSaving(false);
     }
   };
-
-  const renderSettingInput = (key: string, setting: Setting) => {
+  /**
+   * @description 설정 타입에 맞는 입력 컴포넌트를 렌더링합니다.
+   * @param {string} key 설정 키.
+   * @param {AdminSettingEntry} setting 설정 값.
+   * @returns {JSX.Element} 렌더링된 입력 요소.
+   */
+  const renderSettingInput = (key: string, setting: AdminSettingEntry) => {
     const { type } = setting;
-
     switch (type) {
       case 'boolean':
         return (
@@ -542,7 +530,6 @@ export default function SettingsPage() {
             className="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600 rounded focus:ring-blue-500"
           />
         );
-      
       case 'number':
         return (
           <input
@@ -552,7 +539,6 @@ export default function SettingsPage() {
             className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
           />
         );
-      
       case 'json':
         return (
           <textarea
@@ -570,8 +556,7 @@ export default function SettingsPage() {
             placeholder="JSON 형식으로 입력하세요"
           />
         );
-      
-      default: // string
+      default: 
         return (
           <input
             type="text"
@@ -582,7 +567,11 @@ export default function SettingsPage() {
         );
     }
   };
-
+  /**
+   * @description 탭별로 표시할 설정 목록을 반환합니다.
+   * @param {string} tabName 탭 이름.
+   * @returns {{ [key: string]: AdminSettingEntry }} 탭에 해당하는 설정 객체.
+   */
   const getTabSettings = (tabName: string) => {
     const tabGroups: { [key: string]: string[] } = {
       general: ['site_title', 'site_description', 'site_logo', 'favicon'],
@@ -594,10 +583,8 @@ export default function SettingsPage() {
       security: ['max_login_attempts', 'session_timeout', 'enable_2fa', 'allowed_file_types'],
       other: ['posts_per_page', 'projects_per_page', 'enable_search', 'enable_rss']
     };
-
-    const tabSettings: { [key: string]: Setting } = {};
+    const tabSettings: { [key: string]: AdminSettingEntry } = {};
     const keys = tabGroups[tabName] || [];
-    
     keys.forEach(key => {
       if (settings?.[key]) {
         tabSettings[key] = settings[key];
@@ -605,7 +592,11 @@ export default function SettingsPage() {
     });
     return tabSettings;
   };
-
+  /**
+   * @description 탭 이름에 해당하는 한국어 제목을 반환합니다.
+   * @param {string} tabName 탭 이름.
+   * @returns {string} 탭 제목.
+   */
   const getTabTitle = (tabName: string) => {
     const titles: { [key: string]: string } = {
       general: '사이트 기본',
@@ -619,7 +610,6 @@ export default function SettingsPage() {
     };
     return titles[tabName] || tabName;
   };
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
@@ -630,7 +620,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
@@ -641,7 +630,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -650,8 +638,6 @@ export default function SettingsPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">사이트 설정</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">사이트의 다양한 설정을 관리할 수 있습니다.</p>
           </div>
-
-          {/* 탭 네비게이션 */}
           <div className="border-b border-gray-200 dark:border-slate-700">
             <nav className="-mb-px flex space-x-8 px-6">
               {['general', 'seo', 'contact', 'social', 'features', 'design', 'security', 'other'].map((tab) => (
@@ -669,9 +655,7 @@ export default function SettingsPage() {
               ))}
             </nav>
           </div>
-
           <div className="p-6">
-            {/* 현재 탭의 설정들 표시 */}
             {(() => {
               const currentSettings = getTabSettings(activeTab);
               if (Object.keys(currentSettings).length === 0) {
@@ -681,7 +665,6 @@ export default function SettingsPage() {
                   </div>
                 );
               }
-
               return (
                 <div className="space-y-4">
                   {Object.entries(currentSettings).map(([key, setting]) => (
@@ -711,7 +694,6 @@ export default function SettingsPage() {
                 </div>
               );
             })()}
-
             <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-slate-700">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 {Object.keys(changedSettings).length > 0 && (
@@ -720,7 +702,6 @@ export default function SettingsPage() {
                   </span>
                 )}
               </div>
-              
               <button
                 onClick={handleSave}
                 disabled={saving || Object.keys(changedSettings).length === 0}

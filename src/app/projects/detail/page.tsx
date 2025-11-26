@@ -1,72 +1,62 @@
 "use client";
 import Link from "next/link";
 import { Suspense } from "react";
-
-// import Image from "next/image";
-
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import { projectApi } from "@/lib/api";
 import { Project } from "@/types";
 import toast from 'react-hot-toast';
-
-// 마크다운 변환 유틸리티
 import { markdownToHtml } from '@/utils/markdown';
-
+/**
+ * @component ProjectDetailContent
+ * @description 프로젝트 상세 데이터를 로드하고 렌더링하는 클라이언트 컴포넌트.
+ * @returns {JSX.Element} 프로젝트 상세 콘텐츠.
+ */
 function ProjectDetailContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug');
-  
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  
-
   useEffect(() => {
     if (!slug) {
       toast.error('프로젝트를 찾을 수 없습니다.');
       setLoading(false);
       return;
     }
-
+    /**
+     * @function fetchProject
+     * @description 슬러그에 해당하는 프로젝트 상세 정보를 조회하고 뷰 카운트를 갱신한다.
+     * @returns {Promise<void>} 프로젝트 로딩 동작.
+     */
     const fetchProject = async () => {
       try {
         setLoading(true);
-        // URL 디코딩 (한글 slug 처리)
         const decodedSlug = decodeURIComponent(slug);
-        
         const response = await projectApi.getProject(decodedSlug);
         if (response.success && response.data) {
           setProject(response.data);
-          
-          // 조회수 증가 (백그라운드에서 실행, 실패해도 사용자에게 알리지 않음)
           try {
             await projectApi.incrementViewCount(decodedSlug);
-            // 로컬 상태에서 조회수 즉시 증가
             setProject(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
-            // 조회수 증가 후 최신 데이터 다시 로드 (캐시 방지를 위해 약간의 지연)
             await new Promise(resolve => setTimeout(resolve, 100));
             const updatedResponse = await projectApi.getProject(decodedSlug);
             if (updatedResponse.success && updatedResponse.data) {
               setProject(updatedResponse.data);
             }
           } catch {
-            // 조회수 증가 실패는 조용히 무시 (사용자 경험에 영향 없음)
           }
         } else {
           toast.error('프로젝트를 찾을 수 없습니다.');
         }
       } catch {
-        // 에러 처리
         toast.error('프로젝트를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchProject();
   }, [slug]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -79,7 +69,6 @@ function ProjectDetailContent() {
       </div>
     );
   }
-
   if (!project) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -98,7 +87,6 @@ function ProjectDetailContent() {
       </div>
     );
   }
-
   return (
     <>
       <Head>
@@ -107,8 +95,6 @@ function ProjectDetailContent() {
         <meta name="keywords" content={project.meta_keywords || project.tags?.map(tag => typeof tag === 'string' ? tag : tag.name).join(', ') || '웹개발, 프로젝트, React, Next.js'} />
         <meta name="author" content="승우" />
         <meta name="robots" content="index, follow" />
-        
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content={project.title} />
         <meta property="og:description" content={project.excerpt || project.meta_description || project.description || '웹 개발자 승우의 프로젝트입니다.'} />
@@ -117,18 +103,12 @@ function ProjectDetailContent() {
         <meta property="og:image:alt" content={project.title} />
         <meta property="og:site_name" content="승우의 포트폴리오" />
         <meta property="og:locale" content="ko_KR" />
-        
-        {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={project.title} />
         <meta name="twitter:description" content={project.excerpt || project.meta_description || project.description || '웹 개발자 승우의 프로젝트입니다.'} />
         <meta name="twitter:image" content={project.image_url || 'https://seungwoo.i234.me/og-image.jpg'} />
         <meta name="twitter:creator" content="@seungwoo" />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href={`https://seungwoo.i234.me/projects/detail?slug=${encodeURIComponent(slug || '')}`} />
-        
-        {/* 구조화된 데이터 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -177,10 +157,8 @@ function ProjectDetailContent() {
           }}
         />
       </Head>
-      
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Breadcrumb */}
         <nav className="mb-8">
           <div className="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
             <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">홈</Link>
@@ -190,8 +168,6 @@ function ProjectDetailContent() {
             <span className="text-slate-700 dark:text-slate-300">{project.title}</span>
           </div>
         </nav>
-
-        {/* Back to Projects */}
         <div className="mb-8">
           <Link href="/projects" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,13 +176,10 @@ function ProjectDetailContent() {
             <span>모든 프로젝트 보기</span>
           </Link>
         </div>
-
-        {/* Project Header */}
         <header className="mb-12">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
             {project.title}
           </h1>
-
           <div className="flex items-center justify-between flex-wrap gap-4 text-slate-600 dark:text-slate-400 mb-6">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -221,7 +194,6 @@ function ProjectDetailContent() {
                 </div>
               </div>
             </div>
-
             <div className="flex items-center space-x-4 text-sm">
               <time className="flex items-center space-x-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,7 +205,6 @@ function ProjectDetailContent() {
                   {project.status === 'in_progress' ? ' - 진행중' : ''}
                 </span>
               </time>
-              
               <span className="flex items-center space-x-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -243,7 +214,6 @@ function ProjectDetailContent() {
               </span>
             </div>
           </div>
-
           <div className="flex flex-wrap gap-2 mb-4">
             {project.tags && project.tags.length > 0 ? (
               project.tags.map((tag, index) => (
@@ -259,8 +229,6 @@ function ProjectDetailContent() {
               </span>
             )}
           </div>
-
-          {/* 요약 */}
           {(project.excerpt || project.meta_description) && (
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 mb-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center">
@@ -275,8 +243,6 @@ function ProjectDetailContent() {
             </div>
           )}
         </header>
-
-        {/* Project Description - 상단 요약 섹션 */}
         {project.description && (
           <div className="mb-8">
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-blue-100 dark:border-slate-600">
@@ -298,8 +264,6 @@ function ProjectDetailContent() {
             </div>
           </div>
         )}
-
-        {/* Project Content */}
         {project.content && (
           <article className="prose prose-lg dark:prose-invert max-w-none mb-8">
             <div className="bg-white dark:bg-slate-800 rounded-xl p-8 md:p-12 shadow-sm border border-slate-200 dark:border-slate-700">
@@ -307,8 +271,6 @@ function ProjectDetailContent() {
             </div>
           </article>
         )}
-
-        {/* Project Links */}
         {(project.demo_url || project.github_url) && (
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">프로젝트 링크</h3>
@@ -347,7 +309,11 @@ function ProjectDetailContent() {
     </>
   );
 }
-
+/**
+ * @component ProjectDetail
+ * @description Suspense 래퍼를 사용하여 프로젝트 상세 페이지 데이터를 비동기 로드한다.
+ * @returns {JSX.Element} 프로젝트 상세 페이지 컨테이너.
+ */
 export default function ProjectDetail() {
   return (
     <Suspense fallback={

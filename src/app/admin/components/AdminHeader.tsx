@@ -1,48 +1,48 @@
 "use client";
 import Link from "next/link";
-
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
-
 import { motion } from 'framer-motion';
 import { 
   LogOut,
   ArrowLeft,
   Menu
 } from 'lucide-react';
-
 interface AdminHeaderProps {
   onMenuToggle?: () => void;
 }
-
+/**
+ * @description Admin Header for admin header.tsx.
+  * @param {*} { onMenuToggle } 입력값
+ * @returns {JSX.Element} 처리 결과
+ */
 export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAdmin();
   const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null);
   const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
     setIsClient(true);
     const root = document.documentElement;
     const currentTheme = root.getAttribute('data-theme');
     setIsDarkMode(currentTheme === 'dark');
-    
   }, []);
-
+  /**
+   * @description toggle Theme for admin header.tsx.
+   * @returns {any} 처리 결과
+   */
   const toggleTheme = () => {
     const root = document.documentElement;
     const newDarkMode = !(isDarkMode ?? root.classList.contains('dark'));
     setIsDarkMode(newDarkMode);
-    
     if (newDarkMode) {
       root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
       root.style.setProperty('--background', '#0a0a0a');
       root.style.setProperty('--foreground', '#ededed');
       root.style.colorScheme = 'dark';
-      // 사파리 호환성을 위한 추가 속성
       root.setAttribute('data-theme', 'dark');
       root.style.backgroundColor = '#0a0a0a';
       root.style.color = '#ededed';
@@ -53,21 +53,24 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
       root.style.setProperty('--background', '#ffffff');
       root.style.setProperty('--foreground', '#171717');
       root.style.colorScheme = 'light';
-      // 사파리 호환성을 위한 추가 속성
       root.setAttribute('data-theme', 'light');
       root.style.backgroundColor = '#ffffff';
       root.style.color = '#171717';
       document.cookie = 'theme=light; path=/; max-age=31536000';
     }
-    
   };
-
+  /**
+   * @description Handles logout for admin header.tsx.
+   * @returns {any} 처리 결과
+   */
   const handleLogout = async () => {
     await logout();
     router.push('/admin-login');
   };
-
-  // 현재 경로에 따른 페이지 정보
+  /**
+   * @description Gets page info for admin header.tsx.
+   * @returns {any} 처리 결과
+   */
   const getPageInfo = () => {
     if (pathname === '/admin') {
       return {
@@ -160,8 +163,6 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
         backText: '대시보드로 돌아가기'
       };
     }
-    
-    // 기본값
     return {
       title: '관리자 페이지',
       showBackButton: true,
@@ -169,25 +170,24 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
       backText: '대시보드로 돌아가기'
     };
   };
-
   const pageInfo = getPageInfo();
-
+  /**
+   * @description Handles back navigation for admin header.tsx.
+   * @returns {any} 처리 결과
+   */
   const handleBackNavigation = () => {
     if (pageInfo.backLink) {
       router.push(pageInfo.backLink);
     }
   };
-
   return (
     <div 
       className="sticky top-0 z-50 w-full backdrop-blur-md border-b border-slate-200 bg-white/95 safari-header-light dark:border-slate-700 dark:bg-slate-900/95 dark:safari-header-dark"
     >
       <header className="w-full">
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* 모바일 레이아웃 */}
           <div className="lg:hidden">
             <div className="flex justify-between items-center min-h-[4rem] py-2">
-              {/* 왼쪽: 메뉴 버튼 + 로고 */}
               <div className="flex items-center space-x-3">
                 <button
                   onClick={onMenuToggle}
@@ -202,14 +202,10 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   </h1>
                 </Link>
               </div>
-              
-              {/* 오른쪽: 사용자명 + 다크모드 토글 + 로그아웃 */}
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-slate-600 dark:text-slate-400 hidden sm:block">
                   {user?.username}님
                 </span>
-                
-                {/* 모바일 다크모드 토글 버튼 */}
                 {isClient && (
                   <motion.button
                     onClick={toggleTheme}
@@ -230,7 +226,6 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                     )}
                   </motion.button>
                 )}
-                
                 <motion.button
                   onClick={handleLogout}
                   className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -241,8 +236,6 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 </motion.button>
               </div>
             </div>
-            
-            {/* 모바일 페이지 제목 */}
             <div className="pb-3 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center space-x-2">
                 {pageInfo.showBackButton && (
@@ -261,8 +254,6 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
               </div>
             </div>
           </div>
-
-          {/* 데스크톱 레이아웃 */}
           <div className="hidden lg:block">
             <div className="flex justify-between items-center h-16">
               <motion.div 
@@ -276,13 +267,9 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   </h1>
                 </Link>
                 <span className="text-slate-400">|</span>
-                
-                {/* 현재 페이지 제목 */}
                 <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-300">
                   {pageInfo.title}
                 </h2>
-                
-                {/* 돌아가기 버튼 */}
                 {pageInfo.showBackButton && (
                   <motion.button
                     onClick={handleBackNavigation}
@@ -295,13 +282,10 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   </motion.button>
                 )}
               </motion.div>
-              
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-slate-600 dark:text-slate-400">
                   안녕하세요, <span className="font-medium text-slate-900 dark:text-white">{user?.username}</span>님
                 </span>
-                
-                {/* 다크모드 토글 버튼 */}
                 {isClient && (
                   <motion.button
                     onClick={toggleTheme}
@@ -322,7 +306,6 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                     )}
                   </motion.button>
                 )}
-                
                 <motion.button
                   onClick={handleLogout}
                   className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"

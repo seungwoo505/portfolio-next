@@ -1,28 +1,17 @@
 "use client";
-
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
-import { AdminUser } from '@/types';
+import { AdminNewUserModalProps, AdminUserForm, AdminUser } from '@/types';
 import { X, AlertCircle, EyeOff, Eye, Save } from 'lucide-react';
-
-interface NewUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onUserCreated: (user: AdminUser) => void;
-}
-
-interface UserForm {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role: 'super_admin' | 'admin' | 'editor';
-  status: 'active' | 'inactive';
-}
-
-export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUserModalProps) {
-  const [formData, setFormData] = useState<UserForm>({
+/**
+ * @component NewUserModal
+ * @description 새로운 관리자 사용자를 생성하는 폼 모달을 제공한다.
+ * @param {NewUserModalProps} props 모달 열림 상태와 콜백.
+ * @returns {JSX.Element | null} 사용자 생성 모달.
+ */
+export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNewUserModalProps) {
+  const [formData, setFormData] = useState<AdminUserForm>({
     username: '',
     email: '',
     password: '',
@@ -34,41 +23,38 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const validateForm = (): boolean => {
-    const newErrors: Partial<UserForm> = {};
-
+    const newErrors: Partial<AdminUserForm> = {};
     if (!formData.username.trim()) {
       newErrors.username = '사용자명을 입력하세요';
     } else if (formData.username.length < 3) {
       newErrors.username = '사용자명은 3자 이상이어야 합니다';
     }
-
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력하세요';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '유효한 이메일 주소를 입력하세요';
     }
-
     if (!formData.password) {
       newErrors.password = '비밀번호를 입력하세요';
     } else if (formData.password.length < 6) {
       newErrors.password = '비밀번호는 6자 이상이어야 합니다';
     }
-
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = '비밀번호가 일치하지 않습니다';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  /**
+   * @function handleSubmit
+   * @description 입력값을 검증한 뒤 새로운 사용자를 생성한다.
+   * @param {React.FormEvent} e 폼 제출 이벤트.
+   * @returns {Promise<void>} 사용자 생성 작업.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-
     setIsSubmitting(true);
     try {
       const userData = {
@@ -81,9 +67,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
         full_name: formData.username.trim(),
         is_active: formData.status === 'active'
       };
-
       const response = await authApi.post('/admin/users', userData);
-      
       if (response.success && response.data) {
         const userData = response.data as AdminUser;
         onUserCreated(userData);
@@ -111,7 +95,12 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
       setIsSubmitting(false);
     }
   };
-
+  /**
+   * @function getRoleInfo
+   * @description 각 역할별 설명과 권한 정보를 반환한다.
+   * @param {string} role 역할 식별자.
+   * @returns {{ label: string; description: string; color: string; icon: JSX.Element }} 역할 메타데이터.
+   */
   const getRoleInfo = (role: string) => {
     switch (role) {
       case 'super_admin':
@@ -133,16 +122,13 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
         return { label: '알 수 없음', description: '' };
     }
   };
-
   if (!isOpen) return null;
-
   return (
     <div 
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
     >
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             새 사용자 추가
@@ -155,10 +141,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* 사용자명 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               사용자명 *
@@ -179,8 +162,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
               </p>
             )}
           </div>
-
-          {/* 이메일 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               이메일 *
@@ -201,8 +182,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
               </p>
             )}
           </div>
-
-          {/* 비밀번호 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               비밀번호 *
@@ -232,8 +211,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
               </p>
             )}
           </div>
-
-          {/* 비밀번호 확인 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               비밀번호 확인 *
@@ -263,8 +240,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
               </p>
             )}
           </div>
-
-          {/* 역할 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               역할 *
@@ -282,8 +257,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
               {getRoleInfo(formData.role).description}
             </p>
           </div>
-
-          {/* 상태 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               상태
@@ -297,8 +270,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: NewUser
               <option value="inactive">비활성</option>
             </select>
           </div>
-
-          {/* 버튼 */}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"

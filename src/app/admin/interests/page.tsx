@@ -1,50 +1,41 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { Heart, Plus, Code, Edit, Trash2, X, Save } from 'lucide-react';
-
-interface Interest {
-  id: string;
-  title: string;
-  description?: string;
-  icon?: string;
-  category: 'technical' | 'personal';
-  display_order: number;
-  created_at: string;
-  updated_at: string;
-}
-
+import { AdminInterest } from '@/types';
+/**
+ * @description 관심사를 추가·수정·삭제할 수 있는 관리자 페이지입니다.
+ * @returns {JSX.Element} 관심사 관리 페이지 컴포넌트.
+ */
 export default function InterestsPage() {
-  const [interests, setInterests] = useState<Interest[]>([]);
+  const [interests, setInterests] = useState<AdminInterest[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [editingInterest, setEditingInterest] = useState<Interest | null>(null);
+  const [editingInterest, setEditingInterest] = useState<AdminInterest | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; interestId: string | null }>({
     isOpen: false,
     interestId: null
   });
-
-  // 폼 데이터
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'technical' as 'technical' | 'personal',
     display_order: 0
   });
-
-  // 데이터 로드
   useEffect(() => {
     fetchInterests();
   }, []);
-
+  /**
+   * @description 관심사 목록을 불러옵니다.
+   * @returns {Promise<void>}
+   */
   const fetchInterests = async () => {
     try {
-      const response = await authApi.get<Interest[]>('/interests');
+      const response = await authApi.get<AdminInterest[]>('/interests');
       if (response.data) {
         setInterests(response.data);
       }
@@ -54,7 +45,11 @@ export default function InterestsPage() {
       setLoading(false);
     }
   };
-
+  /**
+   * @description 입력값 변경 시 폼 상태를 업데이트합니다.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e 입력 이벤트.
+   * @returns {void}
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -62,8 +57,12 @@ export default function InterestsPage() {
       [name]: name === 'display_order' ? parseInt(value) || 0 : value
     }));
   };
-
-  const openModal = (interest?: Interest) => {
+  /**
+   * @description 관심사 추가/수정 모달을 엽니다.
+   * @param {AdminInterest} [interest] 편집할 관심사.
+   * @returns {void}
+   */
+  const openModal = (interest?: AdminInterest) => {
     if (interest) {
       setEditingInterest(interest);
       setFormData({
@@ -83,7 +82,10 @@ export default function InterestsPage() {
     }
     setShowModal(true);
   };
-
+  /**
+   * @description 관심사 모달을 닫고 입력값을 초기화합니다.
+   * @returns {void}
+   */
   const closeModal = () => {
     setShowModal(false);
     setEditingInterest(null);
@@ -94,15 +96,16 @@ export default function InterestsPage() {
       display_order: 0
     });
   };
-
+  /**
+   * @description 관심사를 저장합니다.
+   * @returns {Promise<void>}
+   */
   const handleSave = async () => {
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
     }
-
     setSaving(true);
-
     try {
       let response;
       if (editingInterest) {
@@ -110,12 +113,9 @@ export default function InterestsPage() {
       } else {
         response = await authApi.post('/interests', formData);
       }
-
       if (response.success) {
         toast.success(editingInterest ? '관심사가 수정되었습니다.' : '관심사가 추가되었습니다.');
         await fetchInterests();
-        
-        // 저장 성공 시 모달 닫기
         closeModal();
       } else {
         toast.error(response.message || '저장에 실패했습니다.');
@@ -126,21 +126,23 @@ export default function InterestsPage() {
       setSaving(false);
     }
   };
-
-  // 관심사 삭제 모달 열기
+  /**
+   * @description 삭제 확인 모달을 엽니다.
+   * @param {string} interestId 삭제할 관심사 ID.
+   * @returns {void}
+   */
   const openDeleteModal = (interestId: string) => {
     setDeleteModal({ isOpen: true, interestId });
   };
-
-  // 관심사 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, interestId: null });
   };
-
-  // 관심사 삭제 실행
+  /**
+   * @description 선택한 관심사를 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const handleDelete = async () => {
     if (!deleteModal.interestId) return;
-    
     try {
       const response = await authApi.delete(`/interests/${deleteModal.interestId}`);
       if (response.success) {
@@ -153,10 +155,8 @@ export default function InterestsPage() {
       toast.error('관심사 삭제에 실패했습니다.');
     }
   };
-
   const technicalInterests = interests.filter(interest => interest.category === 'technical');
   const personalInterests = interests.filter(interest => interest.category === 'personal');
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
@@ -178,7 +178,6 @@ export default function InterestsPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-6xl mx-auto">
@@ -204,10 +203,7 @@ export default function InterestsPage() {
               <span>관심사 추가</span>
             </motion.button>
           </div>
-
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* 기술적 관심사 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
               <div className="p-6">
                 <div className="flex items-center space-x-2 mb-4">
@@ -219,7 +215,6 @@ export default function InterestsPage() {
                     {technicalInterests.length}
                   </span>
                 </div>
-                
                 <div className="space-y-3">
                   {technicalInterests.map((interest) => (
                     <motion.div
@@ -229,7 +224,6 @@ export default function InterestsPage() {
                       className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
-
                         <div>
                           <h3 className="font-medium text-gray-900 dark:text-white">
                             {interest.title}
@@ -257,7 +251,6 @@ export default function InterestsPage() {
                       </div>
                     </motion.div>
                   ))}
-                  
                   {technicalInterests.length === 0 && (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                       기술적 관심사가 없습니다.
@@ -266,8 +259,6 @@ export default function InterestsPage() {
                 </div>
               </div>
             </div>
-
-            {/* 개인적 관심사 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
               <div className="p-6">
                 <div className="flex items-center space-x-2 mb-4">
@@ -279,7 +270,6 @@ export default function InterestsPage() {
                     {personalInterests.length}
                   </span>
                 </div>
-                
                 <div className="space-y-3">
                   {personalInterests.map((interest) => (
                     <motion.div
@@ -289,7 +279,6 @@ export default function InterestsPage() {
                       className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
-
                         <div>
                           <h3 className="font-medium text-gray-900 dark:text-white">
                             {interest.title}
@@ -317,7 +306,6 @@ export default function InterestsPage() {
                       </div>
                     </motion.div>
                   ))}
-                  
                   {personalInterests.length === 0 && (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                       개인적 관심사가 없습니다.
@@ -329,8 +317,6 @@ export default function InterestsPage() {
           </div>
         </motion.div>
       </div>
-
-      {/* 모달 */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -358,7 +344,6 @@ export default function InterestsPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
               <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -373,7 +358,6 @@ export default function InterestsPage() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     설명
@@ -386,9 +370,6 @@ export default function InterestsPage() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                   />
                 </div>
-
-
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     카테고리
@@ -403,7 +384,6 @@ export default function InterestsPage() {
                     <option value="personal">개인적 관심사</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     표시 순서
@@ -417,7 +397,6 @@ export default function InterestsPage() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                   />
                 </div>
-
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
@@ -442,8 +421,6 @@ export default function InterestsPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

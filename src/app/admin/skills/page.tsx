@@ -1,17 +1,18 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { personalApi, skillApi, authApi, api } from '@/lib/api';
 import { Skill } from '@/types';
 import SkillModal from './components/SkillModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
-
+/**
+ * @description 기술 스택을 조회·관리할 수 있는 관리자 페이지입니다.
+ * @returns {JSX.Element} 기술 관리 페이지 컴포넌트.
+ */
 export default function AdminSkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
@@ -20,11 +21,13 @@ export default function AdminSkillsPage() {
     skillId: null
   });
   const categoryInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     loadSkills();
   }, []);
-
+  /**
+   * @description 모든 기술과 카테고리 정보를 불러옵니다.
+   * @returns {Promise<void>}
+   */
   const loadSkills = async () => {
     try {
       setLoading(true);
@@ -33,8 +36,6 @@ export default function AdminSkillsPage() {
         setSkills(response.data.skills || []);
         const categoriesData = response.data.categories || [];
         setCategories(categoriesData);
-        
-
       } else {
         toast.error('기술 스택을 불러올 수 없습니다.');
       }
@@ -45,16 +46,13 @@ export default function AdminSkillsPage() {
       setLoading(false);
     }
   };
-
   const handleSaveSkill = async (skillData: Partial<Skill>): Promise<{ success: boolean; message?: string }> => {
     try {
       if (editingSkill) {
-        // 수정
         await skillApi.updateSkill(editingSkill.id, skillData);
         await loadSkills();
         return { success: true, message: '기술 스택이 수정되었습니다.' };
       } else {
-        // 새로 추가
         await skillApi.createSkill(skillData);
         await loadSkills();
         return { success: true, message: '기술 스택이 추가되었습니다.' };
@@ -64,7 +62,12 @@ export default function AdminSkillsPage() {
       return { success: false, message: errorMessage };
     }
   };
-
+  /**
+   * @description 추천 여부를 전환합니다.
+   * @param {string} skillId 기술 ID.
+   * @param {boolean} currentStatus 현재 추천 상태.
+   * @returns {Promise<void>}
+   */
   const toggleFeatured = async (skillId: string, currentStatus: boolean) => {
     try {
       await skillApi.toggleFeatured(skillId, !currentStatus);
@@ -75,21 +78,23 @@ export default function AdminSkillsPage() {
       toast.error(errorMessage);
     }
   };
-
-  // 스킬 삭제 모달 열기
+  /**
+   * @description 삭제 확인 모달을 엽니다.
+   * @param {string} skillId 삭제할 기술 ID.
+   * @returns {void}
+   */
   const openDeleteModal = (skillId: string) => {
     setDeleteModal({ isOpen: true, skillId });
   };
-
-  // 스킬 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, skillId: null });
   };
-
-  // 스킬 삭제 실행
+  /**
+   * @description 선택한 기술을 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const deleteSkill = async () => {
     if (!deleteModal.skillId) return;
-    
     try {
       await skillApi.deleteSkill(deleteModal.skillId);
       await loadSkills();
@@ -99,33 +104,40 @@ export default function AdminSkillsPage() {
       toast.error(errorMessage);
     }
   };
-
+  /**
+   * @description 기술 수정 모달을 엽니다.
+   * @param {Skill} skill 편집할 기술.
+   * @returns {void}
+   */
   const openEditModal = (skill: Skill) => {
     setEditingSkill(skill);
     setIsModalOpen(true);
   };
-
   const openAddModal = () => {
     setEditingSkill(null);
     setIsModalOpen(true);
   };
-
+  /**
+   * @description 기술 모달을 닫고 상태를 초기화합니다.
+   * @returns {void}
+   */
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingSkill(null);
   };
-
-  // 카테고리 추가
+  /**
+   * @description 새 카테고리를 추가합니다.
+   * @param {string} name 카테고리 이름.
+   * @returns {Promise<void>}
+   */
   const handleAddCategory = async (name: string) => {
     try {
       const response = await authApi.createCategory(name);
       if (response.success) {
-        // 카테고리만 새로고침 (전체 페이지 리렌더링 방지)
         const skillsResponse = await api.get<{ skills: Skill[]; categories: Array<{ id: string; name: string }>; skillsByCategory: unknown[] }>('/skills');
         if (skillsResponse.success && skillsResponse.data?.categories) {
           setCategories(skillsResponse.data.categories);
         }
-        // 입력 필드 초기화
         if (categoryInputRef.current) {
           categoryInputRef.current.value = '';
         }
@@ -138,19 +150,19 @@ export default function AdminSkillsPage() {
       toast.error(errorMessage);
     }
   };
-
-  // 카테고리 삭제
+  /**
+   * @description 카테고리를 삭제합니다.
+   * @param {string} categoryId 카테고리 ID.
+   * @returns {Promise<void>}
+   */
   const handleDeleteCategory = async (categoryId: string) => {
-
     try {
       const response = await authApi.deleteCategory(categoryId);
       if (response.success) {
-        // 카테고리만 새로고침 (전체 페이지 리렌더링 방지)
         const skillsResponse = await api.get<{ skills: Skill[]; categories: Array<{ id: string; name: string }>; skillsByCategory: unknown[] }>('/skills');
         if (skillsResponse.success && skillsResponse.data?.categories) {
           setCategories(skillsResponse.data.categories);
         }
-        // 기술 스택은 모달이 닫힐 때 useEffect에서 자동으로 새로고침됨
         toast.success('카테고리가 삭제되었습니다.');
       } else {
         toast.error(response.message || '카테고리 삭제에 실패했습니다.');
@@ -160,13 +172,10 @@ export default function AdminSkillsPage() {
       toast.error(errorMessage);
     }
   };
-
-  // 모달 열릴 때 배경 스크롤 막기
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (isModalOpen || isCategoryModalOpen) {
         document.body.style.overflow = 'hidden';
-        // 사파리 호환성을 위한 추가 속성
         document.body.style.position = 'fixed';
         document.body.style.width = '100%';
       } else {
@@ -175,8 +184,6 @@ export default function AdminSkillsPage() {
         document.body.style.width = 'unset';
       }
     }
-
-    // 컴포넌트 언마운트 시 스크롤 복원
     return () => {
       if (typeof window !== 'undefined') {
         document.body.style.overflow = 'unset';
@@ -185,14 +192,11 @@ export default function AdminSkillsPage() {
       }
     };
   }, [isModalOpen, isCategoryModalOpen]);
-
-  // 카테고리 모달이 닫힐 때 기술 스택 새로고침
   useEffect(() => {
     if (!isCategoryModalOpen) {
       loadSkills();
     }
   }, [isCategoryModalOpen]);
-
   if (loading) {
     return (
       <div className="flex-1 p-8">
@@ -207,7 +211,6 @@ export default function AdminSkillsPage() {
       </div>
     );
   }
-
   return (
     <div className="flex-1">
       <div className="p-8">
@@ -231,8 +234,6 @@ export default function AdminSkillsPage() {
               </button>
             </div>
           </div>
-
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
@@ -247,15 +248,12 @@ export default function AdminSkillsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
                       숙련도
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
                       추천
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
                       순서
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
                       작업
                     </th>
@@ -289,7 +287,6 @@ export default function AdminSkillsPage() {
                           </span>
                         </div>
                       </td>
-
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
                           onClick={() => toggleFeatured(skill.id, skill.is_featured)}
@@ -302,11 +299,9 @@ export default function AdminSkillsPage() {
                           {skill.is_featured ? '추천' : '일반'}
                         </button>
                       </td>
-
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
                         {skill.display_order}
                       </td>
-
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button 
@@ -328,7 +323,6 @@ export default function AdminSkillsPage() {
                 </tbody>
               </table>
             </div>
-
             {skills.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 dark:text-slate-400">
@@ -338,18 +332,14 @@ export default function AdminSkillsPage() {
             )}
           </div>
         </div>
-
-        {/* 기술 스택 모달 */}
         <SkillModal
           isOpen={isModalOpen}
           onClose={closeModal}
           skill={editingSkill}
           onSave={handleSaveSkill}
           categories={categories}
-          keepOpenOnSuccess={!editingSkill} // 새로 추가 시에만 모달 유지
+          keepOpenOnSuccess={!editingSkill} 
         />
-
-        {/* 카테고리 관리 모달 */}
         {isCategoryModalOpen && (
           <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
@@ -367,9 +357,7 @@ export default function AdminSkillsPage() {
                     </svg>
                   </button>
                 </div>
-
                 <div className="space-y-4">
-                  {/* 새 카테고리 추가 */}
                   <div className="flex space-x-2">
                     <input
                       ref={categoryInputRef}
@@ -393,8 +381,6 @@ export default function AdminSkillsPage() {
                       추가
                     </button>
                   </div>
-
-                  {/* 카테고리 목록 */}
                   <div className="max-h-60 overflow-y-auto">
                     {categories.map((category) => (
                       <div key={category.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
@@ -419,8 +405,6 @@ export default function AdminSkillsPage() {
           </div>
         )}
       </div>
-
-      {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

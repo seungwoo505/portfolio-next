@@ -1,89 +1,41 @@
 'use client';
-
 import Link from "next/link";
-
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-
 import Head from 'next/head';
 import { api } from '@/lib/api';
 import DynamicHead from '@/components/DynamicHead';
 import ScrollProgress from '@/components/ScrollProgress';
 import { generateStructuredData } from '@/lib/seo';
-
+import { AboutPersonalInfo, AboutSkill, AboutExperience, AboutInterest, AboutCategory } from '@/types';
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
 const EXPERIENCE_REVEAL_INTERVAL = 120;
-
-interface PersonalInfo {
-  id?: number;
-  full_name?: string;
-  title?: string;
-  bio?: string;
-  about?: string;
-  location?: string;
-  email?: string;
-  phone?: string;
-  avatar_url?: string;
-  resume_url?: string;
-  github_url?: string;
-  linkedin_url?: string;
-  twitter_url?: string;
-  instagram_url?: string;
-}
-
-interface Skill {
-  id: number;
-  name: string;
-  proficiency_level: number;
-  category_name?: string;
-  type?: string;
-  category?: string;
-}
-
-interface Experience {
-  id: number;
-  title: string;
-  company?: string;
-  company_or_institution?: string;
-  start_date: string;
-  end_date?: string;
-  description?: string;
-  type: string;
-}
-
-interface Interest {
-  id: number;
-  title: string;
-  description?: string;
-  icon?: string;
-  category?: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  display_order?: number;
-}
-
+/**
+ * @component AboutPage
+ * @description 개인 소개, 기술 스택, 경력, 관심사를 보여주는 소개 페이지를 렌더링한다.
+ * @returns {JSX.Element} 소개 페이지 컴포넌트.
+ */
 export default function AboutPage() {
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({});
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [interests, setInterests] = useState<Interest[]>([]);
+  const [personalInfo, setPersonalInfo] = useState<AboutPersonalInfo>({});
+  const [skills, setSkills] = useState<AboutSkill[]>([]);
+  const [categories, setCategories] = useState<AboutCategory[]>([]);
+  const [experiences, setExperiences] = useState<AboutExperience[]>([]);
+  const [interests, setInterests] = useState<AboutInterest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasApiError, setHasApiError] = useState(false);
   const [skillRevealCount, setSkillRevealCount] = useState(0);
   const [experienceRevealCount, setExperienceRevealCount] = useState(0);
-
   useEffect(() => {
+    /**
+     * @function fetchData
+     * @description 개인 정보, 기술, 경력, 관심사를 동시에 로드하여 상태를 갱신한다.
+     * @returns {Promise<void>} 데이터 로딩 작업.
+     */
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
-        // 모든 API 호출을 병렬로 실행
         const [settingsResponse, personalResponse, skillsResponse, experiencesResponse, interestsResponse] = await Promise.all([
           api.get('/settings'),
           api.get('/personal-info'),
@@ -91,11 +43,8 @@ export default function AboutPage() {
           api.get('/experiences'),
           api.get('/interests')
         ]);
-
-        // 개인정보 설정 (설정 우선, 개인정보 테이블 백업)
         let settingsPersonalInfo = {};
         const personalTableInfo = personalResponse.data || {};
-        
         if (settingsResponse.success && settingsResponse.data) {
           const settings = settingsResponse.data as { [key: string]: string };
           settingsPersonalInfo = {
@@ -114,8 +63,6 @@ export default function AboutPage() {
             instagram_url: settings.personal_instagram_url || settings.intro_instagram_url || ''
           };
         }
-        
-        // 설정 우선, 개인정보 테이블 백업으로 병합 (빈 값은 덮어씌우지 않음)
         const mergedPersonalInfo = { ...personalTableInfo };
         Object.keys(settingsPersonalInfo).forEach(key => {
           const settingsValue = settingsPersonalInfo[key as keyof typeof settingsPersonalInfo] as string;
@@ -124,15 +71,14 @@ export default function AboutPage() {
           }
         });
         setPersonalInfo(mergedPersonalInfo);
-        setSkills((skillsResponse.data as { skills?: Skill[] })?.skills ?? []);
-        setCategories((skillsResponse.data as { categories?: Category[] })?.categories ?? []);
-        
-        const mappedExperiences = ((experiencesResponse.data as Experience[]) ?? []).map((exp: Experience) => ({
+        setSkills((skillsResponse.data as { skills?: AboutSkill[] })?.skills ?? []);
+        setCategories((skillsResponse.data as { categories?: AboutCategory[] })?.categories ?? []);
+        const mappedExperiences = ((experiencesResponse.data as AboutExperience[]) ?? []).map((exp: AboutExperience) => ({
           ...exp,
           company: exp.company_or_institution
         }));
         setExperiences(mappedExperiences);
-        setInterests((interestsResponse.data as Interest[]) ?? []);
+        setInterests((interestsResponse.data as AboutInterest[]) ?? []);
         setError(null);
       } catch {
         setError('서버와의 연결에 문제가 발생했습니다.');
@@ -141,10 +87,8 @@ export default function AboutPage() {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
-
   const skillsByCategory = useMemo(() => {
     return skills.reduce((acc, skill) => {
       const category = skill.category_name || '기타';
@@ -153,44 +97,35 @@ export default function AboutPage() {
       }
       acc[category].push(skill);
       return acc;
-    }, {} as Record<string, Skill[]>);
+    }, {} as Record<string, AboutSkill[]>);
   }, [skills]);
-
   const finalCategoryOrder = useMemo(() => {
     const orderedCategories = [...categories]
       .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
       .map((cat) => cat.name);
-
     const defaultOrder = ['프론트엔드', '백엔드', '데이터베이스', '기타'];
     const baseOrder = orderedCategories.length > 0 ? orderedCategories : defaultOrder;
-
     const categoryKeys = Object.keys(skillsByCategory);
     const sorted = baseOrder.filter((name) => skillsByCategory[name]);
     const remaining = categoryKeys.filter((name) => !baseOrder.includes(name));
     return [...sorted, ...remaining];
   }, [categories, skillsByCategory]);
-
   const totalSkillsCount = skills.length;
   const skillSkeletonCount = Math.max(totalSkillsCount, 1);
-
   const experienceSkeletonCount = Math.max(experiences.length, 1);
-
   const technicalInterests = useMemo(
     () => interests.filter((interest) => interest.category === 'technical'),
     [interests]
   );
-
   const personalInterests = useMemo(
     () => interests.filter((interest) => interest.category === 'personal'),
     [interests]
   );
-
   useEffect(() => {
     if (isLoading || totalSkillsCount === 0) {
       setSkillRevealCount(0);
       return;
     }
-
     setSkillRevealCount(0);
     const interval = window.setInterval(() => {
       setSkillRevealCount((prev) => {
@@ -201,16 +136,13 @@ export default function AboutPage() {
         return next;
       });
     }, SKILL_REVEAL_INTERVAL);
-
     return () => window.clearInterval(interval);
   }, [isLoading, totalSkillsCount]);
-
   useEffect(() => {
     if (isLoading || experiences.length === 0) {
       setExperienceRevealCount(0);
       return;
     }
-
     setExperienceRevealCount(0);
     const interval = window.setInterval(() => {
       setExperienceRevealCount((prev) => {
@@ -221,16 +153,17 @@ export default function AboutPage() {
         return next;
       });
     }, EXPERIENCE_REVEAL_INTERVAL);
-
     return () => window.clearInterval(interval);
   }, [isLoading, experiences]);
-
+  /**
+   * @description 날짜 문자열을 `YYYY.MM` 형식으로 변환합니다.
+   * @param {string} dateString 날짜 문자열.
+   * @returns {string} 변환된 날짜 문자열.
+   */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
   };
-
-  // 스켈레톤 UI 컴포넌트 - 실제 UI와 유사하게 개선
   const SkeletonSkill = () => (
     <div className="animate-pulse">
       <div className="flex justify-between mb-2">
@@ -244,7 +177,6 @@ export default function AboutPage() {
       </div>
     </div>
   );
-
   const SkeletonExperience = () => (
     <div className="border-l-4 border-slate-300 dark:border-slate-600 pl-6 animate-pulse">
       <div className="h-6 bg-slate-300 dark:bg-slate-600 rounded w-48 mb-2"></div>
@@ -259,7 +191,6 @@ export default function AboutPage() {
       </div>
     </div>
   );
-
   const HeroSkeleton = () => (
     <div className="text-center">
       <div className="w-40 h-40 mx-auto mb-8 rounded-full bg-slate-300 dark:bg-slate-600 animate-pulse" />
@@ -275,7 +206,6 @@ export default function AboutPage() {
       </div>
     </div>
   );
-
   const AboutSkeleton = () => (
     <div className="space-y-3">
       <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-full animate-pulse" />
@@ -283,8 +213,6 @@ export default function AboutPage() {
       <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-4/5 animate-pulse" />
     </div>
   );
-
-  // 오류 상태 처리
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -311,7 +239,6 @@ export default function AboutPage() {
       </div>
     );
   }
-
   return (
     <>
       <Head>
@@ -319,8 +246,6 @@ export default function AboutPage() {
         <meta name="description" content="웹 개발자에 대해 알아보세요." />
         <meta name="keywords" content="웹개발자, 소개, 이력서" />
         <meta name="author" content="개발자" />
-        
-        {/* Open Graph */}
         <meta property="og:type" content="profile" />
         <meta property="og:title" content="소개 | 포트폴리오" />
         <meta property="og:description" content="웹 개발자에 대해 알아보세요." />
@@ -330,18 +255,12 @@ export default function AboutPage() {
         <meta property="og:locale" content="ko_KR" />
         <meta property="profile:first_name" content="개발자" />
         <meta property="profile:last_name" content="" />
-        
-        {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="소개 | 포트폴리오" />
         <meta name="twitter:description" content="웹 개발자에 대해 알아보세요." />
         <meta name="twitter:image" content={personalInfo?.avatar_url || '/og-image.jpg'} />
         <meta name="twitter:creator" content="@developer" />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href="/about" />
-        
-        {/* 구조화된 데이터 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -367,7 +286,6 @@ export default function AboutPage() {
       <ScrollProgress />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* Hero Section */}
           <section className="text-center mb-16">
             {isLoading ? (
               <HeroSkeleton />
@@ -386,15 +304,12 @@ export default function AboutPage() {
                     <span>{personalInfo.full_name?.charAt(0) || 'S'}</span>
                   )}
                 </div>
-
                 <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
                   {personalInfo.full_name || (hasApiError ? '데이터를 불러올 수 없습니다' : '이름을 입력해주세요')}
                 </h1>
-
                 <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
                   {personalInfo.bio || (hasApiError ? '데이터를 불러올 수 없습니다' : '소개를 입력해주세요')}
                 </p>
-
                 <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400 mb-6">
                   {personalInfo.location && (
                     <span className="flex items-center gap-1">
@@ -412,8 +327,6 @@ export default function AboutPage() {
                     </span>
                   )}
                 </div>
-
-                {/* Social Links */}
                 <div className="flex justify-center gap-4">
                   {personalInfo.github_url && (
                     <a
@@ -458,8 +371,6 @@ export default function AboutPage() {
               </>
             )}
           </section>
-
-          {/* About Me Section */}
           <section className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 mb-12">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
               자기소개
@@ -474,24 +385,19 @@ export default function AboutPage() {
               </div>
             )}
           </section>
-
-          {/* Skills Section */}
           <section className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 mb-12">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
               기술 스택
             </h2>
-            
             <div className="relative">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pr-12 md:pr-8">
                 {skills.length > 0 ? (
                   (() => {
                     const revealLimit = !isLoading ? Math.min(skillRevealCount, totalSkillsCount) : 0;
                     let revealedIndex = 0;
-
                     return finalCategoryOrder.map((categoryName, index) => {
                       const categorySkills = skillsByCategory[categoryName] || [];
                       const isLeftColumn = index % 2 === 0;
-
                       return (
                         <div
                           key={categoryName}
@@ -504,7 +410,6 @@ export default function AboutPage() {
                             {categorySkills.slice(0, 6).map((skill) => {
                               const isRevealed = !isLoading && revealedIndex < revealLimit;
                               revealedIndex += 1;
-
                               return (
                                 <div key={skill.id}>
                                   {isRevealed ? (
@@ -553,13 +458,10 @@ export default function AboutPage() {
               </div>
             </div>
           </section>
-
-          {/* Experience Section */}
           <section className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 mb-12">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
               경험
             </h2>
-            
             <div className="space-y-8">
               {experiences.length > 0 ? (
                 experiences.map((experience, index) => {
@@ -605,15 +507,11 @@ export default function AboutPage() {
               )}
             </div>
           </section>
-
-          {/* Interests Section */}
           <section className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 mb-12">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
               관심사
             </h2>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* 기술적 관심사 */}
               <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
@@ -655,8 +553,6 @@ export default function AboutPage() {
                   )}
                 </div>
               </div>
-
-              {/* 개인적 관심사 */}
               <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-lg flex items-center justify-center">
@@ -700,8 +596,6 @@ export default function AboutPage() {
               </div>
             </div>
           </section>
-
-          {/* CTA Section */}
           <section className="text-center mt-16">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
               함께 일해보실래요?

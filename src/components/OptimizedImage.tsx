@@ -1,8 +1,20 @@
 "use client";
-
 import Image from "next/image";
 import { useState } from "react";
-
+/**
+ * @interface OptimizedImageProps
+ * @description 최적화된 반응형 이미지를 구성하기 위한 속성입니다.
+ * @property {string} src 렌더링할 이미지의 URL.
+ * @property {string} alt 이미지의 대체 텍스트.
+ * @property {number} width 이미지의 최대 가로 크기.
+ * @property {number} height 이미지의 최대 세로 크기.
+ * @property {boolean} [priority] 이미지를 우선적으로 로드할지 여부.
+ * @property {string} [className] 컨테이너에 추가할 클래스.
+ * @property {string} [sizes] `next/image`에 전달할 sizes 속성.
+ * @property {number} [quality] 최적화된 이미지의 JPEG 품질.
+ * @property {"blur" | "empty"} [placeholder] 로딩 중 사용할 플레이스홀더 모드.
+ * @property {string} [blurDataURL] 커스텀 블러 플레이스홀더 데이터 URL.
+ */
 interface OptimizedImageProps {
   src: string;
   alt: string;
@@ -15,8 +27,12 @@ interface OptimizedImageProps {
   placeholder?: "blur" | "empty";
   blurDataURL?: string;
 }
-
-// 🚀 최적화된 이미지 컴포넌트
+/**
+ * @component OptimizedImage
+ * @description Next.js `Image`를 감싸 일관된 스켈레톤 로딩과 에러 처리를 제공하는 컴포넌트입니다.
+ * @param {OptimizedImageProps} props 이미지 설정 및 표시 옵션.
+ * @returns {JSX.Element} 로딩/에러 상태를 포함한 반응형 이미지 요소.
+ */
 export default function OptimizedImage({
   src,
   alt,
@@ -31,10 +47,7 @@ export default function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-
-  // 기본 블러 데이터 URL (1x1 투명 픽셀)
   const defaultBlurDataURL = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
-
   if (hasError) {
     return (
       <div 
@@ -45,7 +58,6 @@ export default function OptimizedImage({
       </div>
     );
   }
-
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {isLoading && (
@@ -56,7 +68,6 @@ export default function OptimizedImage({
           <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
         </div>
       )}
-      
       <Image
         src={src}
         alt={alt}

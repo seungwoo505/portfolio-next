@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-
 interface SEOConfig {
   title: string;
   description: string;
@@ -13,7 +12,6 @@ interface SEOConfig {
   section?: string;
   tags?: string[];
 }
-
 export function generateMetadata(config: SEOConfig): Metadata {
   const {
     title,
@@ -28,16 +26,12 @@ export function generateMetadata(config: SEOConfig): Metadata {
     section,
     tags = []
   } = config;
-
   const fullTitle = title.includes('승우') ? title : `${title} | 승우의 포트폴리오`;
   const fullDescription = description || '웹 개발자 승우의 포트폴리오입니다. React, Next.js, Node.js를 활용한 프로젝트들을 확인해보세요.';
   const fullUrl = url ? `https://seungwoo.i234.me${url}` : 'https://seungwoo.i234.me';
-  
-  // 키워드 우선순위: 직접 입력 > 태그 > 기본값
   const finalKeywords = keywords || 
     (tags.length > 0 ? tags.join(', ') : '') || 
     '웹개발, 포트폴리오';
-
   return {
     title: fullTitle,
     description: fullDescription,
@@ -45,8 +39,6 @@ export function generateMetadata(config: SEOConfig): Metadata {
     authors: [{ name: author }],
     creator: author,
     publisher: author,
-    
-    // Open Graph
     openGraph: {
       type,
       title: fullTitle,
@@ -68,8 +60,6 @@ export function generateMetadata(config: SEOConfig): Metadata {
       ...(section && { section }),
       ...(tags.length > 0 && { tags }),
     },
-
-    // Twitter Cards
     twitter: {
       card: 'summary_large_image',
       title: fullTitle,
@@ -78,8 +68,6 @@ export function generateMetadata(config: SEOConfig): Metadata {
       creator: '@seungwoo',
       site: '@seungwoo',
     },
-
-    // Additional meta tags
     robots: {
       index: true,
       follow: true,
@@ -91,13 +79,9 @@ export function generateMetadata(config: SEOConfig): Metadata {
         'max-snippet': -1,
       },
     },
-
-    // Canonical URL
     alternates: {
       canonical: fullUrl,
     },
-
-    // Verification
     verification: {
       google: 'your-google-verification-code',
       yandex: 'your-yandex-verification-code',
@@ -105,15 +89,12 @@ export function generateMetadata(config: SEOConfig): Metadata {
     },
   };
 }
-
-// 구조화된 데이터 생성
 export function generateStructuredData(config: {
   type: 'WebSite' | 'Article' | 'Person' | 'Project' | 'BlogPosting';
   data: Record<string, unknown>;
 }) {
   const { type, data } = config;
   const baseUrl = 'https://seungwoo.i234.me';
-
   const baseStructuredData = {
     '@context': 'https://schema.org',
     '@type': type,
@@ -136,7 +117,6 @@ export function generateStructuredData(config: {
       url: baseUrl,
     },
   };
-
   switch (type) {
     case 'WebSite':
       return {
@@ -147,7 +127,6 @@ export function generateStructuredData(config: {
           'query-input': 'required name=search_term_string',
         },
       };
-
     case 'Article':
     case 'BlogPosting':
       return {
@@ -158,7 +137,6 @@ export function generateStructuredData(config: {
         ...(data.tags ? { keywords: Array.isArray(data.tags) ? data.tags.join(', ') : String(data.tags) } : {}),
         ...(data.section ? { articleSection: String(data.section) } : {}),
       };
-
     case 'Project':
       return {
         ...baseStructuredData,
@@ -171,7 +149,6 @@ export function generateStructuredData(config: {
         ...(data.end_date ? { endDate: String(data.end_date) } : {}),
         ...(data.is_ongoing ? { status: 'Active' } : {}),
       };
-
     case 'Person':
       return {
         ...baseStructuredData,
@@ -193,13 +170,10 @@ export function generateStructuredData(config: {
           'https://linkedin.com/in/seungwoo',
         ],
       };
-
     default:
       return baseStructuredData;
   }
 }
-
-// 사이트맵 생성용 데이터
 export function generateSitemapData(): Array<{
   url: string;
   lastModified: string;
@@ -208,7 +182,6 @@ export function generateSitemapData(): Array<{
 }> {
   const baseUrl = 'https://seungwoo.i234.me';
   const currentDate = new Date().toISOString();
-
   return [
     {
       url: baseUrl,

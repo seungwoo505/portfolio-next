@@ -1,11 +1,13 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
 import { adminPersonalApi } from '@/api/user';
 import toast from 'react-hot-toast';
 import { PersonalInfo } from '@/types';
-
+/**
+ * @description 포트폴리오에 표시될 개인정보를 관리하는 페이지입니다.
+ * @returns {JSX.Element} 개인정보 관리 페이지 컴포넌트.
+ */
 export default function PersonalInfoPage() {
   const { isAuthenticated } = useAdmin();
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -29,19 +31,19 @@ export default function PersonalInfoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-
-  // 개인정보 가져오기
   useEffect(() => {
     if (isAuthenticated) {
       fetchPersonalInfo();
     }
   }, [isAuthenticated]);
-
+  /**
+   * @description 개인정보를 서버에서 불러옵니다.
+   * @returns {Promise<void>}
+   */
   const fetchPersonalInfo = async () => {
     try {
       setLoading(true);
       const response = await adminPersonalApi.getPersonalInfo();
-      
       if (response.success && response.data) {
         setPersonalInfo(response.data);
       } else {
@@ -53,8 +55,12 @@ export default function PersonalInfoPage() {
       setLoading(false);
     }
   };
-
-  // 입력값 변경 핸들러
+  /**
+   * @description 입력값 변경 시 상태를 업데이트합니다.
+   * @param {keyof PersonalInfo} field 변경할 필드.
+   * @param {string} value 새로운 값.
+   * @returns {void}
+   */
   const handleInputChange = (field: keyof PersonalInfo, value: string) => {
     setPersonalInfo(prev => ({
       ...prev,
@@ -62,8 +68,10 @@ export default function PersonalInfoPage() {
     }));
     setHasChanges(true);
   };
-
-  // 저장 핸들러
+  /**
+   * @description 변경된 개인정보를 저장합니다.
+   * @returns {Promise<void>}
+   */
   const handleSave = async () => {
     if (!hasChanges) {
       toast('변경된 내용이 없습니다.', {
@@ -72,19 +80,15 @@ export default function PersonalInfoPage() {
       });
       return;
     }
-
     setSaving(true);
-    
     try {
       const response = await adminPersonalApi.updatePersonalInfo(personalInfo);
-      
       if (response.success) {
         toast.success('개인정보가 성공적으로 저장되었습니다!', {
           duration: 3000,
           icon: '✅',
         });
         setHasChanges(false);
-        // 업데이트된 데이터로 다시 설정
         if (response.data) {
           setPersonalInfo(response.data);
         }
@@ -103,8 +107,6 @@ export default function PersonalInfoPage() {
       setSaving(false);
     }
   };
-
-  // 로딩 중일 때
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -119,11 +121,9 @@ export default function PersonalInfoPage() {
       </div>
     );
   }
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-        {/* 헤더 */}
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div>
@@ -154,16 +154,12 @@ export default function PersonalInfoPage() {
             </div>
           </div>
         </div>
-
-        {/* 폼 내용 */}
         <div className="px-6 py-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 기본 정보 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 기본 정보
               </h3>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   이름 (full_name)
@@ -176,7 +172,6 @@ export default function PersonalInfoPage() {
                   placeholder="예: 홍길동"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   이름 (name) - 백업용
@@ -189,7 +184,6 @@ export default function PersonalInfoPage() {
                   placeholder="예: 홍길동"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   직책/타이틀
@@ -202,7 +196,6 @@ export default function PersonalInfoPage() {
                   placeholder="예: 프론트엔드 개발자"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   짧은 소개 (bio)
@@ -215,7 +208,6 @@ export default function PersonalInfoPage() {
                   placeholder="메인 페이지에 표시될 짧은 소개"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   상세 소개 (about)
@@ -229,13 +221,10 @@ export default function PersonalInfoPage() {
                 />
               </div>
             </div>
-
-            {/* 연락처 정보 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 연락처 정보
               </h3>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   이메일
@@ -248,7 +237,6 @@ export default function PersonalInfoPage() {
                   placeholder="example@email.com"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   전화번호
@@ -261,7 +249,6 @@ export default function PersonalInfoPage() {
                   placeholder="010-1234-5678"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   위치
@@ -274,13 +261,10 @@ export default function PersonalInfoPage() {
                   placeholder="예: 서울, 대한민국"
                 />
               </div>
-
-              {/* 소셜 미디어 */}
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   소셜 미디어
                 </h3>
-                
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -294,7 +278,6 @@ export default function PersonalInfoPage() {
                       placeholder="https://github.com/username"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       LinkedIn URL
@@ -307,7 +290,6 @@ export default function PersonalInfoPage() {
                       placeholder="https://linkedin.com/in/username"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Twitter URL
@@ -320,7 +302,6 @@ export default function PersonalInfoPage() {
                       placeholder="https://twitter.com/username"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Instagram URL
@@ -335,13 +316,10 @@ export default function PersonalInfoPage() {
                   </div>
                 </div>
               </div>
-
-              {/* 기타 URL */}
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   기타 URL
                 </h3>
-                
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -355,7 +333,6 @@ export default function PersonalInfoPage() {
                       placeholder="https://example.com/profile.jpg"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       이력서 URL
@@ -372,8 +349,6 @@ export default function PersonalInfoPage() {
               </div>
             </div>
           </div>
-
-          {/* 저장 정보 */}
           {personalInfo.updated_at && (
             <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
               <div className="text-sm text-slate-500 dark:text-slate-400">

@@ -1,21 +1,16 @@
-// 폼 관리 커스텀 훅
-
 import { useState, useCallback } from 'react';
 import { validateRequired, validateEmail, validateUrl, validateDateRange, validateMinLength, validateMaxLength } from '@/utils/validation';
-
 export interface FormState<T> {
   data: T;
   errors: Record<string, string>;
   isSubmitting: boolean;
   isDirty: boolean;
 }
-
 export interface UseFormOptions<T> {
   initialData: T;
   validationRules?: Partial<Record<keyof T, (value: unknown) => string | null>>;
   onSubmit?: (data: T) => Promise<void> | void;
 }
-
 export function useForm<T extends Record<string, unknown>>({
   initialData,
   validationRules = {},
@@ -27,16 +22,14 @@ export function useForm<T extends Record<string, unknown>>({
     isSubmitting: false,
     isDirty: false
   });
-
   const updateField = useCallback((field: keyof T, value: unknown) => {
     setFormState(prev => ({
       ...prev,
       data: { ...prev.data, [field]: value },
       isDirty: true,
-      errors: { ...prev.errors, [field]: '' } // 필드 업데이트 시 해당 에러 제거
+      errors: { ...prev.errors, [field]: '' } 
     }));
   }, []);
-
   const updateFields = useCallback((updates: Partial<T>) => {
     setFormState(prev => ({
       ...prev,
@@ -44,28 +37,24 @@ export function useForm<T extends Record<string, unknown>>({
       isDirty: true
     }));
   }, []);
-
   const setError = useCallback((field: keyof T, message: string) => {
     setFormState(prev => ({
       ...prev,
       errors: { ...prev.errors, [field]: message }
     }));
   }, []);
-
   const setErrors = useCallback((errors: Record<string, string>) => {
     setFormState(prev => ({
       ...prev,
       errors
     }));
   }, []);
-
   const clearErrors = useCallback(() => {
     setFormState(prev => ({
       ...prev,
       errors: {}
     }));
   }, []);
-
   const validateField = useCallback((field: keyof T, value: unknown): string | null => {
     const rule = validationRules[field];
     if (rule) {
@@ -73,11 +62,9 @@ export function useForm<T extends Record<string, unknown>>({
     }
     return null;
   }, [validationRules]);
-
   const validateForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
     let isValid = true;
-
     Object.keys(formState.data).forEach(field => {
       const value = formState.data[field as keyof T];
       const error = validateField(field as keyof T, value);
@@ -86,20 +73,16 @@ export function useForm<T extends Record<string, unknown>>({
         isValid = false;
       }
     });
-
     setErrors(errors);
     return isValid;
   }, [formState.data, validateField, setErrors]);
-
   const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
     }
-
     if (!validateForm()) {
       return false;
     }
-
     if (onSubmit) {
       setFormState(prev => ({ ...prev, isSubmitting: true }));
       try {
@@ -107,16 +90,13 @@ export function useForm<T extends Record<string, unknown>>({
         setFormState(prev => ({ ...prev, isDirty: false }));
         return true;
       } catch {
-        // Form submission error
         return false;
       } finally {
         setFormState(prev => ({ ...prev, isSubmitting: false }));
       }
     }
-
     return true;
   }, [validateForm, onSubmit, formState.data]);
-
   const reset = useCallback(() => {
     setFormState({
       data: initialData,
@@ -125,7 +105,6 @@ export function useForm<T extends Record<string, unknown>>({
       isDirty: false
     });
   }, [initialData]);
-
   return {
     data: formState.data,
     errors: formState.errors,
@@ -142,8 +121,6 @@ export function useForm<T extends Record<string, unknown>>({
     reset
   };
 }
-
-// 공통 검증 규칙들
 export const commonValidationRules = {
   required: (value: unknown) => validateRequired(value as string, '이 필드'),
   email: (value: unknown) => validateEmail(value as string),

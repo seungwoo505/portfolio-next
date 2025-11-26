@@ -1,14 +1,15 @@
 "use client";
-
 import Link from "next/link";
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
-
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
-
+/**
+ * @component AdminLogin
+ * @description 관리자 인증을 위한 로그인 폼을 제공하는 페이지 컴포넌트.
+ * @returns {JSX.Element} 관리자 로그인 페이지.
+ */
 export default function AdminLogin() {
   const [credentials, setCredentials] = useState({
     username: '',
@@ -16,15 +17,17 @@ export default function AdminLogin() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-
   const { login } = useAdmin();
   const router = useRouter();
-
+  /**
+   * @function handleSubmit
+   * @description 로그인 폼 제출을 처리하고 성공 시 관리자 대시보드로 이동한다.
+   * @param {React.FormEvent} e 폼 제출 이벤트.
+   * @returns {Promise<void>} 로그인 작업.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const success = await login(credentials.username, credentials.password);
       if (success) {
@@ -34,8 +37,6 @@ export default function AdminLogin() {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : '로그인에 실패했습니다.';
       toast.error(errorMessage);
-      
-      // 로그인 실패 시 입력 필드 초기화
       setCredentials({
         username: '',
         password: ''
@@ -44,18 +45,21 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
-
+  /**
+   * @function handleChange
+   * @description 입력 필드 변경에 따라 자격 증명 상태를 갱신한다.
+   * @param {React.ChangeEvent<HTMLInputElement>} e 입력 변경 이벤트.
+   * @returns {void}
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCredentials(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        {/* 로고/헤더 */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -66,11 +70,8 @@ export default function AdminLogin() {
             관리자 로그인
           </p>
         </div>
-
-        {/* 로그인 폼 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 사용자명 */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 사용자명
@@ -92,8 +93,6 @@ export default function AdminLogin() {
                 />
               </div>
             </div>
-
-            {/* 비밀번호 */}
             <div>
               <label htmlFor="password" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                 비밀번호
@@ -126,9 +125,6 @@ export default function AdminLogin() {
                 </button>
               </div>
             </div>
-
-
-            {/* 로그인 버튼 */}
             <button
               type="submit"
               disabled={isLoading || !credentials.username || !credentials.password}
@@ -144,8 +140,6 @@ export default function AdminLogin() {
               )}
             </button>
           </form>
-
-          {/* 추가 링크 */}
           <div className="mt-6 text-center">
             <Link 
               href="/" 
@@ -155,8 +149,6 @@ export default function AdminLogin() {
             </Link>
           </div>
         </div>
-
-        {/* 보안 알림 */}
         <div className="mt-6 text-center">
           <p className="text-xs text-slate-500 dark:text-slate-400">
             이 페이지는 관리자 전용입니다. 승인된 사용자만 접근할 수 있습니다.
@@ -166,4 +158,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-

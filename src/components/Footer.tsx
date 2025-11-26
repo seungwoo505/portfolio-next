@@ -1,12 +1,8 @@
 "use client";
-
 import Link from "next/link";
-
 import { motion } from "framer-motion";
-
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
-
 interface PersonalInfo {
   full_name?: string;
   title?: string;
@@ -18,19 +14,25 @@ interface PersonalInfo {
   twitter_url?: string;
   instagram_url?: string;
 }
-
+/**
+ * @component Footer
+ * @description 빠른 링크, 연락처, 소셜 정보가 포함된 사이트 푸터를 렌더링합니다.
+ * @returns {JSX.Element} 개인 정보가 존재하면 해당 내용으로 채워진 애니메이션 푸터를 반환합니다.
+ */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({});
   const [hasApiError, setHasApiError] = useState(false);
-
   useEffect(() => {
+    /**
+     * @function fetchPersonalInfo
+     * @description 개인 정보와 설정값을 불러와 푸터에 표시할 내용을 구성합니다.
+     * @returns {Promise<void>} API 데이터와 동기화가 완료되면 해결됩니다.
+     */
     const fetchPersonalInfo = async () => {
       try {
-        // 설정에서 개인정보 가져오기 (우선)
         const settingsResponse = await api.get<{ [key: string]: string }>('/settings');
         let settingsPersonalInfo = {};
-        
         if (settingsResponse.success && settingsResponse.data) {
           const settings = settingsResponse.data;
           settingsPersonalInfo = {
@@ -45,8 +47,6 @@ export default function Footer() {
             instagram_url: settings.personal_instagram_url || settings.intro_instagram_url || ''
           };
         }
-        
-        // 개인정보 테이블에서 가져오기 (백업)
         let personalTableInfo = {};
         try {
           const personalResponse = await api.get<PersonalInfo>('/personal-info');
@@ -54,10 +54,7 @@ export default function Footer() {
             personalTableInfo = personalResponse.data;
           }
         } catch {
-          // 개인정보 테이블에서 가져오기 실패
         }
-        
-        // 설정 우선, 개인정보 테이블 백업으로 병합
         setPersonalInfo({
           ...personalTableInfo,
           ...settingsPersonalInfo
@@ -66,10 +63,8 @@ export default function Footer() {
         setHasApiError(true);
       }
     };
-
     fetchPersonalInfo();
   }, []);
-
   return (
     <motion.footer 
       className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 overflow-x-hidden"
@@ -80,7 +75,6 @@ export default function Footer() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* 브랜드 섹션 */}
           <motion.div 
             className="space-y-4"
             initial={{ opacity: 0, x: -30 }}
@@ -108,8 +102,6 @@ export default function Footer() {
               {personalInfo.bio || personalInfo.about || (hasApiError ? '데이터를 불러올 수 없습니다.' : '소개를 입력해주세요.')}
             </p>
           </motion.div>
-
-          {/* 빠른 링크 */}
           <motion.div 
             className="space-y-4"
             initial={{ opacity: 0, y: 30 }}
@@ -136,8 +128,6 @@ export default function Footer() {
               </Link>
             </div>
           </motion.div>
-
-          {/* 연락처 */}
           <motion.div 
             className="space-y-4"
             initial={{ opacity: 0, x: 30 }}
@@ -217,8 +207,6 @@ export default function Footer() {
             </div>
           </motion.div>
         </div>
-
-        {/* 저작권 */}
         <motion.div 
           className="border-t border-slate-200 dark:border-slate-700 mt-8 pt-8 text-center"
           initial={{ opacity: 0 }}

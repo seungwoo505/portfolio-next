@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin, useRole } from '@/contexts/AdminContext';
@@ -20,7 +19,11 @@ import {
 import { authApi } from '@/lib/api';
 import { AdminUser } from '@/types';
 import NewUserModal from './components/NewUserModal';
-
+/**
+ * @component UsersManagement
+ * @description 관리자 권한을 가진 사용자를 생성, 검색, 필터링, 삭제할 수 있는 관리 페이지.
+ * @returns {JSX.Element} 사용자 관리 페이지.
+ */
 export default function UsersManagement() {
   const { isAuthenticated, isLoading, user: currentUser } = useAdmin();
   const isSuperAdmin = useRole('super_admin');
@@ -29,29 +32,27 @@ export default function UsersManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'super_admin' | 'admin' | 'editor'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  // const [, setSelectedUsers] = useState<Set<string>>(new Set());
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; userId: string | null }>({
     isOpen: false,
     userId: null
   });
   const router = useRouter();
-
-  // 인증 확인 및 권한 체크
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     } else if (!isLoading && isAuthenticated && !isSuperAdmin) {
-      // 슈퍼 관리자가 아니면 대시보드로 리다이렉트
       router.push('/admin');
     }
   }, [isAuthenticated, isLoading, isSuperAdmin, router]);
-
-  // 사용자 목록 가져오기
   useEffect(() => {
+    /**
+     * @function fetchUsers
+     * @description 관리자 사용자 목록을 조회하여 상태를 갱신한다.
+     * @returns {Promise<void>} 사용자 로딩 작업.
+     */
     const fetchUsers = async () => {
       if (!isAuthenticated || !isSuperAdmin) return;
-      
       try {
         setLoading(true);
         const response = await authApi.get('/admin/users');
@@ -67,46 +68,38 @@ export default function UsersManagement() {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, [isAuthenticated, isSuperAdmin]);
-
-  // 사용자 상태 변경
+  /**
+   * @description 사용자 활성화 상태를 전환합니다.
+   * @param {string} userId 대상 사용자 ID.
+   * @param {boolean} currentIsActive 현재 활성 상태.
+   * @returns {Promise<void>}
+   */
   const toggleUserStatus = async (userId: string, currentIsActive: boolean) => {
     if (userId === currentUser?.id) {
       toast.error('자신의 계정 상태는 변경할 수 없습니다.');
       return;
     }
-
     try {
       const newIsActive = !currentIsActive;
-
-      // 실제 서버 요청 시도
       const currentUser = users.find(u => String(u.id) === String(userId));
       if (!currentUser) {
         throw new Error('사용자 정보를 찾을 수 없습니다.');
       }
-
-      // 편집 페이지와 완전히 동일한 구조로 시도
       const updateData = {
         username: currentUser.username,
         email: currentUser.email,
         role: currentUser.role,
         is_active: newIsActive ? 1 : 0
       };
-
-
       const response = await authApi.put(`/admin/users/${userId}`, updateData);
-      
       if (response.success) {
-        
-        // 로컬 상태 업데이트
         setUsers(prev => prev.map(user => 
           user.id === userId 
             ? { ...user, is_active: newIsActive ? 1 : 0 }
             : user
         ));
-        
         toast.success('사용자 상태가 변경되었습니다.');
       } else {
         toast.error('사용자 상태 변경에 실패했습니다: ' + response.message);
@@ -116,8 +109,11 @@ export default function UsersManagement() {
       toast.error(errorMessage);
     }
   };
-
-  // 사용자 삭제 모달 열기
+  /**
+   * @description 삭제 모달을 엽니다.
+   * @param {string} userId 삭제할 사용자 ID.
+   * @returns {void}
+   */
   const openDeleteModal = (userId: string) => {
     if (userId === currentUser?.id) {
       toast.error('자신의 계정은 삭제할 수 없습니다.');
@@ -125,16 +121,15 @@ export default function UsersManagement() {
     }
     setDeleteModal({ isOpen: true, userId });
   };
-
-  // 사용자 삭제 모달 닫기
+  /**
+   * @description 삭제 모달을 닫습니다.
+   * @returns {void}
+   */
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, userId: null });
   };
-
-  // 사용자 삭제 실행
   const deleteUser = async () => {
     if (!deleteModal.userId) return;
-    
     try {
       await authApi.delete(`/admin/users/${deleteModal.userId}`);
       setUsers(prev => prev.filter(user => user.id !== deleteModal.userId));
@@ -144,14 +139,15 @@ export default function UsersManagement() {
       toast.error(errorMessage);
     }
   };
-
-  // 새 사용자 생성 후 목록에 추가
+  /**
+   * @description 새 사용자 생성 후 목록을 갱신합니다.
+   * @param {AdminUser} newUser 추가된 사용자 정보.
+   * @returns {void}
+   */
   const handleUserCreated = (newUser: AdminUser) => {
     setUsers(prev => [...prev, newUser]);
     setShowNewUserModal(false);
   };
-
-  // 역할 표시 함수
   const getRoleInfo = (role: string) => {
     switch (role) {
       case 'super_admin':
@@ -180,24 +176,17 @@ export default function UsersManagement() {
         };
     }
   };
-
-  // 필터링된 사용자
   const filteredUsers = users.filter(user => {
     const matchesSearch = !searchQuery || 
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    
-    // status 필드 기반으로 상태 필터링
     const userIsActive = user.is_active === 1;
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'active' && userIsActive) ||
       (statusFilter === 'inactive' && !userIsActive);
-    
     return matchesSearch && matchesRole && matchesStatus;
   });
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
@@ -208,19 +197,12 @@ export default function UsersManagement() {
       </div>
     );
   }
-
   if (!isAuthenticated || !isSuperAdmin) {
     return null;
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-
-        {/* 액션 바 */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -238,11 +220,8 @@ export default function UsersManagement() {
             <span>새 사용자</span>
           </button>
         </div>
-
-        {/* 검색 및 필터 */}
         <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* 검색 */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -253,8 +232,6 @@ export default function UsersManagement() {
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
               />
             </div>
-
-            {/* 역할 필터 */}
             <div className="flex flex-wrap space-x-2">
               {[
                 { key: 'all', label: '모든 역할' },
@@ -275,8 +252,6 @@ export default function UsersManagement() {
                 </button>
               ))}
             </div>
-
-            {/* 상태 필터 */}
             <div className="flex space-x-2">
               {[
                 { key: 'all', label: '모든 상태' },
@@ -298,8 +273,6 @@ export default function UsersManagement() {
             </div>
           </div>
         </div>
-
-        {/* 사용자 목록 */}
         <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
           {loading ? (
             <div className="p-8">
@@ -319,13 +292,11 @@ export default function UsersManagement() {
             </div>
           ) : filteredUsers.length > 0 ? (
             <>
-              {/* 모바일 카드 레이아웃 */}
               <div className="block lg:hidden space-y-4">
                 {filteredUsers.map((user) => {
                   const roleInfo = getRoleInfo(user.role);
                   const RoleIcon = roleInfo.icon;
                   const isCurrentUser = user.id === currentUser?.id;
-
                   return (
                     <div key={user.id} className={`bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 ${isCurrentUser ? 'ring-2 ring-blue-500' : ''}`}>
                       <div className="flex items-start justify-between">
@@ -356,7 +327,6 @@ export default function UsersManagement() {
                           </span>
                         </div>
                       </div>
-                      
                       <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                         <div>
                           <span className="text-slate-500 dark:text-slate-400">마지막 로그인:</span>
@@ -371,7 +341,6 @@ export default function UsersManagement() {
                           </p>
                         </div>
                       </div>
-
                       <div className="mt-3 flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-slate-500 dark:text-slate-400">활성화:</span>
@@ -406,8 +375,6 @@ export default function UsersManagement() {
                   );
                 })}
               </div>
-
-              {/* 데스크톱 테이블 레이아웃 */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                   <thead className="bg-slate-50 dark:bg-slate-900">
@@ -440,7 +407,6 @@ export default function UsersManagement() {
                     const roleInfo = getRoleInfo(user.role);
                     const RoleIcon = roleInfo.icon;
                     const isCurrentUser = user.id === currentUser?.id;
-
                     return (
                       <tr key={user.id} className={`hover:bg-slate-50 dark:hover:bg-slate-600 ${isCurrentUser ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
                         <td className="px-6 py-4">
@@ -486,7 +452,6 @@ export default function UsersManagement() {
                         <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                           {new Date(user.created_at).toLocaleDateString('ko-KR')}
                         </td>
-                        {/* 활성화 토글 */}
                         <td className="px-6 py-4">
                           <div className="flex justify-center">
                             {!isCurrentUser ? (
@@ -511,7 +476,6 @@ export default function UsersManagement() {
                             )}
                           </div>
                         </td>
-                        {/* 관리 액션 */}
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center space-x-2">
                             <Link
@@ -564,15 +528,11 @@ export default function UsersManagement() {
             </div>
           )}
         </div>
-
-        {/* 새 사용자 생성 모달 */}
         <NewUserModal 
           isOpen={showNewUserModal}
           onClose={() => setShowNewUserModal(false)}
           onUserCreated={handleUserCreated}
         />
-
-        {/* 삭제 확인 모달 */}
         <ConfirmModal
           isOpen={deleteModal.isOpen}
           onClose={closeDeleteModal}

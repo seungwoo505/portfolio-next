@@ -1,5 +1,3 @@
-// 블로그 관련 타입 정의
-
 export interface BlogPost {
   id: string;
   title: string;
@@ -18,7 +16,6 @@ export interface BlogPost {
   published_at?: string;
   tags?: BlogTag[];
 }
-
 export interface BlogTag {
   id: string;
   name: string;
@@ -28,3 +25,5 @@ export interface BlogTag {
   type?: 'blog' | 'project' | 'general';
   post_count?: number;
 }
+
+export type RawBlogPost = BlogPost & { tags?: Array<string | BlogTag> };

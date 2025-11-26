@@ -1,27 +1,36 @@
 "use client";
 import Link from "next/link";
-
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-
 import ScrollProgress from "./ScrollProgress";
 import { seoApi, personalApi, blogApi, projectApi } from "@/lib/api";
 import toast from "react-hot-toast";
-
-
 import { BlogPost } from "@/types";
-
 const BLOG_PLACEHOLDER_COUNT = 1;
 const PROJECT_PLACEHOLDER_COUNT = 1;
 const SKILL_PLACEHOLDER_COUNT = 1;
 const CARD_REVEAL_INTERVAL = 120;
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
-
-// 동적 import로 OptimizedGalaxy 컴포넌트 지연 로딩
 const Galaxy = lazy(() => import("./OptimizedGalaxy"));
-
+/**
+ * @interface Project
+ * @description 홈 화면에 노출되는 프로젝트 정보를 나타냅니다.
+ * @property {string} id 프로젝트 고유 식별자.
+ * @property {string} title 프로젝트 제목.
+ * @property {string} description 카드에 표시할 간단한 요약.
+ * @property {string} [detailed_description] 상세 설명.
+ * @property {string} [excerpt] 티저용으로 사용할 발췌문.
+ * @property {string} [meta_description] 프로젝트용 SEO 최적화 설명.
+ * @property {string} slug 네비게이션에 사용할 슬러그.
+ * @property {boolean} featured 대표 프로젝트 여부.
+ * @property {string} [image_url] 프로젝트 대표 이미지 URL.
+ * @property {string} created_at 프로젝트 생성 일시.
+ * @property {string[]} [tags] 프로젝트와 연관된 태그 목록.
+ * @property {string[]} [skills] 프로젝트에서 강조하는 기술 스택.
+ * @property {number} [view_count] 조회수.
+ */
 interface Project {
   id: string;
   title: string;
@@ -37,21 +46,45 @@ interface Project {
   skills?: string[];
   view_count?: number;
 }
-
+/**
+ * @interface Skill
+ * @description API에서 가져온 단일 기술 정보를 나타냅니다.
+ * @property {string} id 기술 고유 식별자.
+ * @property {string} name 화면에 표시할 기술명.
+ * @property {number} proficiency_level 숙련도를 나타내는 숫자 값.
+ * @property {string} [category_name] 기술이 속한 카테고리 이름.
+ */
 interface Skill {
   id: string;
   name: string;
   proficiency_level: number;
   category_name?: string;
 }
-
+/**
+ * @interface PersonalInfo
+ * @description 히어로 섹션을 구성하는 개인 프로필 정보입니다.
+ * @property {string} [full_name] 정식 이름.
+ * @property {string} [name] 선호하는 표시 이름.
+ * @property {string} [bio] 짧은 소개 문장.
+ * @property {string} [about] 확장된 자기소개 내용.
+ */
 interface PersonalInfo {
   full_name?: string;
   name?: string;
   bio?: string;
   about?: string;
 }
-
+/**
+ * @interface ClientHomeProps
+ * @description 클라이언트 홈 컴포넌트에 전달되는 초기 데이터와 상태 플래그입니다.
+ * @property {BlogPost[]} [blogPosts] 미리 불러온 블로그 포스트 목록.
+ * @property {Project[]} [projects] 미리 불러온 프로젝트 목록.
+ * @property {Skill[]} [skills] 미리 불러온 기술 목록.
+ * @property {boolean} [loading] 서버에서 전달된 초기 로딩 상태.
+ * @property {string} [error] 페이지 대신 표시할 오류 메시지.
+ * @property {PersonalInfo} [personalInfo] 초기 개인 정보 데이터.
+ * @property {boolean} [hasError] 서버에서 오류가 감지되었는지 여부.
+ */
 interface ClientHomeProps {
   blogPosts?: BlogPost[];
   projects?: Project[];
@@ -61,7 +94,12 @@ interface ClientHomeProps {
   personalInfo?: PersonalInfo;
   hasError?: boolean;
 }
-
+/**
+ * @component ClientHome
+ * @description 개인 정보, 대표 프로젝트, 블로그 글, 애니메이션 배경을 결합한 인터랙티브 랜딩 페이지를 렌더링합니다.
+ * @param {ClientHomeProps} param0 UI 하이드레이션에 필요한 사전 로딩 데이터와 상태 플래그.
+ * @returns {JSX.Element} 퍼블릭 랜딩 페이지에 특화된 콘텐츠를 반환합니다.
+ */
 export default function ClientHome({ 
   blogPosts: initialBlogPosts = [], 
   projects: initialProjects = [], 
@@ -75,8 +113,6 @@ export default function ClientHome({
   const [activeSkillTab, setActiveSkillTab] = useState('all');
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
-  
-  // 클라이언트 사이드 데이터 상태
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [skills, setSkills] = useState<Skill[]>(initialSkills);
@@ -85,36 +121,29 @@ export default function ClientHome({
   const [blogRevealCount, setBlogRevealCount] = useState(0);
   const [projectRevealCount, setProjectRevealCount] = useState(0);
   const [skillsRevealCount, setSkillsRevealCount] = useState(0);
-
-
-  // 클라이언트 사이드에서 데이터 로딩
   useEffect(() => {
+    /**
+     * @function loadData
+     * @description 홈 화면에 표시할 대표 블로그, 프로젝트, 기술 정보를 불러옵니다.
+     * @returns {Promise<void>} 데이터 상태 갱신이 완료되면 해결됩니다.
+     */
     const loadData = async () => {
       setIsDataLoading(true);
-      
       try {
-        // 병렬로 데이터 로딩
         const [blogResponse, projectResponse, skillsResponse] = await Promise.all([
           blogApi.getPosts({ limit: 2, featured: true }),
           projectApi.getProjects({ limit: 2, featured: true }),
           personalApi.getFeaturedSkills()
         ]);
-
-        // 블로그 포스트 설정
         if (blogResponse.success && blogResponse.data) {
           setBlogPosts(blogResponse.data);
         }
-
-        // 프로젝트 설정
         if (projectResponse.success && projectResponse.data) {
           setProjects(projectResponse.data as Project[]);
         }
-
-        // 기술 스택 설정
         if (skillsResponse.success && skillsResponse.data) {
           setSkills(skillsResponse.data);
         }
-
         setLoading(false);
         setDataError(false);
       } catch (error) {
@@ -125,131 +154,102 @@ export default function ClientHome({
         setIsDataLoading(false);
       }
     };
-
-    // 초기 데이터가 없는 경우에만 로딩
     if (initialBlogPosts.length === 0 && initialProjects.length === 0 && initialSkills.length === 0) {
       loadData();
     } else {
       setIsDataLoading(false);
     }
   }, [initialBlogPosts.length, initialProjects.length, initialSkills.length]);
-
-  // 개인정보 동적 로딩 (서버에서 빈 객체로 전달된 경우에만 백업 로딩)
   useEffect(() => {
+    /**
+     * @function loadPersonalInfo
+     * @description 서버에서 전달되지 않은 경우 개인 프로필 정보를 조회합니다.
+     * @returns {Promise<void>} 개인 정보 상태 설정이 완료되면 해결됩니다.
+     */
     const loadPersonalInfo = async () => {
-      // 서버에서 개인정보를 가져오지 못한 경우에만 클라이언트에서 재시도
       if (!personalInfo || Object.keys(personalInfo).length === 0) {
         try {
           const response = await personalApi.getPersonalInfo();
-          
           if (response.success && response.data) {
-            // 클라이언트에서 성공적으로 가져온 경우
             setPersonalInfo(response.data);
           } else {
-            // 서버에서도 데이터를 가져올 수 없는 경우
             toast.error('개인정보를 불러올 수 없습니다. 서버 상태를 확인해주세요.');
           }
         } catch {
-          // API 호출 자체가 실패한 경우
           toast.error('개인정보 서버에 연결할 수 없습니다.');
         }
       }
     };
-
-    // 서버에서 개인정보를 가져오지 못한 경우에만 백업 로딩 실행
     loadPersonalInfo();
   }, [personalInfo]);
-
-  // SEO 설정 동적 업데이트 (최적화: useCallback 사용)
+  /**
+   * @function updateSeoMetadata
+   * @description 백엔드의 SEO 설정과 문서 메타 태그를 동기화합니다.
+   * @returns {Promise<void>} 메타 태그와 문서 제목 갱신이 끝나면 해결됩니다.
+   */
   const updateSeoMetadata = useCallback(async () => {
     try {
       const seoResponse = await seoApi.getSeoSettings();
       if (seoResponse.success && seoResponse.data) {
         const seo = seoResponse.data;
-        
-        // 페이지 제목 업데이트
         if (seo.seo_title || seo.site_title) {
           document.title = seo.seo_title || seo.site_title || '승우의 포트폴리오 | 프론트엔드 개발자';
         }
-
-        // 메타 설명 업데이트
         const metaDescription = document.querySelector('meta[name="description"]');
         if (metaDescription) {
           metaDescription.setAttribute('content', seo.seo_description || seo.site_description || '프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.');
         }
-
-        // 메타 키워드 업데이트
         const metaKeywords = document.querySelector('meta[name="keywords"]');
         if (metaKeywords && seo.seo_keywords) {
           metaKeywords.setAttribute('content', seo.seo_keywords);
         }
-
-        // Open Graph 메타 태그 업데이트
         const ogTitle = document.querySelector('meta[property="og:title"]');
         if (ogTitle) {
           ogTitle.setAttribute('content', seo.og_title || seo.seo_title || seo.site_title || '승우의 포트폴리오 | 프론트엔드 개발자');
         }
-
         const ogDescription = document.querySelector('meta[property="og:description"]');
         if (ogDescription) {
           ogDescription.setAttribute('content', seo.og_description || seo.seo_description || seo.site_description || '프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.');
         }
-
         const ogImage = document.querySelector('meta[property="og:image"]');
         if (ogImage && seo.og_image) {
           ogImage.setAttribute('content', seo.og_image);
         }
-
         const ogAlt = document.querySelector('meta[property="og:image:alt"]');
         if (ogAlt && seo.og_alt) {
           ogAlt.setAttribute('content', seo.og_alt);
         }
-
-        // Twitter 카드 메타 태그 업데이트
         const twitterTitle = document.querySelector('meta[name="twitter:title"]');
         if (twitterTitle) {
           twitterTitle.setAttribute('content', seo.twitter_title || seo.og_title || seo.seo_title || seo.site_title || '승우의 포트폴리오 | 프론트엔드 개발자');
         }
-
         const twitterDescription = document.querySelector('meta[name="twitter:description"]');
         if (twitterDescription) {
           twitterDescription.setAttribute('content', seo.twitter_description || seo.og_description || seo.seo_description || seo.site_description || '프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.');
         }
-
         const twitterImage = document.querySelector('meta[name="twitter:image"]');
         if (twitterImage && seo.og_image) {
           twitterImage.setAttribute('content', seo.og_image);
         }
-
         const twitterUsername = document.querySelector('meta[name="twitter:creator"]');
         if (twitterUsername && seo.twitter_username) {
           twitterUsername.setAttribute('content', seo.twitter_username);
         }
-
-        // Google 인증 코드 업데이트
         const googleVerification = document.querySelector('meta[name="google-site-verification"]');
         if (googleVerification && seo.google_verification && seo.google_verification !== 'your-google-verification-code') {
           googleVerification.setAttribute('content', seo.google_verification);
         }
-
-        // 정규 URL 업데이트
         const canonical = document.querySelector('link[rel="canonical"]');
         if (canonical && seo.canonical_url) {
           canonical.setAttribute('href', seo.canonical_url);
         }
       }
     } catch {
-      // SEO 설정 로딩 실패는 조용히 무시 (사용자 경험에 영향 없음)
     }
   }, []);
-
   useEffect(() => {
     updateSeoMetadata();
   }, [updateSeoMetadata]);
-  
-
-
-  // 갤럭시 props를 상수로 분리하여 리렌더링 방지
   const galaxyProps = useMemo(() => ({
     mouseRepulsion: true,
     mouseInteraction: true,
@@ -261,17 +261,11 @@ export default function ClientHome({
     disableAnimation: false,
     speed: 1.0,
   }), []);
-
-  // 데이터 로딩 상태 관리
   useEffect(() => {
-    // API 호출이 완료되면 로딩 상태 해제 (데이터가 있든 없든)
     setIsDataLoading(false);
   }, [blogPosts, projects, skills]);
-
-  // 카테고리별 기술 스택 분류
   const categorizedSkills = useMemo(() => {
     if (!skills || skills.length === 0) return {};
-    
     const categories: { [key: string]: Skill[] } = {};
     skills.forEach(skill => {
       const category = skill.category_name || '기타';
@@ -280,33 +274,26 @@ export default function ClientHome({
       }
       categories[category].push(skill);
     });
-    
     return categories;
   }, [skills]);
-
-  // 현재 활성 탭의 기술 스택
   const currentSkills = useMemo(() => {
     if (activeSkillTab === 'all') {
       return skills;
     }
     return categorizedSkills[activeSkillTab] || [];
   }, [activeSkillTab, skills, categorizedSkills]);
-
   const featuredProjectItems = useMemo(() => {
     if (!projects || projects.length === 0) return [];
     return projects.filter((project) => project.featured);
   }, [projects]);
-
   const blogSkeletonCount = blogPosts.length > 0 ? blogPosts.length : BLOG_PLACEHOLDER_COUNT;
   const projectSkeletonCount = featuredProjectItems.length > 0 ? featuredProjectItems.length : PROJECT_PLACEHOLDER_COUNT;
   const skillSkeletonCount = currentSkills.length > 0 ? currentSkills.length : SKILL_PLACEHOLDER_COUNT;
-
   useEffect(() => {
     if (loading || !blogPosts || blogPosts.length === 0) {
       setBlogRevealCount(0);
       return;
     }
-
     setBlogRevealCount(0);
     const interval = window.setInterval(() => {
       setBlogRevealCount((prev) => {
@@ -317,16 +304,13 @@ export default function ClientHome({
         return next;
       });
     }, CARD_REVEAL_INTERVAL);
-
     return () => window.clearInterval(interval);
   }, [loading, blogPosts]);
-
   useEffect(() => {
     if (loading || featuredProjectItems.length === 0) {
       setProjectRevealCount(0);
       return;
     }
-
     setProjectRevealCount(0);
     const interval = window.setInterval(() => {
       setProjectRevealCount((prev) => {
@@ -337,16 +321,13 @@ export default function ClientHome({
         return next;
       });
     }, CARD_REVEAL_INTERVAL);
-
     return () => window.clearInterval(interval);
   }, [loading, featuredProjectItems]);
-
   useEffect(() => {
     if (loading || !currentSkills || currentSkills.length === 0) {
       setSkillsRevealCount(0);
       return;
     }
-
     setSkillsRevealCount(0);
     const interval = window.setInterval(() => {
       setSkillsRevealCount((prev) => {
@@ -357,25 +338,21 @@ export default function ClientHome({
         return next;
       });
     }, SKILL_REVEAL_INTERVAL);
-
     return () => window.clearInterval(interval);
   }, [loading, currentSkills, activeSkillTab]);
-
- 
- 
- 
- 
- 
   useEffect(() => {
+    /**
+     * @function handleMouseMove
+     * @description 배경 인터랙션에 활용하기 위해 마우스 좌표를 추적합니다.
+     * @param {MouseEvent} e 원본 mousemove 이벤트.
+     * @returns {void}
+     */
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-
-  // Framer Motion variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -386,7 +363,6 @@ export default function ClientHome({
       }
     }
   };
-
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
@@ -399,7 +375,6 @@ export default function ClientHome({
       }
     }
   };
-
   const nameVariants = {
     hidden: { scale: 0.8, opacity: 0 },
     visible: {
@@ -413,8 +388,11 @@ export default function ClientHome({
       }
     }
   };
-
-  // 스켈레톤 UI 컴포넌트 - 실제 UI와 유사하게 개선
+  /**
+   * @component CardSkeletonContent
+   * @description 로딩 중 프로젝트/블로그 카드를 대신할 플레이스홀더 콘텐츠를 렌더링합니다.
+   * @returns {JSX.Element} 스켈레톤 카드 마크업을 반환합니다.
+   */
   const CardSkeletonContent = () => (
     <div className="p-6 animate-pulse">
       <div className="flex items-center justify-between mb-3">
@@ -438,26 +416,36 @@ export default function ClientHome({
       </div>
     </div>
   );
-
+  /**
+   * @component SkeletonCard
+   * @description 목록 로딩 시 사용할 테두리 있는 스켈레톤 카드를 제공합니다.
+   * @returns {JSX.Element} 스켈레톤 카드 컨테이너.
+   */
   const SkeletonCard = () => (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
       <CardSkeletonContent />
     </div>
   );
-
+  /**
+   * @component SkillSkeletonContent
+   * @description 기술 항목 로딩 동안 간단한 스켈레톤 라인을 표시합니다.
+   * @returns {JSX.Element} 기술 스켈레톤 마크업.
+   */
   const SkillSkeletonContent = () => (
     <div className="animate-pulse">
       <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-16 mx-auto" />
     </div>
   );
-
+  /**
+   * @component SkeletonSkill
+   * @description 기술 스켈레톤 콘텐츠를 스타일링된 컨테이너로 감쌉니다.
+   * @returns {JSX.Element} 스켈레톤 기술 카드.
+   */
   const SkeletonSkill = () => (
     <div className="p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 text-center">
       <SkillSkeletonContent />
     </div>
   );
-
-  // 오류 상태 처리
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
@@ -484,14 +472,10 @@ export default function ClientHome({
       </div>
     );
   }
-
-  // 로딩 중일 때 스켈레톤 UI 표시
   if (isDataLoading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <ScrollProgress />
-        
-        {/* Hero Section Skeleton */}
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-black"></div>
           <div className="relative z-10 text-center">
@@ -500,12 +484,8 @@ export default function ClientHome({
             <div className="h-6 bg-white/30 rounded w-1/3 mx-auto animate-pulse"></div>
           </div>
         </div>
-
-        {/* Skills Section Skeleton */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded w-1/4 mx-auto mb-12 animate-pulse"></div>
-          
-          {/* 탭 네비게이션 스켈레톤 */}
           <div className="flex justify-center mb-8">
             <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded w-12 animate-pulse"></div>
@@ -513,15 +493,12 @@ export default function ClientHome({
               <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded w-20 animate-pulse"></div>
             </div>
           </div>
-          
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
               <SkeletonSkill key={i} />
             ))}
           </div>
         </div>
-
-        {/* Projects Section Skeleton */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded w-1/4 mx-auto mb-12 animate-pulse"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -530,8 +507,6 @@ export default function ClientHome({
             ))}
           </div>
         </div>
-
-        {/* Blog Section Skeleton */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded w-1/4 mx-auto mb-12 animate-pulse"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -543,50 +518,33 @@ export default function ClientHome({
       </div>
     );
   }
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <ScrollProgress />
-
-
-
-      {/* Hero Section - Spectacular Name Display with Galaxy Background */}
       <motion.section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        {/* Galaxy Background - Pure Black - 모든 모드에서 검은색 유지 */}
         <div className="absolute inset-0 bg-black overflow-hidden galaxy-section">
           <div className="w-full h-full relative galaxy-container">
-            
-            
-                         {/* Galaxy 컴포넌트만 사용 - 다크 모드 변경 시 강제 리렌더링 */}
             <Suspense fallback={<div className="w-full h-full bg-black" />}>
               <Galaxy 
                 key="galaxy-static" 
                 {...galaxyProps} 
               />
             </Suspense>
-            
-            
           </div>
         </div>
-        
-        {/* Gradient Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-transparent to-slate-900/80 pointer-events-none"></div>
-        
-        {/* Mouse-following gradient */}
         <motion.div
           className="absolute inset-0 opacity-30 pointer-events-none"
           style={{
             background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`
           }}
         />
-
         <motion.div className="relative z-10 text-center px-4 sm:px-6 lg:px-8" variants={itemVariants}>
-          {/* Main Name Display */}
           <motion.div className="mb-8" variants={nameVariants}>
             <motion.h1 
               className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-tight cursor-pointer"
@@ -613,8 +571,6 @@ export default function ClientHome({
                 {personalInfo?.full_name || personalInfo?.name || '개인 정보를 불러올 수 없습니다'}
               </motion.span>
             </motion.h1>
-            
-            {/* Interactive Decorative Elements */}
             <motion.div 
               className="flex justify-center items-center space-x-4 mt-6"
               variants={itemVariants}
@@ -656,8 +612,6 @@ export default function ClientHome({
               />
             </motion.div>
           </motion.div>
-
-                             {/* Animated Subtitle */}
                    <motion.div className="mb-12" variants={itemVariants}>
                      <motion.p className="text-2xl md:text-3xl lg:text-4xl font-light text-slate-200 mb-4">
                        {["웹", "프론트엔드", "개발자"].map((word, index) => (
@@ -686,8 +640,6 @@ export default function ClientHome({
 {personalInfo?.bio || personalInfo?.about || '개인 정보를 불러올 수 없습니다'}
                      </motion.p>
                    </motion.div>
-
-                                      {/* CTA Buttons */}
                    <motion.div 
                      className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
                      variants={itemVariants}
@@ -709,8 +661,6 @@ export default function ClientHome({
                        연락하기
                      </motion.a>
                    </motion.div>
-
-                   {/* Animated Scroll Indicator - 버튼 아래에 자연스럽게 배치 */}
                    <motion.div 
                      className="flex flex-col items-center mt-8 scroll-indicator"
                      animate={{ 
@@ -746,8 +696,6 @@ export default function ClientHome({
                      </motion.div>
                      <ChevronDown className="w-4 h-4 text-slate-400 mx-auto mt-2" />
                    </motion.div>
-                   
-                   {/* 추가 인터랙티브 요소 */}
                    <motion.div 
                      className="flex justify-center items-center space-x-6 mt-6"
                      variants={itemVariants}
@@ -791,11 +739,8 @@ export default function ClientHome({
                    </motion.div>
                  </motion.div>
       </motion.section>
-
-      {/* Latest Blog Posts & Projects */}
       <section id="latest-content" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-x-hidden">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* 블로그 포스트 */}
           <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -805,7 +750,6 @@ export default function ClientHome({
                 모든 포스트 보기 →
               </Link>
             </div>
-            
             <div className="space-y-4">
               {loading ? (
                 Array.from({ length: blogSkeletonCount }).map((_, index) => (
@@ -818,7 +762,6 @@ export default function ClientHome({
                   const stateClass = isRevealed
                     ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
                     : "cursor-default pointer-events-none";
-
                   return (
                     <article
                       key={post.id}
@@ -831,7 +774,6 @@ export default function ClientHome({
                             <time>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time>
                             <span className="text-sm text-slate-400">블로그</span>
                           </div>
-
                           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             <Link
                               href={`/blog/post?slug=${post.slug}`}
@@ -840,11 +782,9 @@ export default function ClientHome({
                               {post.title}
                             </Link>
                           </h3>
-
                           <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
                             {post.excerpt || post.content.substring(0, 100) + '...'}
                           </p>
-
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.tags && post.tags.length > 0
                               ? post.tags.slice(0, 2).map((tag, tagIndex) => (
@@ -857,7 +797,6 @@ export default function ClientHome({
                                 ))
                               : null}
                           </div>
-
                           <div className="flex items-center justify-between">
                             <Link
                               href={`/blog/post?slug=${post.slug}`}
@@ -886,8 +825,6 @@ export default function ClientHome({
               )}
             </div>
           </div>
-
-          {/* 프로젝트 */}
           <div>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -897,7 +834,6 @@ export default function ClientHome({
                 모든 프로젝트 보기 →
               </Link>
             </div>
-            
             <div className="space-y-4">
               {loading ? (
                 Array.from({ length: projectSkeletonCount }).map((_, index) => (
@@ -910,7 +846,6 @@ export default function ClientHome({
                   const stateClass = isRevealed
                     ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
                     : "cursor-default pointer-events-none";
-
                   return (
                     <article
                       key={project.id}
@@ -923,15 +858,12 @@ export default function ClientHome({
                             <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
                             <span className="text-sm text-slate-400">프로젝트</span>
                           </div>
-
                           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
                             {project.title}
                           </h3>
-
                           <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
                             {project.excerpt || project.detailed_description || project.description || '프로젝트 설명이 없습니다.'}
                           </p>
-
                           <div className="flex flex-wrap gap-2 mb-4">
                             {project.skills && Array.isArray(project.skills) && project.skills.length > 0 ? (
                               project.skills.slice(0, 3).map((skill: string, skillIndex: number) => (
@@ -953,7 +885,6 @@ export default function ClientHome({
                               ))
                             ) : null}
                           </div>
-
                           <div className="flex items-center justify-between">
                             <Link
                               href={`/projects/detail?slug=${encodeURIComponent(project.slug)}`}
@@ -984,16 +915,12 @@ export default function ClientHome({
           </div>
         </div>
       </section>
-
-      {/* Skills Section */}
       <section 
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
       >
         <h2 className="text-3xl font-bold text-slate-900 dark:text-white text-center mb-12">
           주요 기술 스택
         </h2>
-        
-        {/* 탭 네비게이션 */}
         <div className="flex justify-center mb-8">
           <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-200 dark:border-slate-600">
             <button
@@ -1021,7 +948,6 @@ export default function ClientHome({
             ))}
           </div>
         </div>
-        
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {loading ? (
             Array.from({ length: skillSkeletonCount }).map((_, index) => (
@@ -1034,7 +960,6 @@ export default function ClientHome({
               const stateClass = isRevealed
                 ? "cursor-pointer transform hover:-translate-y-1 hover:scale-105"
                 : "cursor-default pointer-events-none";
-
               return (
                 <div key={skill.id} className={`${baseClass} ${stateClass}`}>
                   {isRevealed ? (
@@ -1057,8 +982,6 @@ export default function ClientHome({
           )}
         </div>
       </section>
-
-
     </div>
   );
 }

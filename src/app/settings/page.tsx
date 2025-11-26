@@ -1,61 +1,47 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-
-interface PublicSettings {
-  site_title?: string;
-  site_description?: string;
-  site_logo?: string;
-  favicon?: string;
-  meta_keywords?: string;
-  meta_author?: string;
-  contact_email?: string;
-  business_hours?: string;
-  social_github?: string;
-  social_linkedin?: string;
-  social_twitter?: string;
-  social_instagram?: string;
-  primary_color?: string;
-  secondary_color?: string;
-  font_family?: string;
-  dark_mode?: boolean;
-  show_animations?: boolean;
-  posts_per_page?: number;
-  projects_per_page?: number;
-  enable_search?: boolean;
-  enable_rss?: boolean;
-}
-
+import { SitePublicSettings } from '@/types';
+/**
+ * @component SettingsPage
+ * @description 방문자가 확인할 수 있는 사이트 설정 정보를 조회하고 표시한다.
+ * @returns {JSX.Element} 설정 정보 요약 페이지 컴포넌트.
+ */
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<PublicSettings>({});
+  const [settings, setSettings] = useState<SitePublicSettings>({});
   const [loading, setLoading] = useState(true);
-  
-
   useEffect(() => {
     fetchSettings();
   }, []);
-
+  /**
+   * @function fetchSettings
+   * @description API에서 사이트 설정 값을 가져와 상태를 갱신한다.
+   * @returns {Promise<void>} 설정 로딩이 끝나면 해결되는 프로미스.
+   */
   const fetchSettings = async () => {
     try {
-      const response = await api.get<{ data: PublicSettings }>('/settings');
+      const response = await api.get<{ data: SitePublicSettings }>('/settings');
       if (response.data?.data) {
         setSettings(response.data.data);
       }
     } catch {
-      // 에러 처리
       toast.error('설정을 가져오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
-
+  /**
+   * @function renderSettingValue
+   * @description 설정 값 타입에 따라 적절한 렌더링 방식을 반환한다.
+   * @param {string} key 설정 키.
+   * @param {string | number | boolean | Record<string, unknown>} value 렌더링할 값.
+   * @returns {JSX.Element} 렌더링 결과 요소.
+   */
   const renderSettingValue = (key: string, value: string | number | boolean | Record<string, unknown>) => {
     if (value === undefined || value === null || value === '') {
       return <span className="text-gray-400 italic">설정되지 않음</span>;
     }
-
     switch (typeof value) {
       case 'boolean':
         return (
@@ -65,10 +51,8 @@ export default function SettingsPage() {
             {value ? '활성화' : '비활성화'}
           </span>
         );
-      
       case 'number':
         return <span className="font-mono text-blue-600">{value}</span>;
-      
       case 'string':
         if (key.includes('color')) {
           return (
@@ -104,12 +88,16 @@ export default function SettingsPage() {
           );
         }
         return <span className="text-gray-900">{value}</span>;
-      
       default:
         return <span className="text-gray-900">{String(value)}</span>;
     }
   };
-
+  /**
+   * @function getSettingDescription
+   * @description 설정 키에 대응하는 설명 문구를 반환한다.
+   * @param {string} key 설정 키.
+   * @returns {string} 설명 문자열.
+   */
   const getSettingDescription = (key: string) => {
     const descriptions: { [key: string]: string } = {
       site_title: '사이트의 제목입니다.',
@@ -134,10 +122,13 @@ export default function SettingsPage() {
       enable_search: '검색 기능 사용 여부입니다.',
       enable_rss: 'RSS 피드 제공 여부입니다.'
     };
-    
     return descriptions[key] || '설정 정보입니다.';
   };
-
+  /**
+   * @function groupSettings
+   * @description 설정 항목들을 주제별 그룹으로 분류한다.
+   * @returns {Record<string, Record<string, string | number | boolean | Record<string, unknown>>>} 그룹화된 설정 객체.
+   */
   const groupSettings = () => {
     const groups: { [key: string]: { [key: string]: string | number | boolean | Record<string, unknown> } } = {
       '사이트 정보': {},
@@ -145,7 +136,6 @@ export default function SettingsPage() {
       '디자인': {},
       '기능': {}
     };
-
     Object.entries(settings).forEach(([key, value]) => {
       if (key.startsWith('site_') || key.startsWith('meta_')) {
         groups['사이트 정보'][key] = value;
@@ -157,10 +147,8 @@ export default function SettingsPage() {
         groups['기능'][key] = value;
       }
     });
-
     return groups;
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -171,7 +159,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-
   if (false) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -183,9 +170,7 @@ export default function SettingsPage() {
       </div>
     );
   }
-
   const groupedSettings = groupSettings();
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,17 +181,14 @@ export default function SettingsPage() {
               현재 사이트에 적용된 설정 정보를 확인할 수 있습니다.
             </p>
           </div>
-
           <div className="p-6">
             {Object.entries(groupedSettings).map(([groupName, groupSettings]) => {
               if (Object.keys(groupSettings).length === 0) return null;
-              
               return (
                 <div key={groupName} className="mb-8">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">
                     {groupName}
                   </h2>
-                  
                   <div className="grid gap-4 md:grid-cols-2">
                     {Object.entries(groupSettings).map(([key, value]) => (
                       <div key={key} className="p-4 bg-gray-50 rounded-lg">
@@ -229,7 +211,6 @@ export default function SettingsPage() {
                 </div>
               );
             })}
-
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -254,4 +235,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

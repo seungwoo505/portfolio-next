@@ -1,54 +1,49 @@
 "use client";
 import Link from "next/link";
 import { Suspense } from "react";
-
-// import Image from "next/image";
-
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import { blogApi } from "@/lib/api";
 import { BlogPost as BlogPostType } from "@/types";
 import toast from 'react-hot-toast';
-
-// 마크다운 변환 유틸리티
 import { markdownToHtml } from '@/utils/markdown';
-
+/**
+ * @component BlogPostContent
+ * @description 블로그 상세 데이터를 로딩하고 렌더링하는 클라이언트 컴포넌트.
+ * @returns {JSX.Element} 블로그 포스트 상세 콘텐츠.
+ */
 function BlogPostContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug');
-  
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
-  
-
   useEffect(() => {
     if (!slug) {
       toast.error('포스트를 찾을 수 없습니다.');
       setLoading(false);
       return;
     }
-
+    /**
+     * @function fetchPost
+     * @description 슬러그에 해당하는 블로그 포스트를 조회하고 조회수를 갱신한다.
+     * @returns {Promise<void>} 포스트 로딩 작업.
+     */
     const fetchPost = async () => {
       try {
         setLoading(true);
         const response = await blogApi.getPostBySlug(slug);
         if (response.success && response.data) {
           setPost(response.data);
-          
-          // 조회수 증가 (백그라운드에서 실행, 실패해도 사용자에게 알리지 않음)
           try {
             await blogApi.incrementViewCount(slug);
-            // 로컬 상태에서 조회수 즉시 증가
             setPost(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
-            // 조회수 증가 후 최신 데이터 다시 로드 (캐시 방지를 위해 약간의 지연)
             await new Promise(resolve => setTimeout(resolve, 100));
             const updatedResponse = await blogApi.getPostBySlug(slug);
             if (updatedResponse.success && updatedResponse.data) {
               setPost(updatedResponse.data);
             }
           } catch {
-            // 조회수 증가 실패는 조용히 무시 (사용자 경험에 영향 없음)
           }
         } else {
           toast.error('포스트를 찾을 수 없습니다.');
@@ -59,10 +54,8 @@ function BlogPostContent() {
         setLoading(false);
       }
     };
-
     fetchPost();
   }, [slug]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -75,7 +68,6 @@ function BlogPostContent() {
       </div>
     );
   }
-
   if (!post) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -94,7 +86,6 @@ function BlogPostContent() {
       </div>
     );
   }
-
   return (
     <>
       <Head>
@@ -103,8 +94,6 @@ function BlogPostContent() {
         <meta name="keywords" content={post.meta_keywords || post.tags?.map(tag => typeof tag === 'string' ? tag : tag.name).join(', ') || '웹개발, 블로그, React, Next.js'} />
         <meta name="author" content="승우" />
         <meta name="robots" content="index, follow" />
-        
-        {/* Open Graph */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.meta_description || post.excerpt || post.content?.substring(0, 160) || '웹 개발자 승우의 블로그 포스트입니다.'} />
@@ -119,18 +108,12 @@ function BlogPostContent() {
         {post.tags && post.tags.map((tag, index) => (
           <meta key={index} property="article:tag" content={typeof tag === 'string' ? tag : tag.name} />
         ))}
-        
-        {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt || post.content?.substring(0, 160) || '웹 개발자 승우의 블로그 포스트입니다.'} />
         <meta name="twitter:image" content={post.featured_image || 'https://seungwoo.i234.me/og-image.jpg'} />
         <meta name="twitter:creator" content="@seungwoo" />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href={`https://seungwoo.i234.me/blog/post?slug=${slug}`} />
-        
-        {/* 구조화된 데이터 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -178,10 +161,8 @@ function BlogPostContent() {
           }}
         />
       </Head>
-      
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Breadcrumb */}
         <nav className="mb-8">
           <div className="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
             <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">홈</Link>
@@ -191,8 +172,6 @@ function BlogPostContent() {
             <span className="text-slate-700 dark:text-slate-300">{post.title}</span>
           </div>
         </nav>
-
-        {/* Back to Blog */}
         <div className="mb-8">
           <Link href="/blog" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,13 +180,10 @@ function BlogPostContent() {
             <span>모든 포스트 보기</span>
           </Link>
         </div>
-
-        {/* Article Header */}
         <header className="mb-12">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
             {post.title}
           </h1>
-
           <div className="flex items-center justify-between flex-wrap gap-4 text-slate-600 dark:text-slate-400 mb-6">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -222,7 +198,6 @@ function BlogPostContent() {
                 </div>
               </div>
             </div>
-
             <div className="flex items-center space-x-2 text-sm">
               <time className="flex items-center space-x-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,8 +222,6 @@ function BlogPostContent() {
               </span>
             </div>
           </div>
-
-          {/* 요약 */}
           {(post.excerpt || post.meta_description) && (
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 mb-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center">
@@ -262,7 +235,6 @@ function BlogPostContent() {
               </p>
             </div>
           )}
-
           <div className="flex flex-wrap gap-2 mb-4">
             {post.tags && post.tags.length > 0 ? (
               post.tags.map((tag, index) => (
@@ -279,8 +251,6 @@ function BlogPostContent() {
             )}
           </div>
         </header>
-
-        {/* Article Content */}
         <article className="prose prose-lg dark:prose-invert max-w-none">
           <div
             className="bg-white dark:bg-slate-800 rounded-xl p-8 md:p-12 shadow-sm border border-slate-200 dark:border-slate-700"
@@ -301,7 +271,11 @@ function BlogPostContent() {
     </>
   );
 }
-
+/**
+ * @component BlogPost
+ * @description Suspense를 활용해 블로그 상세 콘텐츠를 비동기 로드하는 페이지 컴포넌트.
+ * @returns {JSX.Element} 블로그 포스트 페이지 컨테이너.
+ */
 export default function BlogPost() {
   return (
     <Suspense fallback={

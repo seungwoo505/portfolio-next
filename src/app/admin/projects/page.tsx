@@ -1,12 +1,10 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
-
 import toast from 'react-hot-toast';
 import { 
   Plus,
@@ -17,29 +15,11 @@ import {
   Star
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  content: string;
-  excerpt?: string;
-  meta_description?: string;
-  meta_keywords?: string;
-  featured_image: string;
-  project_url: string;
-  github_url: string;
-  tags: string[];
-  start_date: string;
-  end_date: string;
-  featured: boolean;
-  is_published: boolean;
-  slug: string;
-  created_at: string;
-  updated_at: string;
-  view_count?: number;
-}
-
+import { Project } from '@/types';
+/**
+ * @description 프로젝트를 검색·필터링·관리할 수 있는 관리자 페이지입니다.
+ * @returns {JSX.Element} 프로젝트 관리 페이지 컴포넌트.
+ */
 export default function ProjectsPage() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -52,18 +32,13 @@ export default function ProjectsPage() {
     projectSlug: null
   });
   const router = useRouter();
-
-  // 인증 확인
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 프로젝트 목록 가져오기
   const fetchProjects = useCallback(async () => {
     if (!isAuthenticated) return;
-    
     try {
       setLoading(true);
       const response = await authApi.get('/admin/projects');
@@ -78,35 +53,37 @@ export default function ProjectsPage() {
       setLoading(false);
     }
   }, [isAuthenticated]);
-
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
-
-  // 페이지 포커스 시 데이터 새로고침
   useEffect(() => {
+    /**
+     * @description 창 포커스를 다시 얻으면 프로젝트 목록을 갱신합니다.
+     * @returns {void}
+     */
     const handleFocus = () => {
       fetchProjects();
     };
-
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchProjects]);
-
-  // 프로젝트 삭제 모달 열기
+  /**
+   * @description 삭제 확인 모달을 엽니다.
+   * @param {string} projectSlug 삭제할 프로젝트 슬러그.
+   * @returns {void}
+   */
   const openDeleteModal = (projectSlug: string) => {
     setDeleteModal({ isOpen: true, projectSlug });
   };
-
-  // 프로젝트 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, projectSlug: null });
   };
-
-  // 프로젝트 삭제 실행
+  /**
+   * @description 선택한 프로젝트를 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const deleteProject = async () => {
     if (!deleteModal.projectSlug) return;
-    
     try {
       await authApi.delete(`/admin/projects/slug/${deleteModal.projectSlug}`);
       setProjects(prev => prev.filter(project => project.slug !== deleteModal.projectSlug));
@@ -115,20 +92,20 @@ export default function ProjectsPage() {
       toast.error('프로젝트 삭제에 실패했습니다.');
     }
   };
-
-  // 프로젝트 발행 상태 토글
+  /**
+   * @description 프로젝트 게시 상태를 전환합니다.
+   * @param {string} projectSlug 대상 프로젝트 슬러그.
+   * @param {boolean} currentStatus 현재 게시 상태.
+   * @returns {Promise<void>}
+   */
   const togglePublishStatus = async (projectSlug: string, currentStatus: boolean) => {
     try {
-      // currentStatus를 boolean으로 정규화
       const normalizedCurrentStatus = Boolean(currentStatus);
       const newStatus = !normalizedCurrentStatus;
-      
       const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, {
         is_published: newStatus
       });
-      
       if (response.success) {
-        // 상태 변경 후 목록 새로고침
         await fetchProjects();
         toast.success('프로젝트 상태가 변경되었습니다.');
       } else {
@@ -138,21 +115,20 @@ export default function ProjectsPage() {
       toast.error('프로젝트 상태 변경에 실패했습니다.');
     }
   };
-
-  // 프로젝트 대표 상태 토글
+  /**
+   * @description 프로젝트 대표 상태를 전환합니다.
+   * @param {string} projectSlug 대상 프로젝트 슬러그.
+   * @param {boolean} currentStatus 현재 대표 상태.
+   * @returns {Promise<void>}
+   */
   const toggleFeaturedStatus = async (projectSlug: string, currentStatus: boolean) => {
     try {
-      
-      // currentStatus를 boolean으로 정규화
       const normalizedCurrentStatus = Boolean(currentStatus);
       const newStatus = !normalizedCurrentStatus;
-      
       const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, {
         is_featured: newStatus
       });
-      
       if (response.success) {
-        // 상태 변경 후 목록 새로고침
         await fetchProjects();
         toast.success('프로젝트 대표 상태가 변경되었습니다.');
       } else {
@@ -162,25 +138,24 @@ export default function ProjectsPage() {
       toast.error('프로젝트 대표 상태 변경에 실패했습니다.');
     }
   };
-
-  // 필터링된 프로젝트
   const filteredProjects = projects.filter(project => {
     const matchesSearch = !searchQuery || 
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'published' && project.is_published) ||
       (statusFilter === 'draft' && !project.is_published);
-    
     const matchesFeatured = featuredFilter === 'all' || 
       (featuredFilter === 'featured' && project.featured) ||
       (featuredFilter === 'not-featured' && !project.featured);
-    
     return matchesSearch && matchesStatus && matchesFeatured;
   });
-
+  /**
+   * @description 날짜 문자열을 한국어 표기 형식으로 변환합니다.
+   * @param {string} dateString 날짜 문자열.
+   * @returns {string} 변환된 날짜 문자열.
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -188,7 +163,6 @@ export default function ProjectsPage() {
       day: 'numeric',
     });
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -205,15 +179,12 @@ export default function ProjectsPage() {
       </div>
     );
   }
-
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -233,11 +204,8 @@ export default function ProjectsPage() {
             </Link>
           </div>
         </div>
-
-        {/* 필터 및 검색 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* 검색 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 검색
@@ -250,8 +218,6 @@ export default function ProjectsPage() {
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
               />
             </div>
-
-            {/* 상태 필터 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 상태
@@ -266,8 +232,6 @@ export default function ProjectsPage() {
                 <option value="draft">비공개</option>
               </select>
             </div>
-
-            {/* 대표 프로젝트 필터 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 대표 프로젝트
@@ -282,8 +246,6 @@ export default function ProjectsPage() {
                 <option value="not-featured">일반 프로젝트</option>
               </select>
             </div>
-
-            {/* 결과 수 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 결과
@@ -294,8 +256,6 @@ export default function ProjectsPage() {
             </div>
           </div>
         </div>
-
-        {/* 프로젝트 목록 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
@@ -500,8 +460,6 @@ export default function ProjectsPage() {
           )}
         </div>
       </div>
-
-      {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

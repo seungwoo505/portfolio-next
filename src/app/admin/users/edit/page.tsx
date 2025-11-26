@@ -1,12 +1,10 @@
 "use client";
 import Link from "next/link";
 import { Suspense } from "react";
-
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdmin, useRole } from '@/contexts/AdminContext';
-
 import { 
   ArrowLeft,
   Save,
@@ -21,27 +19,20 @@ import {
   Mail
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
-import { AdminUser } from '@/types';
-
-interface EditUserForm {
-  username: string;
-  email: string;
-  role: 'super_admin' | 'admin' | 'editor';
-  status: 'active' | 'inactive';
-  is_active: number | boolean;
-  newPassword?: string;
-  confirmPassword?: string;
-}
-
+import { AdminEditUserForm, AdminUser } from '@/types';
+/**
+ * @component EditUserContent
+ * @description 관리자 사용자 정보를 로드하고 수정할 수 있는 폼을 제공한다.
+ * @returns {JSX.Element} 사용자 편집 폼 콘텐츠.
+ */
 function EditUserContent() {
   const { isAuthenticated, isLoading } = useAdmin();
   const isSuperAdmin = useRole('super_admin');
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
-  
   const [user, setUser] = useState<AdminUser | null>(null);
-  const [formData, setFormData] = useState<EditUserForm>({
+  const [formData, setFormData] = useState<AdminEditUserForm>({
     username: '',
     email: '',
     role: 'editor',
@@ -54,27 +45,26 @@ function EditUserContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  // 인증 확인
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin/login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 사용자 데이터 로드
   useEffect(() => {
+    /**
+     * @function loadUser
+     * @description 쿼리 파라미터의 사용자 ID를 사용해 사용자 정보를 로드한다.
+     * @returns {Promise<void>} 사용자 로딩 작업.
+     */
     const loadUser = async () => {
       if (!userId) {
         toast.error('사용자 ID가 필요합니다.');
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         const response = await authApi.get(`/admin/users/${userId}`);
-        
         if (response.success && response.data) {
           const userData = response.data as AdminUser;
           setUser(userData);
@@ -98,13 +88,10 @@ function EditUserContent() {
         setLoading(false);
       }
     };
-
     if (isAuthenticated) {
       loadUser();
     }
   }, [userId, isAuthenticated, router]);
-
-  // 권한 확인
   if (!isLoading && isAuthenticated && !isSuperAdmin) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -122,7 +109,6 @@ function EditUserContent() {
       </div>
     );
   }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -138,7 +124,6 @@ function EditUserContent() {
       </div>
     );
   }
-
   if (!userId) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -155,10 +140,13 @@ function EditUserContent() {
       </div>
     );
   }
-
+  /**
+   * @description 입력값 변경 시 폼 상태를 업데이트합니다.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLSelectElement>} e 입력 이벤트.
+   * @returns {void}
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({
@@ -174,37 +162,33 @@ function EditUserContent() {
       }));
     }
   };
-
+  /**
+   * @description 폼 제출을 처리하고 사용자 정보를 업데이트합니다.
+   * @param {React.FormEvent} e 제출 이벤트.
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!userId) {
       toast.error('사용자 ID가 필요합니다.');
       return;
     }
-
-    // 비밀번호 확인
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
       toast.error('비밀번호가 일치하지 않습니다.');
       return;
     }
-
     setSaving(true);
     try {
-      const updateData: { username: string; email: string; role: string; is_active: boolean; password?: string } = {
+    const updateData: { username: string; email: string; role: string; is_active: boolean; password?: string } = {
         username: formData.username,
         email: formData.email,
         role: formData.role,
         is_active: Boolean(formData.is_active)
       };
-
-      // 비밀번호가 입력된 경우에만 포함
       if (formData.newPassword) {
         updateData.password = formData.newPassword;
       }
-
       const response = await authApi.put(`/admin/users/${userId}`, updateData);
-      
       if (response.success) {
         toast.success('사용자 정보가 성공적으로 업데이트되었습니다.');
         router.push('/admin/users');
@@ -217,7 +201,11 @@ function EditUserContent() {
       setSaving(false);
     }
   };
-
+  /**
+   * @description 역할에 맞는 아이콘을 반환합니다.
+   * @param {string} role 역할 식별자.
+   * @returns {JSX.Element} 역할 표시 아이콘.
+   */
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'super_admin':
@@ -228,7 +216,11 @@ function EditUserContent() {
         return <Shield className="w-4 h-4 text-slate-500" />;
     }
   };
-
+  /**
+   * @description 역할에 해당하는 텍스트 라벨을 반환합니다.
+   * @param {string} role 역할 식별자.
+   * @returns {string} 역할 라벨.
+   */
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'super_admin':
@@ -239,11 +231,9 @@ function EditUserContent() {
         return '편집자';
     }
   };
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
             <Link
@@ -259,8 +249,6 @@ function EditUserContent() {
             사용자 정보를 수정하고 권한을 관리합니다.
           </p>
         </div>
-
-        {/* 사용자 정보 카드 */}
         {user && (
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
             <div className="flex items-center space-x-4">
@@ -296,14 +284,10 @@ function EditUserContent() {
             </div>
           </div>
         )}
-
-        {/* 편집 폼 */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">기본 정보</h3>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 사용자명 */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   사용자명 *
@@ -318,8 +302,6 @@ function EditUserContent() {
                   placeholder="사용자명을 입력하세요"
                 />
               </div>
-
-              {/* 이메일 */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   이메일 *
@@ -334,8 +316,6 @@ function EditUserContent() {
                   placeholder="이메일을 입력하세요"
                 />
               </div>
-
-              {/* 역할 */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   역할 *
@@ -351,8 +331,6 @@ function EditUserContent() {
                   <option value="super_admin">슈퍼 관리자</option>
                 </select>
               </div>
-
-              {/* 상태 */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   상태
@@ -372,16 +350,12 @@ function EditUserContent() {
               </div>
             </div>
           </div>
-
-          {/* 비밀번호 변경 */}
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">비밀번호 변경</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               비밀번호를 변경하려면 아래 필드를 입력하세요. 변경하지 않으려면 비워두세요.
             </p>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 새 비밀번호 */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   새 비밀번호
@@ -404,8 +378,6 @@ function EditUserContent() {
                   </button>
                 </div>
               </div>
-
-              {/* 비밀번호 확인 */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   비밀번호 확인
@@ -430,8 +402,6 @@ function EditUserContent() {
               </div>
             </div>
           </div>
-
-          {/* 저장 버튼 */}
           <div className="flex justify-end space-x-4">
             <Link
               href="/admin/users"
@@ -453,7 +423,11 @@ function EditUserContent() {
     </div>
   );
 }
-
+/**
+ * @component EditUser
+ * @description 관리자 사용자를 편집하기 위한 Suspense 기반 페이지 래퍼.
+ * @returns {JSX.Element} 사용자 편집 페이지 컨테이너.
+ */
 export default function EditUser() {
   return (
     <Suspense fallback={

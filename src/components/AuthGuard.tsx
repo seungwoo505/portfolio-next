@@ -1,20 +1,25 @@
 'use client';
-
 import Link from "next/link";
-
 import { ReactNode } from 'react';
-
 import { useAuth } from '@/hooks/useAuth';
-
+/**
+ * @interface AuthGuardProps
+ * @description 인증 상태에 따라 보호된 콘텐츠를 렌더링하기 위한 설정입니다.
+ * @property {ReactNode} children 인증된 사용자에게만 보여줄 콘텐츠.
+ * @property {ReactNode} [fallback] 권한이 없을 때 표시할 선택적 대체 UI.
+ */
 interface AuthGuardProps {
   children: ReactNode;
   fallback?: ReactNode;
 }
-
+/**
+ * @component AuthGuard
+ * @description 사용자가 인증되지 않았다면 접근을 제한하고 필요 시 대체 UI를 렌더링합니다.
+ * @param {AuthGuardProps} param0 자식 및 대체 노드를 포함한 가드 설정.
+ * @returns {JSX.Element} 인증 상태에 따라 보호된 콘텐츠, 대체 UI, 로딩 화면을 반환합니다.
+ */
 export default function AuthGuard({ children, fallback }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
-
-  // 로딩 중일 때
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
@@ -25,13 +30,10 @@ export default function AuthGuard({ children, fallback }: AuthGuardProps) {
       </div>
     );
   }
-
-  // 인증 실패 시
   if (isAuthenticated === false) {
     if (fallback) {
       return <>{fallback}</>;
     }
-
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -52,7 +54,5 @@ export default function AuthGuard({ children, fallback }: AuthGuardProps) {
       </div>
     );
   }
-
-  // 인증 성공 시
   return <>{children}</>;
 }

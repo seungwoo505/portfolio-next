@@ -1,13 +1,17 @@
 "use client";
-
 import { ProjectForm } from '@/types/project';
-
 interface ProjectBasicInfoProps {
   formData: ProjectForm;
   setFormData: (data: ProjectForm) => void;
   errors: Record<string, string>;
 }
-
+/**
+ * @description Project Basic Info for project basic info.tsx.
+  * @param {*} { formData 입력값
+  * @param {*} setFormData 입력값
+  * @param {*} errors } 입력값
+ * @returns {any} 처리 결과
+ */
 function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoProps) {
   const handleInputChange = (field: keyof ProjectForm, value: string | boolean) => {
     setFormData({
@@ -15,7 +19,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
       [field]: value
     });
   };
-
   return (
     <div className="space-y-6">
       <div>
@@ -31,7 +34,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
         />
         {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
       </div>
-
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           슬러그 *
@@ -45,7 +47,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
         />
         {errors.slug && <p className="text-red-500 text-sm mt-1">{errors.slug}</p>}
       </div>
-
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           프로젝트 설명 *
@@ -59,7 +60,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
         />
         {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -72,7 +72,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
             className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
           />
         </div>
-
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             종료일
@@ -85,7 +84,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
           />
         </div>
       </div>
-
       <div className="flex items-center space-x-4">
         <label className="flex items-center">
           <input
@@ -96,7 +94,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
           />
           <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">추천 프로젝트</span>
         </label>
-
         <label className="flex items-center">
           <input
             type="checkbox"
@@ -106,7 +103,6 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
           />
           <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">공개</span>
         </label>
-
         <label className="flex items-center">
           <input
             type="checkbox"
@@ -120,5 +116,4 @@ function ProjectBasicInfo({ formData, setFormData, errors }: ProjectBasicInfoPro
     </div>
   );
 }
-
 export default ProjectBasicInfo;

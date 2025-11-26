@@ -1,12 +1,10 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
-
-import { 
+import {
   Search,
   Plus,
   Edit3,
@@ -17,33 +15,24 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import TagModal from './components/TagModal';
-
-interface BlogTag {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  color?: string;
-  type: 'blog' | 'project' | 'general';
-  usage_count?: number;
-  created_at: string;
-  updated_at: string;
-}
-
+import { AdminBlogTag } from '@/types';
+/**
+ * @description 태그를 조회·검색·편집·삭제할 수 있는 관리자 페이지입니다.
+ * @returns {JSX.Element} 태그 관리 페이지 컴포넌트.
+ */
 export default function TagsManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
-  const [tags, setTags] = useState<BlogTag[]>([]);
+  const [tags, setTags] = useState<AdminBlogTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'blog' | 'project' | 'general'>('all');
   const [showNewTagModal, setShowNewTagModal] = useState(false);
-  const [editingTag, setEditingTag] = useState<BlogTag | null>(null);
+  const [editingTag, setEditingTag] = useState<AdminBlogTag | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; tagId: string | null }>({
     isOpen: false,
     tagId: null
   });
   const router = useRouter();
-  // URL 파라미터에서 초기 필터 설정
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -53,24 +42,23 @@ export default function TagsManagement() {
       }
     }
   }, []);
-
-  // 인증 확인
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 태그 목록 가져오기
   useEffect(() => {
+    /**
+     * @description 태그 목록을 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const fetchTags = async () => {
       if (!isAuthenticated) return;
-      
       try {
         setLoading(true);
         const response = await authApi.get('/admin/tags');
         if (response.success && response.data) {
-          const tagsData = response.data as BlogTag[];
+          const tagsData = response.data as AdminBlogTag[];
           setTags(tagsData);
         }
       } catch {
@@ -79,24 +67,25 @@ export default function TagsManagement() {
         setLoading(false);
       }
     };
-
     fetchTags();
   }, [isAuthenticated]);
-
-  // 태그 삭제 모달 열기
+  /**
+   * @description 삭제 모달을 엽니다.
+   * @param {string} tagId 삭제할 태그 ID.
+   * @returns {void}
+   */
   const openDeleteModal = (tagId: string) => {
     setDeleteModal({ isOpen: true, tagId });
   };
-
-  // 태그 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, tagId: null });
   };
-
-  // 태그 삭제 실행
+  /**
+   * @description 선택한 태그를 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const deleteTag = async () => {
     if (!deleteModal.tagId) return;
-    
     try {
       await authApi.delete(`/admin/tags/${deleteModal.tagId}`);
       setTags(prev => prev.filter(tag => tag.id !== deleteModal.tagId));
@@ -105,31 +94,37 @@ export default function TagsManagement() {
       toast.error('태그 삭제에 실패했습니다.');
     }
   };
-
-  // 태그 생성/수정 후 목록에 반영
-  const handleTagSaved = (savedTag: BlogTag) => {
+  /**
+   * @description 태그 저장 후 목록을 갱신합니다.
+   * @param {AdminBlogTag} savedTag 저장된 태그.
+   * @returns {void}
+   */
+  const handleTagSaved = (savedTag: AdminBlogTag) => {
     if (editingTag) {
-      // 수정
       setTags(prev => prev.map(tag => 
         tag.id === savedTag.id ? savedTag : tag
       ));
       setEditingTag(null);
       toast.success('태그가 수정되었습니다.');
     } else {
-      // 생성
       setTags(prev => [savedTag, ...prev]);
       toast.success('태그가 생성되었습니다.');
     }
     setShowNewTagModal(false);
   };
-
-  // 모달 닫기
+  /**
+   * @description 모달을 닫고 편집 상태를 초기화합니다.
+   * @returns {void}
+   */
   const handleCloseModal = () => {
     setShowNewTagModal(false);
     setEditingTag(null);
   };
-
-  // 태그 타입 정보
+  /**
+   * @description 태그 유형에 따른 라벨과 아이콘 정보를 반환합니다.
+   * @param {string} type 태그 유형.
+   * @returns {{ label: string; color: string; icon: typeof Tag }} 유형 정보.
+   */
   const getTypeInfo = (type: string) => {
     switch (type) {
       case 'blog':
@@ -138,7 +133,6 @@ export default function TagsManagement() {
           color: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
           icon: Tag 
         };
-
       case 'project':
         return { 
           label: '프로젝트', 
@@ -159,19 +153,14 @@ export default function TagsManagement() {
         };
     }
   };
-
-  // 필터링된 태그
   const filteredTags = tags.filter(tag => {
     const matchesSearch = !searchQuery || 
       tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tag.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tag.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    
     const matchesType = typeFilter === 'all' || tag.type === typeFilter;
-    
     return matchesSearch && matchesType;
   });
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
@@ -182,19 +171,12 @@ export default function TagsManagement() {
       </div>
     );
   }
-
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-
-        {/* 액션 바 */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -212,11 +194,8 @@ export default function TagsManagement() {
             <span>새 태그</span>
           </button>
         </div>
-
-        {/* 검색 및 필터 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* 검색 */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -227,8 +206,6 @@ export default function TagsManagement() {
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
               />
             </div>
-
-            {/* 타입 필터 */}
             <div className="flex flex-wrap space-x-2">
               {[
                 { key: 'all', label: '전체' },
@@ -251,8 +228,6 @@ export default function TagsManagement() {
             </div>
           </div>
         </div>
-
-        {/* 태그 목록 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -272,13 +247,11 @@ export default function TagsManagement() {
               {filteredTags.map((tag) => {
                 const typeInfo = getTypeInfo(tag.type);
                 const TypeIcon = typeInfo.icon;
-
                 return (
                   <div 
                     key={tag.id} 
                     className="relative group p-4 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600 transition-all hover:shadow-md"
                   >
-                    {/* 태그 헤더 */}
                     <div className="flex items-center space-x-3 mb-3">
                       <div 
                         className="w-4 h-4 rounded-full flex-shrink-0"
@@ -290,8 +263,6 @@ export default function TagsManagement() {
                         </h3>
                       </div>
                     </div>
-
-                    {/* 타입과 사용횟수 */}
                     <div className="flex items-center justify-between mb-3">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${typeInfo.color}`}>
                         <TypeIcon className="w-3 h-3 mr-1" />
@@ -301,15 +272,11 @@ export default function TagsManagement() {
                         {tag.usage_count || 0}회
                       </span>
                     </div>
-
-                    {/* 설명 */}
                     {tag.description && (
                       <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
                         {tag.description}
                       </p>
                     )}
-
-                    {/* 하단 정보와 액션 */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-400">
                         {new Date(tag.created_at).toLocaleDateString('ko-KR')}
@@ -351,8 +318,6 @@ export default function TagsManagement() {
             </div>
           )}
         </div>
-
-        {/* 삭제 확인 모달 */}
         <ConfirmModal
           isOpen={deleteModal.isOpen}
           onClose={closeDeleteModal}
@@ -363,8 +328,6 @@ export default function TagsManagement() {
           cancelText="취소"
           isDestructive={true}
         />
-
-        {/* 태그 생성/편집 모달 */}
         <TagModal 
           isOpen={showNewTagModal || !!editingTag}
           onClose={handleCloseModal}

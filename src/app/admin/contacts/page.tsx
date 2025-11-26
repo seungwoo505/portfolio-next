@@ -1,11 +1,9 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
-
 import { 
   Mail, 
   MailOpen, 
@@ -15,24 +13,16 @@ import {
   Search
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
-
-interface ContactMessage {
-  id: string;
-  name: string;
-  email: string;
-  subject?: string;
-  message: string;
-  status: 'unread' | 'read';
-  created_at: string;
-  ip_address?: string;
-  user_agent?: string;
-}
-
+import { AdminContactMessage } from '@/types';
+/**
+ * @description 문의 메시지를 조회하고 상태를 관리하는 페이지입니다.
+ * @returns {JSX.Element} 연락처 관리 페이지 컴포넌트.
+ */
 export default function ContactsManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [messages, setMessages] = useState<AdminContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<AdminContactMessage | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; messageId: string | null }>({
@@ -40,24 +30,23 @@ export default function ContactsManagement() {
     messageId: null
   });
   const router = useRouter();
-
-  // 인증 확인
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 메시지 목록 가져오기
   useEffect(() => {
+    /**
+     * @description 문의 메시지 목록을 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const fetchMessages = async () => {
       if (!isAuthenticated) return;
-      
       try {
         setLoading(true);
         const response = await authApi.get('/admin/contacts');
         if (response.success && response.data) {
-          const messagesData = response.data as ContactMessage[];
+          const messagesData = response.data as AdminContactMessage[];
           setMessages(messagesData);
         }
       } catch {
@@ -66,11 +55,13 @@ export default function ContactsManagement() {
         setLoading(false);
       }
     };
-
     fetchMessages();
   }, [isAuthenticated]);
-
-  // 메시지 읽음 처리
+  /**
+   * @description 메시지를 읽음 상태로 변경합니다.
+   * @param {string} messageId 메시지 ID.
+   * @returns {Promise<void>}
+   */
   const markAsRead = async (messageId: string) => {
     try {
       await authApi.put(`/admin/contacts/${messageId}/read`);
@@ -82,33 +73,23 @@ export default function ContactsManagement() {
       toast.error('메시지 상태 변경에 실패했습니다.');
     }
   };
-
-  // 메시지 읽지 않음 처리 - 주석 처리
-  // const _markAsUnread = async (messageId: string) => {
-  //   try {
-  //     await authApi.put(`/admin/contacts/${messageId}/unread`);
-  //     setMessages(prev => prev.map(msg => 
-  //       msg.id === messageId ? { ...msg, status: 'unread' } : msg
-  //     ));
-  //   } catch {
-  //     // 에러 처리
-  //   }
-  // };
-
-  // 메시지 삭제 모달 열기
+  /**
+   * @description 삭제 확인 모달을 엽니다.
+   * @param {string} messageId 삭제할 메시지 ID.
+   * @returns {void}
+   */
   const openDeleteModal = (messageId: string) => {
     setDeleteModal({ isOpen: true, messageId });
   };
-
-  // 메시지 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, messageId: null });
   };
-
-  // 메시지 삭제 실행
+  /**
+   * @description 선택한 메시지를 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const deleteMessage = async () => {
     if (!deleteModal.messageId) return;
-    
     try {
       await authApi.delete(`/admin/contacts/${deleteModal.messageId}`);
       setMessages(prev => prev.filter(msg => msg.id !== deleteModal.messageId));
@@ -120,16 +101,17 @@ export default function ContactsManagement() {
       toast.error('메시지 삭제에 실패했습니다.');
     }
   };
-
-  // 메시지 선택
-  const selectMessage = async (message: ContactMessage) => {
+  /**
+   * @description 메시지를 선택하고 필요 시 읽음 처리합니다.
+   * @param {AdminContactMessage} message 선택한 메시지.
+   * @returns {Promise<void>}
+   */
+  const selectMessage = async (message: AdminContactMessage) => {
     setSelectedMessage(message);
     if (message.status === 'unread') {
       await markAsRead(message.id);
     }
   };
-
-  // 필터링된 메시지
   const filteredMessages = messages.filter(message => {
     const matchesFilter = filter === 'all' || message.status === filter;
     const matchesSearch = !searchQuery || 
@@ -137,10 +119,8 @@ export default function ContactsManagement() {
       message.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (message.subject?.toLowerCase().includes(searchQuery.toLowerCase())) ||
       message.message.toLowerCase().includes(searchQuery.toLowerCase());
-    
     return matchesFilter && matchesSearch;
   });
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
@@ -151,21 +131,15 @@ export default function ContactsManagement() {
       </div>
     );
   }
-
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 메시지 목록 */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-              {/* 필터 및 검색 */}
               <div className="p-4 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -175,8 +149,6 @@ export default function ContactsManagement() {
                     {filteredMessages.length}개
                   </span>
                 </div>
-                
-                {/* 검색 */}
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -187,8 +159,6 @@ export default function ContactsManagement() {
                     className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white text-sm"
                   />
                 </div>
-
-                {/* 필터 */}
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setFilter('all')}
@@ -222,8 +192,6 @@ export default function ContactsManagement() {
                   </button>
                 </div>
               </div>
-
-              {/* 메시지 목록 */}
               <div className="max-h-96 overflow-y-auto">
                 {loading ? (
                   <div className="p-4 space-y-3">
@@ -294,12 +262,9 @@ export default function ContactsManagement() {
               </div>
             </div>
           </div>
-
-          {/* 메시지 상세 */}
           <div className="lg:col-span-2">
             {selectedMessage ? (
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-                {/* 메시지 헤더 */}
                 <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -321,10 +286,7 @@ export default function ContactsManagement() {
                         </div>
                       </div>
                     </div>
-                    
-                    {/* 액션 버튼 */}
                     <div className="flex items-center space-x-2">
-
                       <button
                         onClick={() => openDeleteModal(selectedMessage.id)}
                         className="flex items-center space-x-1 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -335,16 +297,12 @@ export default function ContactsManagement() {
                     </div>
                   </div>
                 </div>
-
-                {/* 메시지 내용 */}
                 <div className="p-6">
                   <div className="prose prose-slate dark:prose-invert max-w-none">
                     <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300 leading-relaxed">
                       {selectedMessage.message}
                     </p>
                   </div>
-
-                  {/* 메타 정보 */}
                   {(selectedMessage.ip_address || selectedMessage.user_agent) && (
                     <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
                       <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">기술 정보</h4>
@@ -380,8 +338,6 @@ export default function ContactsManagement() {
           </div>
         </div>
       </div>
-
-      {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

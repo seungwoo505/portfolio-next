@@ -1,30 +1,18 @@
 "use client";
-
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Head from "next/head";
 import { contactApi } from "@/lib/api";
-import { ContactMessage } from "@/types";
+import { ContactMessage, SiteSettings } from "@/types";
 import DynamicHead from "@/components/DynamicHead";
 import ScrollProgress from "../../components/ScrollProgress";
 import { api } from "@/lib/api";
 import toast from 'react-hot-toast';
-// import { generateStructuredData } from '@/lib/seo';
-
-type SiteSettings = {
-  site_title?: string;
-  contact_description?: string;
-  contact_enabled?: boolean;
-  contact_form_name_placeholder?: string;
-  contact_form_email_placeholder?: string;
-  contact_form_subject_placeholder?: string;
-  contact_form_message_placeholder?: string;
-  contact_form_submit_text?: string;
-  contact_form_success_message?: string;
-  contact_form_error_message?: string;
-};
-
+/**
+ * @component ContactPage
+ * @description SEO 메타데이터와 동적 설정, 애니메이션 문의 폼을 포함한 연락처 페이지입니다.
+ * @returns {JSX.Element} 인터랙티브한 연락처 페이지 컴포넌트.
+ */
 export default function ContactPage() {
   const [formData, setFormData] = useState<ContactMessage>({
     name: '',
@@ -34,8 +22,12 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
-
   useEffect(() => {
+    /**
+     * @function fetchSettings
+     * @description 연락처 페이지에 필요한 사이트 설정을 불러와 문구와 토글 값을 채웁니다.
+     * @returns {Promise<void>} 설정 상태 갱신이 완료되면 해결됩니다.
+     */
     const fetchSettings = async () => {
       try {
         const response = await api.get<{ data: SiteSettings }>('/settings');
@@ -43,20 +35,21 @@ export default function ContactPage() {
           setSettings(response.data.data);
         }
       } catch {
-        // 설정 로딩 실패 시 기본값 사용
       }
     };
-
     fetchSettings();
   }, []);
-
+/**
+ * @function handleSubmit
+ * @description 연락처 폼 데이터를 백엔드 API로 전송하고 사용자에게 피드백을 제공합니다.
+ * @param {React.FormEvent} e 폼 제출 이벤트.
+ * @returns {Promise<void>} 전송 작업이 완료되면 해결됩니다.
+ */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
       const response = await contactApi.sendMessage(formData);
-      
       if (response.success) {
         toast.success(response.message || '메시지가 성공적으로 전송되었습니다!');
         setFormData({ name: '', email: '', subject: '', message: '' });
@@ -70,14 +63,18 @@ export default function ContactPage() {
       setIsSubmitting(false);
     }
   };
-
+/**
+ * @function handleChange
+ * @description 입력 값이 바뀔 때 폼 상태를 갱신합니다.
+ * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e 폼 필드의 변경 이벤트.
+ * @returns {void}
+ */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.id]: e.target.value
     }));
   };
-
   return (
     <>
       <Head>
@@ -85,8 +82,6 @@ export default function ContactPage() {
         <meta name="description" content="웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다." />
         <meta name="keywords" content="연락처, 문의, 채용, 프로젝트, 웹개발, React, Next.js, Node.js, 개발자" />
         <meta name="author" content="승우" />
-        
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content="연락처 | 승우의 포트폴리오" />
         <meta property="og:description" content="웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다." />
@@ -94,18 +89,12 @@ export default function ContactPage() {
         <meta property="og:image" content="https://seungwoo.i234.me/og-image.jpg" />
         <meta property="og:site_name" content="승우의 포트폴리오" />
         <meta property="og:locale" content="ko_KR" />
-        
-        {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="연락처 | 승우의 포트폴리오" />
         <meta name="twitter:description" content="웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다." />
         <meta name="twitter:image" content="https://seungwoo.i234.me/og-image.jpg" />
         <meta name="twitter:creator" content="@seungwoo" />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href="https://seungwoo.i234.me/contact" />
-        
-        {/* 구조화된 데이터 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -133,8 +122,6 @@ export default function ContactPage() {
       <DynamicHead pageTitle="연락처" />
       <ScrollProgress />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-
-
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -158,7 +145,6 @@ export default function ContactPage() {
               {settings?.contact_description || '궁금한 점이 있으시거나 협업을 원하시면 언제든지 메시지를 보내주세요!'}
             </motion.p>
           </motion.div>
-
           {settings?.contact_enabled === false ? (
             <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
@@ -183,7 +169,6 @@ export default function ContactPage() {
               >
 {settings.contact_form_submit_text || "메시지 보내기"}
               </motion.h2>
-
               <motion.form 
                 className="space-y-6" 
                 onSubmit={handleSubmit}
@@ -210,7 +195,6 @@ export default function ContactPage() {
                     whileFocus={{ scale: 1.02 }}
                   />
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -230,7 +214,6 @@ export default function ContactPage() {
                     whileFocus={{ scale: 1.02 }}
                   />
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -249,7 +232,6 @@ export default function ContactPage() {
                     whileFocus={{ scale: 1.02 }}
                   />
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -269,8 +251,6 @@ export default function ContactPage() {
                     whileFocus={{ scale: 1.02 }}
                   ></motion.textarea>
                 </motion.div>
-
-
                 <motion.button
                   type="submit"
                   className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"

@@ -1,54 +1,48 @@
 "use client";
-
 import { useState, useCallback } from 'react';
 import { ProjectForm } from '@/types/project';
 import dynamic from 'next/dynamic';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-
-// 마크다운 에디터 동적 import
 const MDEditor = dynamic(
   () => import('@uiw/react-md-editor'),
   { ssr: false }
 );
-
 interface ProjectContentProps {
   formData: ProjectForm;
   setFormData: (data: ProjectForm) => void;
   errors: Record<string, string>;
 }
-
+/**
+ * @description Project Content for project content.tsx.
+  * @param {*} { formData 입력값
+  * @param {*} setFormData 입력값
+  * @param {*} errors } 입력값
+ * @returns {any} 처리 결과
+ */
 function ProjectContent({ formData, setFormData, errors }: ProjectContentProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-
   const handleContentChange = (value: string | undefined) => {
     setFormData({
       ...formData,
       content: value || ''
     });
   };
-
-  // AI 기반 요약 생성
   const generateSummary = useCallback(async () => {
     if (!formData.content || formData.content.length < 50) {
       toast.error('콘텐츠가 너무 짧습니다. 최소 50자 이상 입력해주세요.');
       return;
     }
-
     try {
       setIsGenerating(true);
       const response = await authApi.generateSummary(formData.content, true);
-      
       if (response.success && response.data) {
         const { summary, keywordsString } = response.data;
-        
-        // 요약을 description에 설정
         setFormData({
           ...formData,
           description: summary,
           meta_keywords: keywordsString || ''
         });
-        
         toast.success('AI 요약이 생성되었습니다!');
       }
     } catch {
@@ -57,26 +51,20 @@ function ProjectContent({ formData, setFormData, errors }: ProjectContentProps) 
       setIsGenerating(false);
     }
   }, [formData, setFormData]);
-
-  // AI 기반 키워드 생성
   const generateKeywords = useCallback(async () => {
     if (!formData.content || formData.content.length < 50) {
       toast.error('콘텐츠가 너무 짧습니다. 최소 50자 이상 입력해주세요.');
       return;
     }
-
     try {
       setIsGenerating(true);
       const response = await authApi.generateKeywords(formData.content, 10);
-      
       if (response.success && response.data) {
         const { keywordsString } = response.data;
-        
         setFormData({
           ...formData,
           meta_keywords: keywordsString || ''
         });
-        
         toast.success('AI 키워드가 생성되었습니다!');
       }
     } catch {
@@ -85,7 +73,6 @@ function ProjectContent({ formData, setFormData, errors }: ProjectContentProps) 
       setIsGenerating(false);
     }
   }, [formData, setFormData]);
-
   return (
     <div className="space-y-6">
       <div>
@@ -112,7 +99,6 @@ function ProjectContent({ formData, setFormData, errors }: ProjectContentProps) 
             </button>
           </div>
         </div>
-        
         <div className="border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden">
           <MDEditor
             value={formData.content}
@@ -122,7 +108,6 @@ function ProjectContent({ formData, setFormData, errors }: ProjectContentProps) 
         </div>
         {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
       </div>
-
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           메타 키워드
@@ -139,5 +124,4 @@ function ProjectContent({ formData, setFormData, errors }: ProjectContentProps) 
     </div>
   );
 }
-
 export default ProjectContent;

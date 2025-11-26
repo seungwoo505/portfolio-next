@@ -1,11 +1,9 @@
 "use client";
 import Link from "next/link";
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import toast from 'react-hot-toast';
-
 import { 
   FileText, 
   Mail, 
@@ -16,45 +14,30 @@ import {
   Tag
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
-
-interface DashboardStats {
-  blog: {
-    total: number;
-    published: number;
-    drafts: number;
-  };
-  projects: {
-    total: number;
-    featured: number;
-  };
-  contacts: {
-    total: number;
-    unread: number;
-  };
-  activities: {
-    total: number;
-    today: number;
-  };
-}
-
+import { AdminDashboardStats } from '@/types';
+/**
+ * @component AdminDashboard
+ * @description 관리자 대시보드 요약 통계를 표시하고 주요 관리 페이지로 이동할 수 있게 한다.
+ * @returns {JSX.Element} 관리자 대시보드 페이지.
+ */
 export default function AdminDashboard() {
   const { user, isAuthenticated, isLoading } = useAdmin();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const router = useRouter();
-
-  // 인증되지 않은 경우 로그인 페이지로 리다이렉트
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 대시보드 통계 가져오기
   useEffect(() => {
+    /**
+     * @function fetchStats
+     * @description 인증된 사용자를 위해 대시보드 통계를 로드한다.
+     * @returns {Promise<void>} 통계 로딩 작업.
+     */
     const fetchStats = async () => {
       if (!isAuthenticated) return;
-      
       try {
         setStatsLoading(true);
         const response = await authApi.get('/admin/dashboard');
@@ -63,8 +46,6 @@ export default function AdminDashboard() {
           setStats(statsData);
         }
       } catch (error) {
-        // 대시보드 통계 로드 실패
-        // Rate Limiting 에러인 경우 사용자에게 알림
         if (error instanceof Error && error.message.includes('요청이 너무 많습니다')) {
           toast.error('API 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.');
         } else {
@@ -80,12 +61,8 @@ export default function AdminDashboard() {
         setStatsLoading(false);
       }
     };
-
     fetchStats();
   }, [isAuthenticated]);
-
-
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
@@ -96,17 +73,12 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
   if (!isAuthenticated) {
-    return null; // 리다이렉트 중
+    return null; 
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* 통계 카드 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
             <div className="flex items-center justify-between">
@@ -121,7 +93,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
@@ -135,7 +106,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
@@ -149,7 +119,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
@@ -164,8 +133,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-
-        {/* 빠른 액션 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Link href="/admin/blog" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-3 sm:space-x-4">
@@ -178,7 +145,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-
           <Link href="/admin/projects" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -190,7 +156,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-
           <Link href="/admin/contacts" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
@@ -202,7 +167,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-
           <Link href="/admin/tags" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
@@ -214,7 +178,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-
           {user?.role === 'super_admin' && (
             <Link href="/admin/users" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-4">
@@ -229,10 +192,7 @@ export default function AdminDashboard() {
             </Link>
           )}
         </div>
-
-        {/* 최근 활동 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 최근 메시지 */}
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">최근 연락 메시지</h3>
@@ -268,8 +228,6 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
-
-          {/* 최근 포스트 */}
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">최근 블로그 포스트</h3>

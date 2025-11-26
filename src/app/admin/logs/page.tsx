@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
@@ -21,24 +20,14 @@ import {
   Download
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
-
-interface ActivityLog {
-  id: string;
-  user_id: string;
-  username: string;
-  action: string;
-  resource_type: string;
-  resource_id?: string;
-  resource_name?: string;
-  details?: string;
-  ip_address?: string;
-  user_agent?: string;
-  created_at: string;
-}
-
+import { AdminActivityLog } from '@/types';
+/**
+ * @description 관리자 활동 로그를 조회하는 페이지입니다.
+ * @returns {JSX.Element} 활동 로그 페이지 컴포넌트.
+ */
 export default function ActivityLogs() {
   const { isAuthenticated, isLoading } = useAdmin();
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [logs, setLogs] = useState<AdminActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [userFilter, setUserFilter] = useState<string>('all');
@@ -46,41 +35,39 @@ export default function ActivityLogs() {
   const [resourceFilter, setResourceFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const router = useRouter();
-
-  // 인증 확인
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 활동 로그 가져오기
   useEffect(() => {
+    /**
+     * @description 활동 로그를 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const fetchLogs = async () => {
       if (!isAuthenticated) return;
-      
       try {
         setLoading(true);
-        const response = await authApi.get<ActivityLog[]>('/admin/logs');
-        
+        const response = await authApi.get<AdminActivityLog[]>('/admin/logs');
         if (response.success && response.data) {
           setLogs(response.data);
         } else {
-          // console.error 제거됨
           setLogs([]);
         }
       } catch {
-        // console.error 제거됨
         setLogs([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchLogs();
   }, [isAuthenticated]);
-
-  // 액션 정보 가져오기
+  /**
+   * @description 액션 유형에 따른 라벨과 아이콘 정보를 반환합니다.
+   * @param {string} action 액션 이름.
+   * @returns {{ label: string; icon: typeof Activity; color: string; bgColor: string }} 액션 정보.
+   */
   const getActionInfo = (action: string) => {
     switch (action) {
       case 'login':
@@ -99,8 +86,11 @@ export default function ActivityLogs() {
         return { label: action, icon: Activity, color: 'text-slate-600 dark:text-slate-400', bgColor: 'bg-slate-100 dark:bg-slate-700' };
     }
   };
-
-  // 리소스 타입 정보 가져오기
+  /**
+   * @description 리소스 유형에 따른 라벨과 아이콘 정보를 반환합니다.
+   * @param {string} resourceType 리소스 유형.
+   * @returns {{ label: string; icon: typeof Activity; color: string }} 리소스 정보.
+   */
   const getResourceInfo = (resourceType: string) => {
     switch (resourceType) {
       case 'auth':
@@ -121,31 +111,30 @@ export default function ActivityLogs() {
         return { label: resourceType, icon: Activity, color: 'text-slate-600 dark:text-slate-400' };
     }
   };
-
-  // JSON details를 사용자 친화적인 텍스트로 변환
+  /**
+   * @description 상세 정보를 보기 쉽게 가공합니다.
+   * @param {string} details 상세 문자열.
+   * @returns {string} 정리된 상세 문자열.
+   */
   const formatDetails = (details: string) => {
     if (!details) return '-';
-    
-    // 백엔드에서 이미 깔끔한 텍스트로 저장되므로 그대로 반환
     return details;
   };
-
-  // IP 주소를 깔끔하게 표시 (::ffff: 접두사 제거)
   const formatIpAddress = (ip: string) => {
     if (!ip) return '-';
-    // IPv6-mapped IPv4 주소에서 IPv4 부분만 추출
     if (ip.startsWith('::ffff:')) {
-      return ip.substring(7); // "::ffff:" 제거
+      return ip.substring(7); 
     }
     return ip;
   };
-
-  // User Agent를 OS와 브라우저만 간략하게 표시
+  /**
+   * @description 사용자 에이전트를 분석해 운영체제와 브라우저를 추출합니다.
+   * @param {string} userAgent 사용자 에이전트 문자열.
+   * @returns {string} OS와 브라우저 정보.
+   */
   const formatUserAgent = (userAgent: string) => {
     if (!userAgent) return '-';
-    
     try {
-      // OS 정보 추출
       let os = 'Unknown';
       if (userAgent.includes('Windows')) {
         if (userAgent.includes('Windows NT 10.0')) os = 'Windows 10/11';
@@ -174,8 +163,6 @@ export default function ActivityLogs() {
         const iosVersion = userAgent.match(/OS (\d+)_/);
         os = iosVersion ? `iPadOS ${iosVersion[1]}` : 'iPadOS';
       }
-      
-      // 브라우저 정보 추출
       let browser = 'Unknown';
       if (userAgent.includes('Chrome')) {
         const chromeVersion = userAgent.match(/Chrome\/(\d+)/);
@@ -193,26 +180,19 @@ export default function ActivityLogs() {
         const operaVersion = userAgent.match(/Opera\/(\d+)/);
         browser = operaVersion ? `Opera ${operaVersion[1]}` : 'Opera';
       }
-      
       return `${os} | ${browser}`;
-      
     } catch {
-      // 파싱 실패 시 원본에서 간단한 정보만 추출
       if (userAgent.includes('Chrome')) return 'Chrome';
       if (userAgent.includes('Firefox')) return 'Firefox';
       if (userAgent.includes('Safari')) return 'Safari';
       if (userAgent.includes('Edge')) return 'Edge';
       if (userAgent.includes('Opera')) return 'Opera';
-      
-      // 너무 길면 축약
       if (userAgent.length > 30) {
         return userAgent.substring(0, 30) + '...';
       }
       return userAgent;
     }
   };
-
-  // 필터링된 로그
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
       (log.username && log.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -220,18 +200,15 @@ export default function ActivityLogs() {
       (log.resource_type && log.resource_type.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (log.resource_name && log.resource_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (log.details && log.details.toLowerCase().includes(searchQuery.toLowerCase()));
-    
     const matchesUser = userFilter === 'all' || log.username === userFilter;
     const matchesAction = actionFilter === 'all' || log.action === actionFilter;
     const matchesResource = resourceFilter === 'all' || log.resource_type === resourceFilter;
-    
     let matchesDate = true;
     if (dateFilter !== 'all') {
       const logDate = new Date(log.created_at);
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
       const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-      
       switch (dateFilter) {
         case 'today':
           matchesDate = logDate.toDateString() === today.toDateString();
@@ -247,15 +224,11 @@ export default function ActivityLogs() {
           break;
       }
     }
-    
     return matchesSearch && matchesUser && matchesAction && matchesResource && matchesDate;
   });
-
-  // 고유한 사용자 목록
   const uniqueUsers = Array.from(new Set(logs.map(log => log.username)));
   const uniqueActions = Array.from(new Set(logs.map(log => log.action)));
   const uniqueResources = Array.from(new Set(logs.map(log => log.resource_type)));
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
@@ -266,15 +239,12 @@ export default function ActivityLogs() {
       </div>
     );
   }
-
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -289,8 +259,6 @@ export default function ActivityLogs() {
             </button>
           </div>
         </div>
-
-        {/* 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
@@ -303,7 +271,6 @@ export default function ActivityLogs() {
               </div>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -321,7 +288,6 @@ export default function ActivityLogs() {
               </div>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -333,7 +299,6 @@ export default function ActivityLogs() {
               </div>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -346,11 +311,8 @@ export default function ActivityLogs() {
             </div>
           </div>
         </div>
-
-        {/* 검색 및 필터 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* 검색 */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -361,8 +323,6 @@ export default function ActivityLogs() {
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
               />
             </div>
-
-            {/* 사용자 필터 */}
             <select
               value={userFilter}
               onChange={(e) => setUserFilter(e.target.value)}
@@ -373,8 +333,6 @@ export default function ActivityLogs() {
                 <option key={user} value={user}>{user}</option>
               ))}
             </select>
-
-            {/* 액션 필터 */}
             <select
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
@@ -385,8 +343,6 @@ export default function ActivityLogs() {
                 <option key={action} value={action}>{getActionInfo(action).label}</option>
               ))}
             </select>
-
-            {/* 리소스 타입 필터 */}
             <select
               value={resourceFilter}
               onChange={(e) => setResourceFilter(e.target.value)}
@@ -397,8 +353,6 @@ export default function ActivityLogs() {
                 <option key={resource} value={resource}>{getResourceInfo(resource).label}</option>
               ))}
             </select>
-
-            {/* 날짜 필터 */}
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
@@ -412,8 +366,6 @@ export default function ActivityLogs() {
             </select>
           </div>
         </div>
-
-        {/* 활동 로그 목록 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
           {loading ? (
             <div className="p-8">
@@ -465,7 +417,6 @@ export default function ActivityLogs() {
                     const resourceInfo = getResourceInfo(log.resource_type);
                     const ActionIcon = actionInfo.icon;
                     const ResourceIcon = resourceInfo.icon;
-
                     return (
                       <tr key={log.id || `log-${index}`} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                         <td className="px-6 py-4">

@@ -1,36 +1,25 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { Briefcase, Plus, Calendar, Edit, Trash2, X, Save } from 'lucide-react';
-
-interface Experience {
-  id: string;
-  title: string;
-  company?: string;
-  start_date?: string;
-  end_date?: string | null;
-  description?: string;
-  achievements?: string[];
-  created_at: string;
-  updated_at: string;
-}
-
+import { AdminExperience } from '@/types';
+/**
+ * @description 경력 및 활동 정보를 관리하는 관리자 페이지입니다.
+ * @returns {JSX.Element} 경력 관리 페이지 컴포넌트.
+ */
 export default function ExperiencesPage() {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [experiences, setExperiences] = useState<AdminExperience[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
+  const [editingExperience, setEditingExperience] = useState<AdminExperience | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; experienceId: string | null }>({
     isOpen: false,
     experienceId: null
   });
-
-  // 폼 데이터
   const [formData, setFormData] = useState({
     type: 'work',
     title: '',
@@ -40,15 +29,16 @@ export default function ExperiencesPage() {
     description: '',
     achievements: ''
   });
-
-  // 데이터 로드
   useEffect(() => {
     fetchExperiences();
   }, []);
-
+  /**
+   * @description 경험 목록을 불러옵니다.
+   * @returns {Promise<void>}
+   */
   const fetchExperiences = async () => {
     try {
-      const response = await authApi.get<Experience[]>('/experiences');
+      const response = await authApi.get<AdminExperience[]>('/experiences');
       if (response.data) {
         setExperiences(response.data);
       }
@@ -58,7 +48,11 @@ export default function ExperiencesPage() {
       setLoading(false);
     }
   };
-
+  /**
+   * @description 입력값 변경 시 폼 상태를 업데이트합니다.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e 입력 이벤트.
+   * @returns {void}
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -66,12 +60,16 @@ export default function ExperiencesPage() {
       [name]: value
     }));
   };
-
-  const openModal = (experience?: Experience) => {
+  /**
+   * @description 경험 추가/수정 모달을 엽니다.
+   * @param {AdminExperience} [experience] 편집할 경험.
+   * @returns {void}
+   */
+  const openModal = (experience?: AdminExperience) => {
     if (experience) {
       setEditingExperience(experience);
       setFormData({
-        type: (experience as Experience & { type?: string }).type || 'work',
+        type: (experience as AdminExperience & { type?: string }).type || 'work',
         title: experience.title,
         company: experience.company || '',
         start_date: experience.start_date ? experience.start_date.split('T')[0] : '',
@@ -93,7 +91,10 @@ export default function ExperiencesPage() {
     }
     setShowModal(true);
   };
-
+  /**
+   * @description 경험 모달을 닫고 입력값을 초기화합니다.
+   * @returns {void}
+   */
   const closeModal = () => {
     setShowModal(false);
     setEditingExperience(null);
@@ -107,39 +108,35 @@ export default function ExperiencesPage() {
       achievements: ''
     });
   };
-
+  /**
+   * @description 경험 정보를 저장합니다.
+   * @returns {Promise<void>}
+   */
   const handleSave = async () => {
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
     }
-
     setSaving(true);
-
     try {
       const achievements = formData.achievements
         .split('\n')
         .map(achievement => achievement.trim())
         .filter(achievement => achievement.length > 0);
-
       const data = {
         ...formData,
         achievements: achievements.length > 0 ? achievements : undefined,
         end_date: formData.end_date || null
       };
-
       let response;
       if (editingExperience) {
         response = await authApi.put(`/experiences/${editingExperience.id}`, data);
       } else {
         response = await authApi.post('/experiences', data);
       }
-
       if (response.success) {
         toast.success(editingExperience ? '경험이 수정되었습니다.' : '경험이 추가되었습니다.');
         await fetchExperiences();
-        
-        // 저장 성공 시 모달 닫기
         closeModal();
       } else {
         toast.error(response.message || '저장에 실패했습니다.');
@@ -150,21 +147,23 @@ export default function ExperiencesPage() {
       setSaving(false);
     }
   };
-
-  // 경험 삭제 모달 열기
+  /**
+   * @description 삭제 확인 모달을 엽니다.
+   * @param {string} experienceId 삭제할 경험 ID.
+   * @returns {void}
+   */
   const openDeleteModal = (experienceId: string) => {
     setDeleteModal({ isOpen: true, experienceId });
   };
-
-  // 경험 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, experienceId: null });
   };
-
-  // 경험 삭제 실행
+  /**
+   * @description 선택한 경험을 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const handleDelete = async () => {
     if (!deleteModal.experienceId) return;
-    
     try {
       const response = await authApi.delete(`/experiences/${deleteModal.experienceId}`);
       if (response.success) {
@@ -177,13 +176,16 @@ export default function ExperiencesPage() {
       toast.error('경험 삭제에 실패했습니다.');
     }
   };
-
+  /**
+   * @description 날짜 문자열을 `YYYY.MM` 형식으로 변환합니다.
+   * @param {string | null | undefined} dateString 날짜 문자열.
+   * @returns {string} 변환된 날짜 문자열 또는 '현재'.
+   */
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '현재';
     const date = new Date(dateString);
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
@@ -205,7 +207,6 @@ export default function ExperiencesPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-4xl mx-auto">
@@ -231,9 +232,6 @@ export default function ExperiencesPage() {
               <span>경험 추가</span>
             </motion.button>
           </div>
-
-
-          {/* 경험 목록 */}
           <div className="space-y-4">
             {experiences.map((experience, index) => (
               <motion.div
@@ -255,7 +253,6 @@ export default function ExperiencesPage() {
                         </span>
                       )}
                     </div>
-                    
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
                       <div className="flex items-center space-x-1">
                         <Calendar className="w-4 h-4" />
@@ -264,13 +261,11 @@ export default function ExperiencesPage() {
                         </span>
                       </div>
                     </div>
-                    
                     {experience.description && (
                       <p className="text-gray-700 dark:text-gray-300 mb-3">
                         {experience.description}
                       </p>
                     )}
-                    
                     {experience.achievements && experience.achievements.length > 0 && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -287,7 +282,6 @@ export default function ExperiencesPage() {
                       </div>
                     )}
                   </div>
-                  
                   <div className="flex items-center space-x-2 ml-4">
                     <button
                       onClick={() => openModal(experience)}
@@ -305,7 +299,6 @@ export default function ExperiencesPage() {
                 </div>
               </motion.div>
             ))}
-            
             {experiences.length === 0 && (
               <div className="text-center py-12">
                 <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -329,8 +322,6 @@ export default function ExperiencesPage() {
           </div>
         </motion.div>
       </div>
-
-      {/* 모달 */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -358,7 +349,6 @@ export default function ExperiencesPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
               <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -377,7 +367,6 @@ export default function ExperiencesPage() {
                     <option value="volunteer">봉사활동</option>
                   </select>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -392,7 +381,6 @@ export default function ExperiencesPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       회사/기관
@@ -406,7 +394,6 @@ export default function ExperiencesPage() {
                     />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -420,7 +407,6 @@ export default function ExperiencesPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       종료일 (현재 재직 중이면 비워두세요)
@@ -434,7 +420,6 @@ export default function ExperiencesPage() {
                     />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     설명
@@ -447,7 +432,6 @@ export default function ExperiencesPage() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     주요 성과 (한 줄에 하나씩)
@@ -461,7 +445,6 @@ export default function ExperiencesPage() {
                     placeholder="• 프로젝트 성과 1&#10;• 프로젝트 성과 2&#10;• 프로젝트 성과 3"
                   />
                 </div>
-
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
@@ -486,8 +469,6 @@ export default function ExperiencesPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

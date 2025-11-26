@@ -1,13 +1,11 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
-
 import { 
   Plus,
   Edit3,
@@ -20,7 +18,10 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { BlogPost } from '@/types';
-
+/**
+ * @description 블로그 포스트를 관리하는 관리자 페이지입니다.
+ * @returns {JSX.Element} 블로그 관리 페이지 컴포넌트.
+ */
 export default function BlogManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -32,19 +33,18 @@ export default function BlogManagement() {
     postSlug: null
   });
   const router = useRouter();
-
-  // 인증 확인
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // 블로그 포스트 목록 가져오기
   useEffect(() => {
+    /**
+     * @description 블로그 포스트 목록을 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const fetchPosts = async () => {
       if (!isAuthenticated) return;
-      
       try {
         setLoading(true);
         const response = await authApi.get('/admin/blog/posts');
@@ -64,14 +64,10 @@ export default function BlogManagement() {
             updated_at: string;
             view_count?: number;
           }>;
-
-          // 태그 데이터 변환: 다양한 형태의 태그 데이터 처리
           const postsWithTags = postsData.map(post => {
             let processedTags: Array<{ id: string; name: string; color: string; slug: string }> = [];
-            
             if (post.tags) {
               if (typeof post.tags === 'string') {
-                // 문자열인 경우: "blogTest,react" -> 배열로 변환
                 processedTags = (post.tags as string).split(',').map((tagName, index) => ({
                   id: `${post.id}-tag-${index}`,
                   name: tagName.trim(),
@@ -79,7 +75,6 @@ export default function BlogManagement() {
                   slug: tagName.trim().toLowerCase().replace(/\s+/g, '-')
                 }));
               } else if (Array.isArray(post.tags)) {
-                // 이미 배열인 경우: 그대로 사용하거나 형식 맞추기
                 processedTags = post.tags.map((tag, index) => {
                   if (typeof tag === 'string') {
                     return {
@@ -99,7 +94,6 @@ export default function BlogManagement() {
                 });
               }
             }
-            
             return {
               ...post,
               tags: processedTags,
@@ -119,24 +113,25 @@ export default function BlogManagement() {
         setLoading(false);
       }
     };
-
     fetchPosts();
   }, [isAuthenticated]);
-
-  // 포스트 삭제 모달 열기
+  /**
+   * @description 삭제 확인 모달을 엽니다.
+   * @param {string} postSlug 삭제할 포스트 슬러그.
+   * @returns {void}
+   */
   const openDeleteModal = (postSlug: string) => {
     setDeleteModal({ isOpen: true, postSlug });
   };
-
-  // 포스트 삭제 모달 닫기
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, postSlug: null });
   };
-
-  // 포스트 삭제 실행
+  /**
+   * @description 선택한 포스트를 삭제합니다.
+   * @returns {Promise<void>}
+   */
   const deletePost = async () => {
     if (!deleteModal.postSlug) return;
-    
     try {
       await authApi.delete(`/admin/blog/posts/slug/${deleteModal.postSlug}`);
       setPosts(prev => prev.filter(post => post.slug !== deleteModal.postSlug));
@@ -145,54 +140,59 @@ export default function BlogManagement() {
       toast.error('포스트 삭제에 실패했습니다.');
     }
   };
-
-  // 포스트 발행 상태 토글
+  /**
+   * @description 포스트의 발행 상태를 전환합니다.
+   * @param {string} postSlug 대상 포스트 슬러그.
+   * @param {boolean} currentStatus 현재 발행 상태.
+   * @returns {Promise<void>}
+   */
   const togglePublishStatus = async (postSlug: string, currentStatus: boolean) => {
     try {
       await authApi.put(`/admin/blog/posts/slug/${postSlug}/publish`, {
         is_published: !currentStatus
       });
-      
       setPosts(prev => prev.map(post => 
         post.slug === postSlug ? { ...post, is_published: !currentStatus } : post
       ));
-      
       toast.success(!currentStatus ? '포스트가 발행되었습니다!' : '포스트가 비발행 상태로 변경되었습니다!');
     } catch {
       toast.error('포스트 상태 변경에 실패했습니다.');
     }
   };
-
+  /**
+   * @description 포스트의 추천 상태를 전환합니다.
+   * @param {string} postSlug 대상 포스트 슬러그.
+   * @param {boolean} currentStatus 현재 추천 상태.
+   * @returns {Promise<void>}
+   */
   const toggleFeaturedStatus = async (postSlug: string, currentStatus: boolean) => {
     try {
       await authApi.put(`/admin/blog/posts/slug/${postSlug}/featured`, {
         is_featured: !currentStatus
       });
-      
       setPosts(prev => prev.map(post => 
         post.slug === postSlug ? { ...post, featured: !currentStatus } : post
       ));
-      
       toast.success(!currentStatus ? '포스트가 추천되었습니다!' : '포스트 추천이 해제되었습니다!');
     } catch {
       toast.error('추천 상태 변경에 실패했습니다.');
     }
   };
-
-  // 필터링된 포스트
   const filteredPosts = posts.filter(post => {
     const matchesSearch = !searchQuery || 
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.tags?.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'published' && post.is_published) ||
       (statusFilter === 'draft' && !post.is_published);
-    
     return matchesSearch && matchesStatus;
   });
-
+  /**
+   * @description 날짜 문자열을 한국어 표기 형식으로 변환합니다.
+   * @param {string} dateString 날짜 문자열.
+   * @returns {string} 변환된 날짜 문자열.
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -200,7 +200,6 @@ export default function BlogManagement() {
       day: 'numeric',
     });
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -217,15 +216,12 @@ export default function BlogManagement() {
       </div>
     );
   }
-
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -245,11 +241,8 @@ export default function BlogManagement() {
             </Link>
           </div>
         </div>
-
-        {/* 필터 및 검색 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* 검색 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 검색
@@ -262,8 +255,6 @@ export default function BlogManagement() {
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
               />
             </div>
-
-            {/* 상태 필터 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 상태
@@ -278,8 +269,6 @@ export default function BlogManagement() {
                 <option value="draft">비공개</option>
               </select>
             </div>
-
-            {/* 결과 수 */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 결과
@@ -290,8 +279,6 @@ export default function BlogManagement() {
             </div>
           </div>
         </div>
-
-        {/* 포스트 목록 */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
           {filteredPosts.length === 0 ? (
             <div className="text-center py-12">
@@ -318,7 +305,6 @@ export default function BlogManagement() {
             </div>
           ) : (
             <>
-              {/* 모바일 카드 레이아웃 */}
               <div className="block lg:hidden space-y-4">
                 {filteredPosts.map((post) => (
                   <div key={post.id} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4">
@@ -339,8 +325,6 @@ export default function BlogManagement() {
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                           {post.excerpt}
                         </p>
-                        
-                        {/* 태그 */}
                         {post.tags && post.tags.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {post.tags.slice(0, 3).map((tag, index) => (
@@ -360,7 +344,6 @@ export default function BlogManagement() {
                         )}
                       </div>
                     </div>
-                    
                     <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <span className="text-slate-500 dark:text-slate-400">상태:</span>
@@ -379,7 +362,6 @@ export default function BlogManagement() {
                         </p>
                       </div>
                     </div>
-
                     <div className="mt-3 flex items-center justify-between">
                       <div className="text-xs text-slate-500 dark:text-slate-400">
                         수정: {new Date(post.updated_at).toLocaleDateString('ko-KR')}
@@ -404,8 +386,6 @@ export default function BlogManagement() {
                   </div>
                 ))}
               </div>
-
-              {/* 데스크톱 테이블 레이아웃 */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                   <thead className="bg-slate-50 dark:bg-slate-700">
@@ -554,8 +534,6 @@ export default function BlogManagement() {
           )}
         </div>
       </div>
-
-      {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

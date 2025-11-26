@@ -1,10 +1,8 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { X, AlertCircle, Palette, Save } from 'lucide-react';
-
 interface BlogTag {
   id: string;
   name: string;
@@ -16,7 +14,6 @@ interface BlogTag {
   created_at: string;
   updated_at: string;
 }
-
 interface TagModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,7 +21,6 @@ interface TagModalProps {
   editingTag?: BlogTag | null;
   defaultType?: 'blog' | 'project' | 'general';
 }
-
 interface TagForm {
   name: string;
   slug: string;
@@ -32,13 +28,16 @@ interface TagForm {
   color: string;
   type: 'blog' | 'project' | 'general';
 }
-
 const colorOptions = [
   '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
   '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6b7280',
   '#14b8a6', '#f43f5e', '#a855f7', '#0891b2', '#65a30d'
 ];
-
+/**
+ * @description 태그를 생성하거나 수정하기 위한 모달 컴포넌트입니다.
+ * @param {TagModalProps} props 모달 제어 및 콜백 설정.
+ * @returns {JSX.Element | null} 태그 모달 요소 혹은 닫힌 상태에서는 null.
+ */
 export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defaultType }: TagModalProps) {
   const [formData, setFormData] = useState<TagForm>({
     name: '',
@@ -49,8 +48,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // 편집 모드일 때 폼 데이터 설정
   useEffect(() => {
     if (editingTag) {
       setFormData({
@@ -71,60 +68,57 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
     }
     setErrors({});
   }, [editingTag, isOpen, defaultType]);
-
-  // 태그명을 URL 친화적인 슬러그로 변환
+  /**
+   * @description 태그명을 기반으로 슬러그를 생성합니다.
+   * @param {string} name 태그명.
+   * @returns {string} 생성된 슬러그.
+   */
   const generateSlug = (name: string) => {
     return name
       .trim()
       .toLowerCase()
-      .replace(/\s+/g, '-')           // 띄어쓰기를 하이픈으로
-      .replace(/[^a-z0-9가-힣-]/g, '') // 영문, 숫자, 한글, 하이픈만 허용
-      .replace(/-+/g, '-')            // 연속된 하이픈을 하나로
-      .replace(/^-|-$/g, '');         // 앞뒤 하이픈 제거
+      .replace(/\s+/g, '-')           
+      .replace(/[^a-z0-9가-힣-]/g, '') 
+      .replace(/-+/g, '-')            
+      .replace(/^-|-$/g, '');         
   };
-
   const validateForm = (): boolean => {
     const newErrors: Partial<TagForm> = {};
-
     if (!formData.name.trim()) {
       newErrors.name = '태그명을 입력하세요';
     }
-
     if (!formData.slug.trim()) {
       newErrors.slug = '태그명을 입력하면 슬러그가 자동으로 생성됩니다';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  /**
+   * @description 폼 제출을 처리하고 태그를 저장합니다.
+   * @param {React.FormEvent} e 제출 이벤트.
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-
     setIsSubmitting(true);
     try {
       const tagData = {
         name: formData.name.trim(),
         slug: formData.slug.trim(),
         description: formData.description.trim() || null,
-        color: formData.color || '#3b82f6', // 기본 파란색 보장
+        color: formData.color || '#3b82f6', 
         type: formData.type
       };
-
       let response;
       if (editingTag) {
         response = await authApi.put(`/admin/tags/${editingTag.id}`, tagData);
       } else {
         response = await authApi.post('/admin/tags', tagData);
       }
-      
       if (response.success && response.data) {
         const tagData = response.data as BlogTag;
         onTagSaved(tagData);
-        
-        // 저장 성공 시 모달 닫기
         onClose();
       }
     } catch (error: unknown) {
@@ -140,16 +134,13 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
       setIsSubmitting(false);
     }
   };
-
   if (!isOpen) return null;
-
   return (
     <div 
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
     >
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             {editingTag ? '태그 편집' : '새 태그 추가'}
@@ -162,10 +153,7 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* 태그명 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               태그명 *
@@ -193,8 +181,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               </p>
             )}
           </div>
-
-          {/* 슬러그 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               슬러그 *
@@ -210,8 +196,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               슬러그는 태그명을 기반으로 URL 친화적으로 자동 생성됩니다.
             </p>
           </div>
-
-          {/* 설명 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               설명 (선택사항)
@@ -224,8 +208,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               placeholder="태그에 대한 설명을 입력하세요"
             />
           </div>
-
-          {/* 타입 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               타입 *
@@ -240,14 +222,10 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               <option value="project">프로젝트</option>
             </select>
           </div>
-
-          {/* 색상 */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               색상
             </label>
-            
-            {/* 색상 미리보기 */}
             <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">미리보기:</p>
               <div className="inline-flex items-center">
@@ -262,7 +240,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
                 </span>
               </div>
             </div>
-
             <div className="flex items-center space-x-2">
               <div className="flex flex-wrap gap-2">
                 {colorOptions.map((color) => (
@@ -292,8 +269,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               </div>
             </div>
           </div>
-
-          {/* 버튼 */}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"

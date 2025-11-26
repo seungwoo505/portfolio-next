@@ -1,31 +1,34 @@
 "use client";
-
 import Link from "next/link";
-
 import { useState, useEffect } from "react";
-
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-
+/**
+ * @component Header
+ * @description 네비게이션, 테마 토글, 모바일 메뉴를 포함한 전역 헤더를 렌더링합니다.
+ * @returns {JSX.Element} 주요 네비게이션을 담은 고정형 헤더 요소를 반환합니다.
+ */
 export default function Header() {
   const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-
   useEffect(() => {
     setIsClient(true);
     const root = document.documentElement;
     const currentTheme = root.getAttribute('data-theme');
     setIsDarkMode(currentTheme === 'dark');
   }, []);
-
+  /**
+   * @function toggleTheme
+   * @description 다크/라이트 테마를 전환하고 사용자의 선호를 저장합니다.
+   * @returns {void}
+   */
   const toggleTheme = () => {
     const root = document.documentElement;
     const newDarkMode = !(isDarkMode ?? root.classList.contains('dark'));
     setIsDarkMode(newDarkMode);
-    
     if (newDarkMode) {
       root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -47,17 +50,23 @@ export default function Header() {
       root.style.color = '#171717';
       document.cookie = 'theme=light; path=/; max-age=31536000';
     }
-    
   };
-
+  /**
+   * @function toggleMobileMenu
+   * @description 모바일 네비게이션 드로어의 표시 상태를 전환합니다.
+   * @returns {void}
+   */
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-
+  /**
+   * @function closeMobileMenu
+   * @description 모바일 네비게이션 드로어를 강제로 닫습니다.
+   * @returns {void}
+   */
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
-
   return (
     <div 
       className="sticky top-0 z-50 w-full backdrop-blur-md border-b border-slate-200 bg-white/95 safari-header-light dark:border-slate-700 dark:bg-slate-900/95 dark:safari-header-dark"
@@ -83,8 +92,6 @@ export default function Header() {
               </h1>
             </Link>
           </div>
-          
-          {/* 데스크톱 네비게이션 */}
           <div className="hidden md:flex items-center space-x-8">
             <div className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
               <Link 
@@ -98,7 +105,6 @@ export default function Header() {
                 홈
               </Link>
             </div>
-            
             <div className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
               <Link 
                 href="/about" 
@@ -111,7 +117,6 @@ export default function Header() {
                 소개
               </Link>
             </div>
-            
             <div className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
               <Link 
                 href="/blog" 
@@ -124,7 +129,6 @@ export default function Header() {
                 블로그
               </Link>
             </div>
-            
             <div className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
               <Link 
                 href="/projects" 
@@ -137,7 +141,6 @@ export default function Header() {
                 프로젝트
               </Link>
             </div>
-            
             <div className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
               <Link 
                 href="/contact" 
@@ -150,8 +153,6 @@ export default function Header() {
                 연락처
               </Link>
             </div>
-            
-            {/* 다크모드 토글 버튼 */}
             {isClient && (
               <button
                 onClick={toggleTheme}
@@ -170,10 +171,7 @@ export default function Header() {
               </button>
             )}
           </div>
-
-          {/* 모바일 메뉴 버튼 */}
           <div className="md:hidden flex items-center space-x-2">
-            {/* 다크모드 토글 버튼 */}
             {isClient && (
               <button
                 onClick={toggleTheme}
@@ -191,8 +189,6 @@ export default function Header() {
                 )}
               </button>
             )}
-            
-            {/* 햄버거 메뉴 버튼 */}
             <button
               onClick={toggleMobileMenu}
               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95"
@@ -206,8 +202,6 @@ export default function Header() {
             </button>
           </div>
         </div>
-
-        {/* 모바일 메뉴 */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
@@ -235,7 +229,6 @@ export default function Header() {
                     홈
                   </Link>
                 </motion.div>
-                
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -253,7 +246,6 @@ export default function Header() {
                     소개
                   </Link>
                 </motion.div>
-                
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -271,7 +263,6 @@ export default function Header() {
                     블로그
                   </Link>
                 </motion.div>
-                
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -289,7 +280,6 @@ export default function Header() {
                     프로젝트
                   </Link>
                 </motion.div>
-                
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -310,7 +300,6 @@ export default function Header() {
               </div>
             </motion.div>
           )}
-
         </AnimatePresence>
         </nav>
       </header>

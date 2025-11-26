@@ -1,5 +1,3 @@
-// 스킬 관련 타입 정의
-
 export interface Skill {
   id: string;
   category_id?: string;
@@ -12,7 +10,6 @@ export interface Skill {
   is_featured: boolean;
   category_name?: string;
 }
-
 export interface SkillCategory {
   id: string;
   name: string;

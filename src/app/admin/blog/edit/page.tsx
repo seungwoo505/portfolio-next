@@ -1,12 +1,9 @@
 "use client";
-
 import Link from "next/link";
 import { Suspense } from "react";
-
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-
 import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
@@ -16,59 +13,37 @@ import {
   Tag
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
-
-// Markdown Editor dynamic import (SSR 방지)
+import { AdminBlogPostForm, AdminTagOption } from '@/types';
 const MDEditor = dynamic(
   () => import('@uiw/react-md-editor'),
   { ssr: false }
 );
-
-interface PostForm {
-  title: string;
-  content: string;
-  excerpt: string;
-  slug: string;
-  meta_description: string;
-  meta_keywords: string;
-  featured_image: string;
-  is_published: boolean;
-  is_featured: boolean;
-  tags: string[];
-}
-
-interface AvailableTag {
-  id: string;
-  name: string;
-  color: string;
-  type?: 'blog' | 'project' | 'general';
-}
-
+/**
+ * @description 기존 블로그 포스트를 수정하기 위한 폼 콘텐츠입니다.
+ * @returns {JSX.Element} 블로그 수정 폼 컴포넌트.
+ */
 function EditBlogPostContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const postSlug = searchParams.get('slug');
-
-  // 다크 모드 상태 감지
   const [isDarkMode, setIsDarkMode] = useState(false);
-
   useEffect(() => {
+    /**
+     * @description 현재 다크 모드 여부를 감지합니다.
+     * @returns {void}
+     */
     const checkDarkMode = () => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
     };
-
     checkDarkMode();
-
-    // 다크 모드 변경 감지
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
     });
-
     return () => observer.disconnect();
   }, []);
-
-  const [formData, setFormData] = useState<PostForm>({
+  const [formData, setFormData] = useState<AdminBlogPostForm>({
     title: '',
     content: '',
     excerpt: '',
@@ -80,33 +55,30 @@ function EditBlogPostContent() {
     is_featured: false,
     tags: []
   });
-
-  const [availableTags, setAvailableTags] = useState<AvailableTag[]>([]);
-  const [selectedTags, setSelectedTags] = useState<AvailableTag[]>([]);
+  const [availableTags, setAvailableTags] = useState<AdminTagOption[]>([]);
+  const [selectedTags, setSelectedTags] = useState<AdminTagOption[]>([]);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-
-  // AI 요약 전에 __projectName__ 형식을 실제 프로젝트명으로 변환
   const preprocessContentForAI = (content: string): string => {
     return content.replace(/__([^_]+)__/g, (match, projectName) => {
       return `${projectName} 프로젝트`;
     });
   };
-
-  // Gemini AI 기반 요약 생성
+  /**
+   * @description AI를 사용해 포스트 요약을 생성합니다.
+   * @param {string} content 요약할 콘텐츠.
+   * @returns {Promise<string>} 생성된 요약.
+   */
   const generateAISummary = async (content: string) => {
     if (!content.trim()) {
       toast.error('요약할 내용이 없습니다. 먼저 포스트 내용을 작성해주세요.');
       return '';
     }
-
     try {
       const preprocessedContent = preprocessContentForAI(content);
       const response = await authApi.generateSummary(preprocessedContent, false);
-
       if (response.success && response.data) {
         return response.data.summary;
       } else {
@@ -117,18 +89,19 @@ function EditBlogPostContent() {
       return '';
     }
   };
-
-  // Gemini AI 기반 키워드 생성
+  /**
+   * @description AI를 사용해 포스트 키워드를 추출합니다.
+   * @param {string} content 키워드를 추출할 콘텐츠.
+   * @returns {Promise<string>} 추출된 키워드.
+   */
   const generateAIKeywords = async (content: string) => {
     if (!content.trim()) {
       toast.error('키워드를 추출할 내용이 없습니다. 먼저 포스트 내용을 작성해주세요.');
       return '';
     }
-
     try {
       const preprocessedContent = preprocessContentForAI(content);
       const response = await authApi.generateSummary(preprocessedContent, true);
-
       if (response.success && response.data) {
         return response.data.keywordsString || '';
       } else {
@@ -139,30 +112,20 @@ function EditBlogPostContent() {
       return '';
     }
   };
-
-  // SEO 메타 설명 자동 생성 (기존 방식) - 주석 처리
-  // const _generateMetaDescription = (excerpt: string, content: string) => {
-  //   if (excerpt.trim()) {
-  //     return excerpt.substring(0, 160);
-  //   }
-  //   // 내용에서 첫 번째 문단 추출
-  //   const firstParagraph = content.split('\n').find(line => line.trim().length > 0)?.trim() || '';
-  //   return firstParagraph.substring(0, 160);
-  // };
-
-  // 포스트 데이터 로드
   useEffect(() => {
+    /**
+     * @description 슬러그를 기반으로 편집할 포스트를 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const loadPost = async () => {
       if (!postSlug) {
         toast.error('포스트 슬러그가 필요합니다.');
         setIsLoading(false);
         return;
       }
-      
       try {
         setIsLoading(true);
         const response = await authApi.get(`/admin/blog/posts/slug/${postSlug}`);
-
         if (response.success && response.data) {
           const post = response.data as {
             id: string;
@@ -177,7 +140,6 @@ function EditBlogPostContent() {
             featured: boolean;
             tags: { id: string; name: string; color?: string; type?: string }[];
           };
-
           setFormData({
             title: post.title || '',
             content: post.content || '',
@@ -190,19 +152,13 @@ function EditBlogPostContent() {
             is_featured: Boolean(post.featured),
             tags: []
           });
-
-          // 태그 설정 (ID 타입 통일 및 중복 제거)
           if (post.tags) {
-
             const postTags = Array.isArray(post.tags) ? post.tags : [];
-            // ID를 문자열로 변환하고 중복 제거
             const formattedTags = postTags.map((tag: { id: string | number; name: string; color?: string }) => ({
-              id: String(tag.id), // ID를 문자열로 통일
+              id: String(tag.id), 
               name: tag.name,
               color: tag.color || '#6B7280',
             }));
-
-            // ID 기준으로 중복 제거
             const uniqueTags = formattedTags.filter((tag, index, self) =>
               index === self.findIndex(t => t.id === tag.id)
             );
@@ -218,12 +174,13 @@ function EditBlogPostContent() {
         setIsLoading(false);
       }
     };
-
     loadPost();
   }, [postSlug, router]);
-
-  // 사용 가능한 태그 목록 가져오기
   useEffect(() => {
+    /**
+     * @description 블로그 포스트에 사용할 수 있는 태그를 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const fetchTags = async () => {
       try {
         const response = await authApi.get('/admin/tags');
@@ -240,20 +197,19 @@ function EditBlogPostContent() {
           setAvailableTags(mapped);
         }
       } catch {
-        // 에러 무시 (필수적이지 않은 작업)
       }
     };
-
     fetchTags();
   }, []);
-
-
   const filteredTags = availableTags.filter(tag =>
     tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
   );
-
-  // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
+    /**
+     * @description 태그 드롭다운 외부 클릭을 감지해 닫습니다.
+     * @param {MouseEvent} event 마우스 이벤트.
+     * @returns {void}
+     */
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
       if (!target.closest('.tag-dropdown')) {
@@ -261,21 +217,21 @@ function EditBlogPostContent() {
         setTagSearchQuery('');
       }
     };
-
     if (showTagDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showTagDropdown]);
-
-  // 드롭다운이 열릴 때 검색어 초기화
   useEffect(() => {
     if (showTagDropdown) {
       setTagSearchQuery('');
     }
   }, [showTagDropdown]);
-
-  // 제목에서 슬러그 자동 생성
+  /**
+   * @description 제목을 기반으로 슬러그를 생성합니다.
+   * @param {string} title 포스트 제목.
+   * @returns {string} 생성된 슬러그.
+   */
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -284,7 +240,11 @@ function EditBlogPostContent() {
       .replace(/-+/g, '-')
       .trim();
   };
-
+  /**
+   * @description 제목 변경 시 슬러그를 함께 업데이트합니다.
+   * @param {string} title 새 제목.
+   * @returns {void}
+   */
   const handleTitleChange = (title: string) => {
     setFormData(prev => ({
       ...prev,
@@ -292,12 +252,15 @@ function EditBlogPostContent() {
       slug: generateSlug(title)
     }));
   };
-
+  /**
+   * @description 본문 내용 변경 시 상태를 업데이트합니다.
+   * @param {string} content 새 본문 내용.
+   * @returns {void}
+   */
   const handleContentChange = (content: string) => {
     setFormData(prev => ({ ...prev, content }));
   };
-
-  const toggleTag = (tag: AvailableTag) => {
+  const toggleTag = (tag: AdminTagOption) => {
     setSelectedTags(prev => {
       const isSelected = prev.some(t => t.id === tag.id);
       if (isSelected) {
@@ -307,8 +270,6 @@ function EditBlogPostContent() {
       }
     });
   };
-
-  // 이미지 업로드 핸들러
   const handleImageUpload = async (file: File): Promise<string> => {
     try {
       if (file.size > 5 * 1024 * 1024) {
@@ -318,64 +279,55 @@ function EditBlogPostContent() {
       if (!allowedTypes.includes(file.type)) {
         throw new Error('지원되지 않는 이미지 형식입니다.');
       }
-
-      // 실제 서버에 이미지 업로드
       try {
         const response = await authApi.uploadImage(file);
-
         if (response.success && response.data?.url) {
           return response.data.url;
         } else {
           throw new Error(response.message || '서버에서 올바른 응답을 받지 못했습니다.');
         }
       } catch {
-        // console.warn 제거됨
-
-        // Object URL 생성하고 나중에 해제되지 않도록 관리
         const objectUrl = URL.createObjectURL(file);
         return objectUrl;
       }
-
     } catch {
-      // 이미지 업로드 실패
       throw new Error('이미지 업로드에 실패했습니다.');
     }
   };
-
+  /**
+   * @description 폼을 검증하고 포스트 수정을 저장합니다.
+   * @param {boolean} publish 저장 후 즉시 발행할지 여부.
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (publish: boolean) => {
     if (!formData.title.trim() || !formData.content.trim()) {
       toast.error('제목과 내용을 입력해주세요.');
       return;
     }
-
     if (!postSlug) {
       toast.error('포스트 슬러그가 필요합니다.');
       return;
     }
-
     setIsSubmitting(true);
     try {
-      // undefined 값들을 null로 변환하거나 기본값 설정
       const postData = {
         title: formData.title || '',
         slug: formData.slug || '',
         content: formData.content || '',
         excerpt: formData.excerpt || '',
         featured_image: formData.featured_image || null,
-        meta_title: formData.title || '', // meta_title이 없으면 title 사용
+        meta_title: formData.title || '', 
         meta_description: formData.meta_description || '',
         meta_keywords: formData.meta_keywords || '',
         is_published: publish,
-        is_featured: formData.is_featured || false, // 폼 데이터에서 가져오기
-        tags: selectedTags.map(tag => tag.name), // 선택된 태그들을 배열로
-        category_id: null, // 기본값
-        reading_time: null, // 기본값
-        author_id: null, // 기본값 (서버에서 JWT에서 추출할 수 있음)
+        is_featured: formData.is_featured || false, 
+        tags: selectedTags.map(tag => tag.name), 
+        category_id: null, 
+        reading_time: null, 
+        author_id: null, 
         published_at: publish ? new Date().toISOString() : null
       };
-
       const response = await authApi.put(`/admin/blog/posts/slug/${postSlug}`, postData);
-
       if (response.success) {
         toast.success(publish ? '포스트가 발행되었습니다!' : '포스트가 저장되었습니다!');
         router.push('/admin/blog');
@@ -386,7 +338,6 @@ function EditBlogPostContent() {
       setIsSubmitting(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -402,7 +353,6 @@ function EditBlogPostContent() {
       </div>
     );
   }
-
   if (!postSlug) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -419,18 +369,13 @@ function EditBlogPostContent() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 메인 에디터 */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 기본 정보 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">기본 정보</h2>
-
-              {/* 제목 */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   제목 *
@@ -443,7 +388,6 @@ function EditBlogPostContent() {
                   placeholder="포스트 제목을 입력하세요"
                 />
               </div>
-
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   슬러그 (URL)
@@ -463,8 +407,6 @@ function EditBlogPostContent() {
                 </p>
               </div>
             </div>
-
-            {/* 내용 에디터 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">내용 작성</h2>
               <div className="mb-4">
@@ -475,7 +417,6 @@ function EditBlogPostContent() {
                   마크다운 문법을 사용하여 포스트를 작성하세요. 이미지는 드래그앤드롭하거나 클립보드에서 붙여넣기(Ctrl+V)로 업로드할 수 있습니다.
                 </p>
               </div>
-
               <div data-color-mode={isDarkMode ? 'dark' : 'light'}>
                 <MDEditor
                   value={formData.content}
@@ -488,42 +429,28 @@ function EditBlogPostContent() {
                     event.preventDefault();
                     const files = Array.from(event.dataTransfer.files);
                     const imageFiles = files.filter(file => file.type.startsWith('image/'));
-
                     if (imageFiles.length > 0) {
                       const loadingText = `\n\n업로드 중... (${imageFiles.length}개 파일)\n\n`;
                       const contentWithLoading = formData.content + loadingText;
                       handleContentChange(contentWithLoading);
-
                       try {
                         let uploadedImages = '';
                         for (const file of imageFiles) {
                           const url = await handleImageUpload(file);
-
-                          // GitHub 스타일 이미지 마크다운 생성 (파일명에서 altText 추출)
                           let altText = 'image';
                           const baseName = file.name.replace(/\.[^/.]+$/, '');
                           if (baseName.length > 0 && baseName.length <= 30) {
-                            // 파일명이 적당한 길이면 사용
                             altText = baseName;
                           }
-
                           const imageMarkdown = `![${altText}](${url})\n\n`;
                           uploadedImages += imageMarkdown;
                         }
-
-                        // 로딩 텍스트를 실제 이미지 마크다운으로 교체
-                        // 현재 상태를 다시 가져와서 최신 내용 반영
-                        const currentContent = contentWithLoading; // 로딩 텍스트가 포함된 최신 내용
+                        const currentContent = contentWithLoading; 
                         const newContent = currentContent.replace(loadingText, '\n\n' + uploadedImages);
-
-                        // 즉시 업데이트 (지연 제거)
                         handleContentChange(newContent);
-
                       } catch {
-                        // 로딩 텍스트 제거
                         const newContent = contentWithLoading.replace(loadingText, '');
                         handleContentChange(newContent);
-
                         toast.error('이미지 업로드에 실패했습니다.');
                       }
                     }
@@ -531,41 +458,27 @@ function EditBlogPostContent() {
                   onPaste={async (event) => {
                     const items = Array.from(event.clipboardData.items);
                     const imageItems = items.filter(item => item.type.startsWith('image/'));
-
                     if (imageItems.length > 0) {
                       event.preventDefault();
-
-                      // 업로드 중 표시
                       const loadingText = `\n\n이미지 업로드 중...\n\n`;
                       const contentWithLoading = formData.content + loadingText;
                       handleContentChange(contentWithLoading);
-
                       try {
                         let uploadedImages = '';
                         for (const item of imageItems) {
                           const file = item.getAsFile();
                           if (file) {
                             const url = await handleImageUpload(file);
-
-                            // GitHub 스타일 이미지 마크다운 (붙여넣기는 기본적으로 "image")
                             const imageMarkdown = `![image](${url})\n\n`;
                             uploadedImages += imageMarkdown;
                           }
                         }
-
-                        // 로딩 텍스트를 실제 이미지 마크다운으로 교체
-                        // 현재 상태를 다시 가져와서 최신 내용 반영
-                        const currentContent = contentWithLoading; // 로딩 텍스트가 포함된 최신 내용
+                        const currentContent = contentWithLoading; 
                         const newContent = currentContent.replace(loadingText, '\n\n' + uploadedImages);
-
-                        // 즉시 업데이트 (지연 제거)
                         handleContentChange(newContent);
-
                       } catch {
-                        // 로딩 텍스트 제거
                         const newContent = contentWithLoading.replace(loadingText, '');
                         handleContentChange(newContent);
-
                         toast.error('이미지 업로드에 실패했습니다.');
                       }
                     }
@@ -574,15 +487,10 @@ function EditBlogPostContent() {
               </div>
             </div>
           </div>
-
-          {/* 사이드바 */}
           <div className="space-y-6">
-            {/* 공개 설정 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">공개 설정</h3>
-
               <div className="space-y-4">
-                {/* 공개/비공개 */}
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -595,8 +503,6 @@ function EditBlogPostContent() {
                       }
                     </p>
                   </div>
-
-                  {/* 토글 스위치 */}
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_published: !prev.is_published }))}
@@ -611,8 +517,6 @@ function EditBlogPostContent() {
                     />
                   </button>
                 </div>
-
-                {/* 추천 설정 */}
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -625,8 +529,6 @@ function EditBlogPostContent() {
                       }
                     </p>
                   </div>
-
-                  {/* 토글 스위치 */}
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_featured: !prev.is_featured }))}
@@ -645,8 +547,6 @@ function EditBlogPostContent() {
                 </div>
               </div>
             </div>
-
-            {/* 태그 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -660,7 +560,6 @@ function EditBlogPostContent() {
                   <span>태그 관리</span>
                 </Link>
               </div>
-
               <div className="tag-dropdown relative">
                 <div
                   className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer bg-white dark:bg-slate-700 min-h-[42px] flex items-center"
@@ -671,7 +570,6 @@ function EditBlogPostContent() {
                     태그 검색 및 선택...
                   </span>
                 </div>
-
                 {showTagDropdown && (
                   <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     <div className="p-2 border-b border-slate-200 dark:border-slate-600">
@@ -684,7 +582,6 @@ function EditBlogPostContent() {
                         autoFocus
                       />
                     </div>
-
                     <div className="max-h-48 overflow-y-auto">
                       {filteredTags.length > 0 ? (
                         filteredTags.map((tag) => {
@@ -725,8 +622,6 @@ function EditBlogPostContent() {
                   </div>
                 )}
               </div>
-
-              {/* 선택된 태그들 표시 */}
               {selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {selectedTags.map((tag, index) => (
@@ -747,8 +642,6 @@ function EditBlogPostContent() {
                 </div>
               )}
             </div>
-
-            {/* 포스트 요약 및 설정 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">포스트 설정</h3>
@@ -778,7 +671,6 @@ function EditBlogPostContent() {
                   <span>AI 요약 & 키워드 생성</span>
                 </button>
               </div>
-
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -811,7 +703,7 @@ function EditBlogPostContent() {
                       setFormData(prev => ({
                         ...prev,
                         excerpt: value,
-                        meta_description: value // 요약과 메타 설명 동기화
+                        meta_description: value 
                       }));
                     }}
                     rows={3}
@@ -827,7 +719,6 @@ function EditBlogPostContent() {
                     </span>
                   </div>
                 </div>
-
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -866,8 +757,6 @@ function EditBlogPostContent() {
             </div>
           </div>
         </div>
-
-        {/* 하단 저장 버튼 */}
         <div className="mt-8 flex justify-end space-x-4">
           <Link
             href="/admin/blog"
@@ -895,7 +784,10 @@ function EditBlogPostContent() {
     </div>
   );
 }
-
+/**
+ * @description 블로그 포스트 수정 페이지를 렌더링합니다.
+ * @returns {JSX.Element} 블로그 수정 페이지.
+ */
 export default function EditBlogPost() {
   return (
     <Suspense fallback={

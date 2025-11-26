@@ -1,10 +1,8 @@
 "use client";
 import Link from "next/link";
 import { Suspense } from "react";
-
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import {
@@ -17,45 +15,20 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { Project } from '@/types';
-
-// 마크다운 에디터 동적 import
+import { AdminProjectForm, AdminTagOption } from '@/types';
 const MDEditor = dynamic(
   () => import('@uiw/react-md-editor'),
   { ssr: false }
 );
-
-interface ProjectFormData {
-  title: string;
-  slug: string;
-  description: string;
-  content: string;
-  excerpt: string;
-  meta_description: string;
-  featured_image: string;
-  project_url: string;
-  github_url: string;
-  tags: string[];
-  start_date: string;
-  end_date: string;
-  is_featured: boolean;
-  is_published: boolean;
-  is_ongoing: boolean;
-  meta_keywords?: string;
-}
-
-interface AvailableTag {
-  id: string;
-  name: string;
-  color: string;
-  type: string;
-}
-
+/**
+ * @description 기존 프로젝트를 수정하기 위한 폼 콘텐츠입니다.
+ * @returns {JSX.Element} 프로젝트 수정 폼 컴포넌트.
+ */
 function EditProjectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectSlug = searchParams.get('slug');
-  
-  const [formData, setFormData] = useState<ProjectFormData>({
+  const [formData, setFormData] = useState<AdminProjectForm>({
     title: '',
     slug: '',
     description: '',
@@ -73,42 +46,44 @@ function EditProjectContent() {
     is_ongoing: false,
     meta_keywords: ''
   });
-
-  const [availableTags, setAvailableTags] = useState<AvailableTag[]>([]);
-  const [selectedTags, setSelectedTags] = useState<AvailableTag[]>([]);
+  const [availableTags, setAvailableTags] = useState<AdminTagOption[]>([]);
+  const [selectedTags, setSelectedTags] = useState<AdminTagOption[]>([]);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // AI 요약/키워드 생성을 위한 전처리 함수
+  /**
+   * @description AI 요약/키워드 생성을 위해 콘텐츠를 전처리합니다.
+   * @param {string} content 원본 콘텐츠.
+   * @returns {string} 전처리된 콘텐츠.
+   */
   const preprocessContentForAI = (content: string) => {
-    // 마크다운에서 텍스트만 추출하고 __projectName__ 형식을 실제 프로젝트명으로 변환
     return content
       .replace(/__projectName__/g, formData.title || '프로젝트')
-      .replace(/#{1,6}\s+/g, '') // 헤더 제거
-      .replace(/\*\*(.*?)\*\*/g, '$1') // 볼드 제거
-      .replace(/\*(.*?)\*/g, '$1') // 이탤릭 제거
-      .replace(/`(.*?)`/g, '$1') // 인라인 코드 제거
-      .replace(/```[\s\S]*?```/g, '') // 코드 블록 제거
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // 링크 제거
-      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // 이미지 제거
-      .replace(/\n+/g, ' ') // 줄바꿈을 공백으로
+      .replace(/#{1,6}\s+/g, '') 
+      .replace(/\*\*(.*?)\*\*/g, '$1') 
+      .replace(/\*(.*?)\*/g, '$1') 
+      .replace(/`(.*?)`/g, '$1') 
+      .replace(/```[\s\S]*?```/g, '') 
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') 
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') 
+      .replace(/\n+/g, ' ') 
       .trim();
   };
-
-  // Gemini AI 기반 요약 생성
+  /**
+   * @description AI를 사용해 프로젝트 요약을 생성합니다.
+   * @param {string} content 요약할 콘텐츠.
+   * @returns {Promise<string>} 생성된 요약.
+   */
   const generateAISummary = async (content: string) => {
     if (!content.trim()) {
       toast.error('요약할 내용이 없습니다. 먼저 프로젝트 내용을 작성해주세요.');
       return '';
     }
-
     try {
       const preprocessedContent = preprocessContentForAI(content);
       const response = await authApi.generateSummary(preprocessedContent, false);
-      
       if (response.success && response.data) {
         return response.data.summary;
       } else {
@@ -119,18 +94,19 @@ function EditProjectContent() {
       return '';
     }
   };
-
-  // Gemini AI 기반 키워드 생성
+  /**
+   * @description AI를 사용해 프로젝트 키워드를 추출합니다.
+   * @param {string} content 키워드를 추출할 콘텐츠.
+   * @returns {Promise<string>} 추출된 키워드.
+   */
   const generateAIKeywords = async (content: string) => {
     if (!content.trim()) {
       toast.error('키워드를 추출할 내용이 없습니다. 먼저 프로젝트 내용을 작성해주세요.');
       return '';
     }
-
     try {
       const preprocessedContent = preprocessContentForAI(content);
       const response = await authApi.generateSummary(preprocessedContent, true);
-      
       if (response.success && response.data) {
         return response.data.keywordsString || '';
       } else {
@@ -141,40 +117,38 @@ function EditProjectContent() {
       return '';
     }
   };
-
-  // 다크 모드 감지
   useEffect(() => {
+    /**
+     * @description 현재 다크 모드 여부를 감지합니다.
+     * @returns {void}
+     */
     const checkDarkMode = () => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
     };
-    
     checkDarkMode();
-    
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
     });
-    
     return () => observer.disconnect();
   }, []);
-
-  // 프로젝트 데이터 로드
   useEffect(() => {
+    /**
+     * @description 슬러그를 기반으로 편집할 프로젝트를 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const loadProject = async () => {
       if (!projectSlug) {
         toast.error('프로젝트 슬러그가 필요합니다.');
         setIsLoading(false);
         return;
       }
-      
       try {
         setIsLoading(true);
         const response = await authApi.get(`/admin/projects/slug/${projectSlug}`);
-        
         if (response.success && response.data) {
           const project = response.data as Project;
-          
           setFormData({
             title: project.title || '',
             slug: project.slug || '',
@@ -193,8 +167,6 @@ function EditProjectContent() {
             is_ongoing: project.status === 'in_progress' || false,
             meta_keywords: project.meta_keywords || ''
           });
-
-          // 태그 설정
           if (project.tags && Array.isArray(project.tags)) {
             const formattedTags = project.tags.map((tag, index) => {
               if (typeof tag === 'string') {
@@ -217,19 +189,19 @@ function EditProjectContent() {
           }
         }
       } catch {
-        // console.error 제거됨
         toast.error('프로젝트를 불러오는데 실패했습니다.');
         router.push('/admin/projects');
       } finally {
         setIsLoading(false);
       }
     };
-
     loadProject();
   }, [projectSlug, router]);
-
-  // 사용 가능한 태그 목록 가져오기
   useEffect(() => {
+    /**
+     * @description 프로젝트에 사용할 태그 목록을 불러옵니다.
+     * @returns {Promise<void>}
+     */
     const fetchTags = async () => {
       try {
         const response = await authApi.get('/admin/tags');
@@ -247,20 +219,19 @@ function EditProjectContent() {
           setAvailableTags(mapped);
         }
       } catch {
-        // console.error 제거됨
       }
     };
-
     fetchTags();
   }, []);
-
-
   const filteredTags = availableTags.filter(tag =>
     tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
   );
-
-  // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
+    /**
+     * @description 태그 드롭다운 외부 클릭을 감지해 닫습니다.
+     * @param {MouseEvent} event 마우스 이벤트.
+     * @returns {void}
+     */
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
       if (!target.closest('.tag-dropdown')) {
@@ -268,14 +239,16 @@ function EditProjectContent() {
         setTagSearchQuery('');
       }
     };
-
     if (showTagDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showTagDropdown]);
-
-  // 제목에서 슬러그 자동 생성
+  /**
+   * @description 제목을 기반으로 슬러그를 생성합니다.
+   * @param {string} title 프로젝트 제목.
+   * @returns {string} 생성된 슬러그.
+   */
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -284,7 +257,11 @@ function EditProjectContent() {
       .replace(/-+/g, '-')
       .trim();
   };
-
+  /**
+   * @description 제목 변경 시 슬러그를 함께 업데이트합니다.
+   * @param {string} title 새 제목.
+   * @returns {void}
+   */
   const handleTitleChange = (title: string) => {
     setFormData(prev => ({
       ...prev,
@@ -292,8 +269,12 @@ function EditProjectContent() {
       slug: generateSlug(title)
     }));
   };
-
-  const toggleTag = (tag: AvailableTag) => {
+  /**
+   * @description 태그 선택 여부를 토글합니다.
+   * @param {AdminTagOption} tag 선택하거나 해제할 태그.
+   * @returns {void}
+   */
+  const toggleTag = (tag: AdminTagOption) => {
     setSelectedTags(prev => {
       const isSelected = prev.some(t => t.id === tag.id);
       if (isSelected) {
@@ -303,52 +284,27 @@ function EditProjectContent() {
       }
     });
   };
-
-  // 이미지 업로드 핸들러 - 주석 처리
-  // const _handleImageUpload = async (file: File): Promise<string> => {
-  //   try {
-  //     if (file.size > 5 * 1024 * 1024) {
-  //       throw new Error('파일 크기는 5MB 이하여야 합니다.');
-  //     }
-  //     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  //     if (!allowedTypes.includes(file.type)) {
-  //       throw new Error('지원되지 않는 이미지 형식입니다.');
-  //     }
-
-  //     const response = await authApi.uploadImage(file);
-  //     
-  //     if (response.success && response.data?.url) {
-  //       return response.data.url;
-  //     } else {
-  //       throw new Error(response.message || '서버에서 올바른 응답을 받지 못했습니다.');
-  //     }
-  //   } catch {
-  //     // console.error 제거됨
-  //     throw new Error('이미지 업로드에 실패했습니다.');
-  //   }
-  // };
-
+  /**
+   * @description 폼을 검증하고 프로젝트 업데이트를 요청합니다.
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
     }
-
     if (!formData.start_date) {
       toast.error('시작일을 입력해주세요.');
       return;
     }
-
     if (!formData.is_ongoing && !formData.end_date) {
       toast.error('종료일을 입력해주세요.');
       return;
     }
-
     if (!projectSlug) {
       toast.error('프로젝트 슬러그가 필요합니다.');
       return;
     }
-
     setIsSubmitting(true);
     try {
       const projectData = {
@@ -369,21 +325,17 @@ function EditProjectContent() {
         is_ongoing: formData.is_ongoing,
         meta_keywords: formData.meta_keywords || null
       };
-
       const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, projectData);
-      
       if (response.success) {
         toast.success('프로젝트가 성공적으로 수정되었습니다!');
         router.push('/admin/projects');
       }
     } catch {
-      // console.error 제거됨
       toast.error('프로젝트 수정에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -399,7 +351,6 @@ function EditProjectContent() {
       </div>
     );
   }
-
   if (!projectSlug) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -416,18 +367,13 @@ function EditProjectContent() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 메인 폼 */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 기본 정보 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">기본 정보</h2>
-              
-              {/* 제목 */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   제목 *
@@ -440,8 +386,6 @@ function EditProjectContent() {
                   placeholder="프로젝트 제목을 입력하세요"
                 />
               </div>
-
-              {/* 슬러그 */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   슬러그 (URL)
@@ -457,10 +401,7 @@ function EditProjectContent() {
                   />
                 </div>
               </div>
-
             </div>
-
-            {/* 상세 내용 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">상세 내용</h2>
               <div data-color-mode={isDarkMode ? 'dark' : 'light'}>
@@ -473,11 +414,8 @@ function EditProjectContent() {
                 />
               </div>
             </div>
-
-            {/* 링크 정보 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">링크 정보</h2>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -491,7 +429,6 @@ function EditProjectContent() {
                     placeholder="https://example.com"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     GitHub URL
@@ -507,15 +444,10 @@ function EditProjectContent() {
               </div>
             </div>
           </div>
-
-          {/* 사이드바 */}
           <div className="space-y-6">
-            {/* 공개 설정 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">공개 설정</h3>
-              
               <div className="space-y-4">
-                {/* 공개/비공개 토글 */}
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -528,8 +460,6 @@ function EditProjectContent() {
                       }
                     </p>
                   </div>
-                  
-                  {/* 토글 스위치 */}
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_published: !prev.is_published }))}
@@ -544,8 +474,6 @@ function EditProjectContent() {
                     />
                   </button>
                 </div>
-
-                {/* 대표 프로젝트 설정 */}
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -558,8 +486,6 @@ function EditProjectContent() {
                       }
                     </p>
                   </div>
-                  
-                  {/* 토글 스위치 */}
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_featured: !prev.is_featured }))}
@@ -574,8 +500,6 @@ function EditProjectContent() {
                     />
                   </button>
                 </div>
-
-                {/* 진행 중 프로젝트 설정 */}
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -585,8 +509,6 @@ function EditProjectContent() {
                       현재 진행 중인 프로젝트인지 설정합니다.
                     </p>
                   </div>
-                  
-                  {/* 토글 스위치 */}
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_ongoing: !prev.is_ongoing }))}
@@ -603,8 +525,6 @@ function EditProjectContent() {
                 </div>
               </div>
             </div>
-
-            {/* 프로젝트 설정 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">프로젝트 설정</h3>
@@ -616,7 +536,6 @@ function EditProjectContent() {
                         generateAISummary(formData.content),
                         generateAIKeywords(formData.content)
                       ]);
-                      
                       if (summary) {
                         setFormData(prev => ({ 
                           ...prev, 
@@ -624,7 +543,6 @@ function EditProjectContent() {
                           meta_description: summary
                         }));
                       }
-                      
                       if (keywords) {
                         setFormData(prev => ({ 
                           ...prev, 
@@ -642,7 +560,6 @@ function EditProjectContent() {
                   <span>AI 요약 & 키워드 생성</span>
                 </button>
               </div>
-              
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -675,7 +592,7 @@ function EditProjectContent() {
                       setFormData(prev => ({ 
                         ...prev, 
                         excerpt: value,
-                        meta_description: value // 요약과 메타 설명 동기화
+                        meta_description: value 
                       }));
                     }}
                     rows={3}
@@ -691,7 +608,6 @@ function EditProjectContent() {
                     </span>
                   </div>
                 </div>
-
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -728,8 +644,6 @@ function EditProjectContent() {
                 </div>
               </div>
             </div>
-
-            {/* 태그 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">태그 선택</h3>
@@ -741,7 +655,6 @@ function EditProjectContent() {
                   <span>태그 관리</span>
                 </Link>
               </div>
-
               <div className="tag-dropdown relative">
                 <button
                   type="button"
@@ -751,13 +664,11 @@ function EditProjectContent() {
                   <span>프로젝트 태그 선택...</span>
                   <Plus className={`w-4 h-4 transition-transform ${showTagDropdown ? 'rotate-45' : ''}`} />
                 </button>
-
                 {showTagDropdown && (
                   <div 
                     className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* 검색 입력창 */}
                     <div className="p-3 border-b border-slate-200 dark:border-slate-700">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -771,8 +682,6 @@ function EditProjectContent() {
                         />
                       </div>
                     </div>
-                    
-                    {/* 태그 목록 */}
                     <div className="max-h-48 overflow-y-auto">
                       {filteredTags.length > 0 ? (
                         filteredTags.map((tag) => {
@@ -814,8 +723,6 @@ function EditProjectContent() {
                   </div>
                 )}
               </div>
-
-              {/* 선택된 태그들 표시 */}
               {selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {selectedTags.map((tag, index) => (
@@ -836,11 +743,8 @@ function EditProjectContent() {
                 </div>
               )}
             </div>
-
-            {/* 날짜 정보 */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">프로젝트 기간</h3>
-              
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -853,7 +757,6 @@ function EditProjectContent() {
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     종료일 {!formData.is_ongoing && '*'}
@@ -870,8 +773,6 @@ function EditProjectContent() {
             </div>
           </div>
         </div>
-
-        {/* 하단 저장 버튼 */}
         <div className="mt-8 flex justify-end space-x-4">
           <Link
             href="/admin/projects"
@@ -899,7 +800,10 @@ function EditProjectContent() {
     </div>
   );
 }
-
+/**
+ * @description 프로젝트 수정 페이지를 렌더링합니다.
+ * @returns {JSX.Element} 프로젝트 수정 페이지.
+ */
 export default function EditProject() {
   return (
     <Suspense fallback={

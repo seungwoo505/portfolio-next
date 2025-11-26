@@ -1,8 +1,6 @@
 "use client";
 import Link from "next/link";
-
 import Image from "next/image";
-
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Head from "next/head";
 import toast from "react-hot-toast";
@@ -11,13 +9,14 @@ import ScrollProgress from "../../components/ScrollProgress";
 import { projectApi, api } from "@/lib/api";
 import { Project } from "@/types";
 import Pagination from "@/components/Pagination";
-
 const PROJECT_CARD_REVEAL_INTERVAL = 120;
 const PROJECTS_PAGE_SIZE = 6;
-
-
+/**
+ * @component Projects
+ * @description 프로젝트 목록, 검색, 태그 필터링, 페이지네이션을 제공하는 공개 프로젝트 페이지.
+ * @returns {JSX.Element} 프로젝트 페이지 컴포넌트.
+ */
 export default function Projects() {
-  
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,30 +30,27 @@ export default function Projects() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalProjects, setTotalProjects] = useState(0);
   const [projectRevealCount, setProjectRevealCount] = useState(0);
-
-  // 필터링된 프로젝트 목록 (서버 사이드에서 처리되므로 클라이언트 사이드 필터링 제거)
   const filteredProjects = useMemo(() => {
     return projects || [];
   }, [projects]);
-
   const projectSkeletonCount = useMemo(() => {
     if (filteredProjects.length > 0) {
       return filteredProjects.length;
     }
-
     if (totalProjects > 0) {
       return Math.max(Math.min(totalProjects, PROJECTS_PAGE_SIZE), 1);
     }
-
     return 1;
   }, [filteredProjects, totalProjects]);
-
-  // 검색 핸들러
+  /**
+   * @function handleSearch
+   * @description 검색어 입력에 따라 프로젝트 목록 필터를 초기화하고 알림을 표시한다.
+   * @param {string} query 검색어.
+   * @returns {void}
+   */
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // 검색 시 첫 페이지로 이동
-    
-    // 검색어가 있을 때 피드백 제공
+    setCurrentPage(1); 
     if (query.trim()) {
       toast.success(`"${query}" 검색 결과를 불러오는 중...`, {
         duration: 1500,
@@ -67,16 +63,18 @@ export default function Projects() {
       });
     }
   }, []);
-
-  // 기술 스택 다중 필터 핸들러 (최적화: useCallback 사용)
+  /**
+   * @function handleTechFilter
+   * @description 기술 스택 토글에 따라 필터 목록을 업데이트한다.
+   * @param {string} tech 선택 또는 해제할 기술 스택 이름.
+   * @returns {void}
+   */
   const handleTechFilter = useCallback((tech: string) => {
     setSelectedTechs(prev => {
       const isCurrentlySelected = prev.includes(tech);
       const newTechs = isCurrentlySelected 
         ? prev.filter(t => t !== tech)
         : [...prev, tech];
-      
-      // 기술 스택 선택/해제 피드백
       if (isCurrentlySelected) {
         toast(`"${tech}" 기술 스택을 해제했습니다.`, {
           duration: 1500,
@@ -88,13 +86,15 @@ export default function Projects() {
           icon: '💻',
         });
       }
-      
       return newTechs;
     });
-    setCurrentPage(1); // 필터 변경 시 첫 페이지로 이동
+    setCurrentPage(1); 
   }, []);
-
-  // 스켈레톤 UI 컴포넌트
+  /**
+   * @component ProjectSkeletonContent
+   * @description 프로젝트 카드 로딩 상태를 위한 스켈레톤 콘텐츠.
+   * @returns {JSX.Element} 스켈레톤 카드 콘텐츠.
+   */
   const ProjectSkeletonContent = () => (
     <div className="p-6 animate-pulse">
       <div className="flex items-center justify-between mb-4">
@@ -121,56 +121,52 @@ export default function Projects() {
       </div>
     </div>
   );
-
+  /**
+   * @component SkeletonProjectCard
+   * @description 공통 스타일을 적용한 프로젝트 스켈레톤 카드 컨테이너.
+   * @returns {JSX.Element} 스켈레톤 프로젝트 카드.
+   */
   const SkeletonProjectCard = () => (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
       <ProjectSkeletonContent />
     </div>
   );
-
-  // 태그 목록 가져오기 (블로그와 동일한 방식)
   useEffect(() => {
+    /**
+     * @function fetchTags
+     * @description 프로젝트와 일반 태그를 모두 가져와 필터 옵션을 구성한다.
+     * @returns {Promise<void>} 태그 로딩 완료 시 해결되는 프로미스.
+     */
     const fetchTags = async () => {
       try {
-        // 블로그와 동일하게 프로젝트 태그와 일반 태그를 가져오기
         const [projectTagsResponse, generalTagsResponse] = await Promise.all([
           api.get('/tags', { type: 'project', popular: 'true' }),
           api.get('/tags', { type: 'general', popular: 'true' })
         ]);
-        
         let allTags: Array<{id: string; name: string; slug: string}> = [];
-        
         if (projectTagsResponse.success && projectTagsResponse.data && Array.isArray(projectTagsResponse.data)) {
           allTags = [...allTags, ...projectTagsResponse.data];
         }
-        
         if (generalTagsResponse.success && generalTagsResponse.data && Array.isArray(generalTagsResponse.data)) {
           allTags = [...allTags, ...generalTagsResponse.data];
         }
-        
-        // 태그 이름을 표시용으로 사용하되, slug를 필터링용으로 저장
         const techNames = allTags.map(tag => tag.name).sort();
         setAvailableTechs(techNames);
-        
-        // 태그 정보를 저장 (name과 slug 매핑)
         setTags(allTags);
-        
       } catch {
-        // 태그 목록 로딩 실패 시 빈 배열 유지
       }
     };
-
     fetchTags();
-  }, []); // 컴포넌트 마운트 시 한 번만 실행
-
-  // 데이터 가져오기
+  }, []); 
   useEffect(() => {
-    
+    /**
+     * @function fetchData
+     * @description 프로젝트 목록과 관련 설정을 로드하여 페이지 상태를 갱신한다.
+     * @returns {Promise<void>} 데이터 로딩 작업.
+     */
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // 프로젝트 데이터 가져오기 (서버 사이드 검색, 필터링, 정렬 적용)
         const params: {
           limit?: number;
           page?: number;
@@ -187,40 +183,27 @@ export default function Projects() {
           sort: sortOrder,
           order: 'desc'
         };
-        
-        // 검색어가 있으면 추가
         if (searchQuery.trim()) {
           params.search = searchQuery.trim();
         }
-        
-        // 선택된 기술 스택들이 있으면 추가 (다중 태그 지원)
         if (selectedTechs.length > 0) {
-          // 태그 이름을 slug로 변환
           const selectedSlugs = selectedTechs.map(techName => {
             const tag = tags.find(t => t.name === techName);
-            return tag ? tag.slug : techName; // slug가 없으면 원본 이름 사용
+            return tag ? tag.slug : techName; 
           });
-          params.tags = selectedSlugs; // slug 배열 전달
+          params.tags = selectedSlugs; 
         }
-        
         const projectsResponse = await projectApi.getProjects(params);
         if (projectsResponse.success && projectsResponse.data) {
           setProjects(projectsResponse.data);
-          
-          // 페이지네이션 정보 업데이트
           if (projectsResponse.pagination) {
             setTotalPages(projectsResponse.pagination.totalPages || Math.ceil(projectsResponse.pagination.total / 6));
             setTotalProjects(projectsResponse.pagination.total);
           }
-          
-          // 기술 스택 목록은 초기 로드에서만 업데이트 (중복 제거)
-          
           setError(null);
         } else {
           setError('프로젝트를 불러올 수 없습니다.');
         }
-
-        // GitHub URL 가져오기 (설정에서)
         try {
           const settingsResponse = await api.get<{ [key: string]: string }>('/settings');
           if (settingsResponse.success && settingsResponse.data) {
@@ -231,25 +214,20 @@ export default function Projects() {
             }
           }
         } catch {
-          // 설정 가져오기 실패 시 기본값 유지
         }
-        
       } catch {
         setError('서버와의 연결에 문제가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [currentPage, searchQuery, selectedTechs, sortOrder, tags]);
-
   useEffect(() => {
     if (loading || filteredProjects.length === 0) {
       setProjectRevealCount(0);
       return;
     }
-
     setProjectRevealCount(0);
     const interval = window.setInterval(() => {
       setProjectRevealCount((prev) => {
@@ -260,18 +238,18 @@ export default function Projects() {
         return next;
       });
     }, PROJECT_CARD_REVEAL_INTERVAL);
-
     return () => window.clearInterval(interval);
   }, [loading, filteredProjects]);
-
-  // 페이지 변경 핸들러
+  /**
+   * @function handlePageChange
+   * @description 페이지네이션 이동 시 현재 페이지와 스크롤 위치를 업데이트한다.
+   * @param {number} page 이동할 페이지 번호.
+   * @returns {void}
+   */
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // 페이지 상단으로 스크롤
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  
   return (
     <>
       <Head>
@@ -280,8 +258,6 @@ export default function Projects() {
         <meta name="keywords" content="웹개발, 프로젝트, 포트폴리오, React, Next.js, Node.js, 프론트엔드, 백엔드" />
         <meta name="author" content="승우" />
         <meta name="robots" content="index, follow" />
-        
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content="프로젝트 | 승우의 포트폴리오" />
         <meta property="og:description" content="웹 개발자 승우의 프로젝트 포트폴리오입니다. React, Next.js, Node.js 등을 활용한 다양한 웹 프로젝트들을 확인해보세요." />
@@ -290,24 +266,17 @@ export default function Projects() {
         <meta property="og:image:alt" content="승우의 프로젝트 포트폴리오" />
         <meta property="og:site_name" content="승우의 포트폴리오" />
         <meta property="og:locale" content="ko_KR" />
-        
-        {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="프로젝트 | 승우의 포트폴리오" />
         <meta name="twitter:description" content="웹 개발자 승우의 프로젝트 포트폴리오입니다. React, Next.js, Node.js 등을 활용한 다양한 웹 프로젝트들을 확인해보세요." />
         <meta name="twitter:image" content="https://seungwoo.i234.me/og-image.jpg" />
         <meta name="twitter:creator" content="@seungwoo" />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href="https://seungwoo.i234.me/projects" />
       </Head>
       <DynamicHead pageTitle="프로젝트" />
       <ScrollProgress />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-
-
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* Hero Section */}
           <section className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
               프로젝트 포트폴리오
@@ -316,12 +285,8 @@ export default function Projects() {
               다양한 기술을 활용하여 제작한 프로젝트들을 소개합니다
             </p>
           </section>
-
-          {/* Projects Section */}
           <section className="mb-16">
-            {/* 검색 및 필터 섹션 */}
             <div className="mb-8">
-              {/* 검색창 - 중앙 배치 */}
               <div 
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
               >
@@ -339,12 +304,9 @@ export default function Projects() {
                   </svg>
                 </div>
               </div>
-              
-              {/* 기술 스택 다중 필터 - 중앙 배치 */}
               <div 
                 className="flex flex-wrap justify-center gap-2 mb-8"
               >
-                {/* 전체/전부 해제 버튼 */}
                 <button
                   onClick={() => setSelectedTechs([])}
                   className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
@@ -358,8 +320,6 @@ export default function Projects() {
                     <span className="ml-1 text-xs">✓</span>
                   )}
                 </button>
-                
-                {/* 개별 태그 버튼들 */}
                 {availableTechs.map((tech) => (
                   <button
                     key={tech}
@@ -377,21 +337,16 @@ export default function Projects() {
                   </button>
                 ))}
               </div>
-
-              {/* 헤더와 정렬 */}
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                   프로젝트 ({filteredProjects.length}개)
                 </h2>
                 <div className="flex items-center space-x-4">
-                  {/* Sort Options */}
                   <select
                     value={sortOrder}
                     onChange={(e) => {
                       const newSortOrder = e.target.value as 'created_at' | 'title' | 'view_count' | 'display_order';
                       setSortOrder(newSortOrder);
-                      
-                      // 정렬 변경 피드백
                       const sortLabels = {
                         'created_at': '생성일순',
                         'title': '제목순',
@@ -414,7 +369,6 @@ export default function Projects() {
                 </div>
               </div>
             </div>
-            
             {loading ? (
               <div className="grid lg:grid-cols-2 gap-8">
                 {Array.from({ length: projectSkeletonCount }).map((_, index) => (
@@ -451,7 +405,10 @@ export default function Projects() {
                   const stateClass = isRevealed
                     ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
                     : "cursor-default pointer-events-none";
-
+                  /**
+                   * @description 프로젝트에 연결된 기술 스택 목록을 계산합니다.
+                   * @returns {string[]} 표시할 기술 스택 배열.
+                   */
                   const techList = (() => {
                     if (project.technologies) {
                       return project.technologies.split(',').map((tech) => tech.trim());
@@ -464,7 +421,6 @@ export default function Projects() {
                     }
                     return [] as string[];
                   })();
-
                   return (
                     <article
                       key={project.id}
@@ -512,20 +468,16 @@ export default function Projects() {
                               )}
                             </div>
                           </div>
-
                           <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
                             <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
                             <span className="text-sm text-slate-400">{project.featured ? '주요 프로젝트' : '프로젝트'}</span>
                           </div>
-
                           <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
                             {project.title}
                           </h3>
-
                           <p className="text-slate-600 dark:text-slate-300 mb-4 line-clamp-3">
                             {project.excerpt || project.description}
                           </p>
-
                           <div className="flex flex-wrap gap-2 mb-4">
                             {techList.length > 0 ? (
                               techList.map((tech, techIndex) => (
@@ -542,7 +494,6 @@ export default function Projects() {
                               </span>
                             )}
                           </div>
-
                           <div className="flex gap-2 mb-3">
                             {project.demo_url && (
                               <a
@@ -567,7 +518,6 @@ export default function Projects() {
                               </a>
                             )}
                           </div>
-
                           <div className="flex items-center justify-between">
                             <a
                               href={`/projects/detail?slug=${encodeURIComponent(project.slug)}`}
@@ -589,8 +539,6 @@ export default function Projects() {
                 })}
               </div>
             )}
-
-            {/* 페이지네이션 */}
             {!searchQuery && selectedTechs.length === 0 && totalPages > 1 && (
               <div className="mt-12">
                 <Pagination
@@ -598,16 +546,12 @@ export default function Projects() {
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
-                
-                {/* 페이지 정보 */}
                 <div className="text-center mt-4 text-sm text-slate-500 dark:text-slate-400">
                   총 {totalProjects}개의 프로젝트 중 {((currentPage - 1) * 6) + 1}-{Math.min(currentPage * 6, totalProjects)}번째 프로젝트
                 </div>
               </div>
             )}
           </section>
-
-          {/* CTA Section */}
           <section 
             className="mt-16 text-center"
           >
@@ -629,10 +573,7 @@ export default function Projects() {
             </div>
           </section>
         </main>
-
-
       </div>
     </>
   );
 }
-

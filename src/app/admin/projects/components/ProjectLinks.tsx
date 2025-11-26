@@ -1,14 +1,18 @@
 "use client";
-
 import { ProjectForm } from '@/types/project';
 import { Link as LinkIcon, Github } from 'lucide-react';
-
 interface ProjectLinksProps {
   formData: ProjectForm;
   setFormData: (data: ProjectForm) => void;
   errors: Record<string, string>;
 }
-
+/**
+ * @description Project Links for project links.tsx.
+  * @param {*} { formData 입력값
+  * @param {*} setFormData 입력값
+  * @param {*} errors } 입력값
+ * @returns {any} 처리 결과
+ */
 function ProjectLinks({ formData, setFormData, errors }: ProjectLinksProps) {
   const handleInputChange = (field: keyof ProjectForm, value: string) => {
     setFormData({
@@ -16,7 +20,6 @@ function ProjectLinks({ formData, setFormData, errors }: ProjectLinksProps) {
       [field]: value
     });
   };
-
   return (
     <div className="space-y-6">
       <div>
@@ -33,7 +36,6 @@ function ProjectLinks({ formData, setFormData, errors }: ProjectLinksProps) {
         />
         {errors.project_url && <p className="text-red-500 text-sm mt-1">{errors.project_url}</p>}
       </div>
-
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           <Github className="w-4 h-4 inline mr-2" />
@@ -48,7 +50,6 @@ function ProjectLinks({ formData, setFormData, errors }: ProjectLinksProps) {
         />
         {errors.github_url && <p className="text-red-500 text-sm mt-1">{errors.github_url}</p>}
       </div>
-
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           대표 이미지 URL
@@ -65,5 +66,4 @@ function ProjectLinks({ formData, setFormData, errors }: ProjectLinksProps) {
     </div>
   );
 }
-
 export default ProjectLinks;
