@@ -236,7 +236,7 @@ export default function ClientHome({
           twitterUsername.setAttribute('content', seo.twitter_username);
         }
         const googleVerification = document.querySelector('meta[name="google-site-verification"]');
-        if (googleVerification && seo.google_verification && seo.google_verification !== 'your-google-verification-code') {
+        if (googleVerification && seo.google_verification) {
           googleVerification.setAttribute('content', seo.google_verification);
         }
         const canonical = document.querySelector('link[rel="canonical"]');

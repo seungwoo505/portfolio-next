@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     canonical: "https://seungwoo.i234.me",
   },
   verification: {
-    google: "your-google-verification-code",
+    google: "Vl181oV3jRYtolyEhTMDgGAlcusVl2qWA71k43xV_YQ",
   },
 };
 /**

@@ -123,7 +123,7 @@ export default function SettingsPage() {
         updated_at: new Date().toISOString()
       },
       google_verification: {
-        value: 'your-google-verification-code',
+        value: 'Vl181oV3jRYtolyEhTMDgGAlcusVl2qWA71k43xV_YQ',
         type: 'string',
         is_public: true,
         description: 'Google Search Console 인증 코드',

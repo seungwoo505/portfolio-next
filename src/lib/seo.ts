@@ -83,7 +83,7 @@ export function generateMetadata(config: SEOConfig): Metadata {
       canonical: fullUrl,
     },
     verification: {
-      google: 'your-google-verification-code',
+      google: 'Vl181oV3jRYtolyEhTMDgGAlcusVl2qWA71k43xV_YQ',
       yandex: 'your-yandex-verification-code',
       yahoo: 'your-yahoo-verification-code',
     },
