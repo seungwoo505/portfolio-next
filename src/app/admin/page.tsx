@@ -42,7 +42,7 @@ export default function AdminDashboard() {
         setStatsLoading(true);
         const response = await authApi.get('/admin/dashboard');
         if (response.success && response.data) {
-          const statsData = response.data as DashboardStats;
+          const statsData = response.data as AdminDashboardStats;
           setStats(statsData);
         }
       } catch (error) {

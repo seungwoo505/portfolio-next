@@ -202,11 +202,19 @@ export default function NewBlogPost() {
         const filteredData = tagsData.filter((t: { type?: string }) => 
           t.type === 'blog' || t.type === 'general'
         );
-        const mapped = filteredData.map((t: { id: string | number; name: string; color?: string }) => ({
-          id: String(t.id),
-          name: t.name,
-          color: t.color || '#6B7280',
-        }));
+        const mapped = filteredData.map((t: { id: string | number; name: string; color?: string; type?: string }) => {
+          const normalizedType =
+            (t.type as 'blog' | 'project' | 'general' | undefined) ?? 'blog';
+          const safeType: AdminTagOption['type'] =
+            normalizedType === 'project' ? 'blog' : normalizedType;
+          const option: AdminTagOption = {
+            id: String(t.id),
+            name: t.name,
+            color: t.color || '#6B7280',
+            type: safeType
+          };
+          return option;
+        });
         setAvailableTags(mapped);
       }
     } catch {

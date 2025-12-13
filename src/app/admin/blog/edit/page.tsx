@@ -154,11 +154,21 @@ function EditBlogPostContent() {
           });
           if (post.tags) {
             const postTags = Array.isArray(post.tags) ? post.tags : [];
-            const formattedTags = postTags.map((tag: { id: string | number; name: string; color?: string }) => ({
-              id: String(tag.id), 
-              name: tag.name,
-              color: tag.color || '#6B7280',
-            }));
+            const formattedTags = postTags.map(
+              (tag: { id: string | number; name: string; color?: string; type?: string }) => {
+                const normalizedType =
+                  (tag.type as 'blog' | 'project' | 'general' | undefined) ?? 'blog';
+                const safeType: AdminTagOption['type'] =
+                  normalizedType === 'project' ? 'blog' : normalizedType;
+                const entry: AdminTagOption = {
+                  id: String(tag.id),
+                  name: tag.name,
+                  color: tag.color || '#6B7280',
+                  type: safeType
+                };
+                return entry;
+              }
+            );
             const uniqueTags = formattedTags.filter((tag, index, self) =>
               index === self.findIndex(t => t.id === tag.id)
             );
@@ -189,11 +199,19 @@ function EditBlogPostContent() {
           const filteredData = tagsData.filter(
             (t: { type?: string }) => t.type === 'blog' || t.type === 'general'
           );
-          const mapped = filteredData.map((t: { id: string | number; name: string; color?: string }) => ({
-            id: String(t.id),
-            name: t.name,
-            color: t.color || '#6B7280',
-          }));
+          const mapped = filteredData.map((t: { id: string | number; name: string; color?: string; type?: string }) => {
+            const normalizedType =
+              (t.type as 'blog' | 'project' | 'general' | undefined) ?? 'blog';
+            const safeType: AdminTagOption['type'] =
+              normalizedType === 'project' ? 'blog' : normalizedType;
+            const option: AdminTagOption = {
+              id: String(t.id),
+              name: t.name,
+              color: t.color || '#6B7280',
+              type: safeType
+            };
+            return option;
+          });
           setAvailableTags(mapped);
         }
       } catch {

@@ -32,10 +32,13 @@ export interface Project {
   technologies?: string;
   github_url?: string;
   demo_url?: string;
+  project_url?: string;
   image_url?: string;
+  featured_image?: string;
   slug: string;
   status: 'planning' | 'in_progress' | 'completed' | 'on_hold';
   featured: boolean;
+  is_published?: boolean;
   start_date?: string;
   end_date?: string;
   view_count: number;

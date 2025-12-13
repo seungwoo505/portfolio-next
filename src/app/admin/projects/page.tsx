@@ -139,10 +139,19 @@ export default function ProjectsPage() {
     }
   };
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = !searchQuery || 
-      project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const normalizedQuery = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery ||
+      project.title.toLowerCase().includes(normalizedQuery) ||
+      project.description.toLowerCase().includes(normalizedQuery) ||
+      (project.tags?.some(tag => {
+        if (typeof tag === 'string') {
+          return tag.toLowerCase().includes(normalizedQuery);
+        }
+        if (tag && typeof tag === 'object' && 'name' in tag && typeof tag.name === 'string') {
+          return tag.name.toLowerCase().includes(normalizedQuery);
+        }
+        return false;
+      }) ?? false);
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'published' && project.is_published) ||
       (statusFilter === 'draft' && !project.is_published);
@@ -156,7 +165,10 @@ export default function ProjectsPage() {
    * @param {string} dateString 날짜 문자열.
    * @returns {string} 변환된 날짜 문자열.
    */
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) {
+      return '미정';
+    }
     return new Date(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'short',
@@ -312,7 +324,14 @@ export default function ProjectsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-                  {filteredProjects.map((project) => (
+                  {filteredProjects.map((project) => {
+                    const tagNames = Array.isArray(project.tags)
+                      ? project.tags.map(tag => typeof tag === 'string' ? tag : tag.name)
+                      : [];
+                    const startDateLabel = formatDate(project.start_date);
+                    const endDateLabel = project.end_date ? formatDate(project.end_date) : null;
+                    const isPublished = Boolean(project.is_published);
+                    return (
                     <tr key={project.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
@@ -359,7 +378,7 @@ export default function ProjectsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
-                          {project.tags.slice(0, 3).map((tag, index) => (
+                          {tagNames.slice(0, 3).map((tag, index) => (
                             <span
                               key={index}
                               className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
@@ -367,33 +386,33 @@ export default function ProjectsPage() {
                               {tag}
                             </span>
                           ))}
-                          {project.tags.length > 3 && (
+                          {tagNames.length > 3 && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                              +{project.tags.length - 3}
+                              +{tagNames.length - 3}
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-slate-900 dark:text-white">
-                          {formatDate(project.start_date)}
+                          {startDateLabel}
                         </div>
-                        {project.end_date && (
+                        {project.end_date && endDateLabel && (
                           <div className="text-sm text-slate-500 dark:text-slate-400">
-                            ~ {formatDate(project.end_date)}
+                            ~ {endDateLabel}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         <button
-                          onClick={() => togglePublishStatus(project.slug, project.is_published)}
+                          onClick={() => togglePublishStatus(project.slug, isPublished)}
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            project.is_published
+                            isPublished
                               ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                               : 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
                           } hover:opacity-80 transition-opacity cursor-pointer`}
                         >
-                          {project.is_published ? (
+                          {isPublished ? (
                             <>
                               <Eye className="w-3 h-3 mr-1" />
                               공개
@@ -453,7 +472,8 @@ export default function ProjectsPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>

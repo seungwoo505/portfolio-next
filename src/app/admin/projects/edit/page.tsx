@@ -156,7 +156,7 @@ function EditProjectContent() {
             content: project.content || '',
             excerpt: project.excerpt || '',
             meta_description: project.meta_description || '',
-            featured_image: project.image_url || '',
+            featured_image: project.featured_image || project.image_url || '',
             project_url: project.demo_url || '',
             github_url: project.github_url || '',
             tags: [],
@@ -170,19 +170,25 @@ function EditProjectContent() {
           if (project.tags && Array.isArray(project.tags)) {
             const formattedTags = project.tags.map((tag, index) => {
               if (typeof tag === 'string') {
-                return {
+                const entry: AdminTagOption = {
                   id: `${project.id}-tag-${index}`,
                   name: tag,
                   color: '#6B7280',
                   type: 'project'
                 };
+                return entry;
               } else {
-                return {
+                const normalizedType =
+                  (tag.type as 'project' | 'blog' | 'general' | undefined) ?? 'project';
+                const safeType: AdminTagOption['type'] =
+                  normalizedType === 'blog' ? 'project' : normalizedType;
+                const entry: AdminTagOption = {
                   id: String(tag.id),
                   name: tag.name,
                   color: tag.color || '#6B7280',
-                  type: tag.type || 'project'
+                  type: safeType ?? 'project'
                 };
+                return entry;
               }
             });
             setSelectedTags(formattedTags);
@@ -210,12 +216,19 @@ function EditProjectContent() {
           const filteredData = tagsData.filter(
             (t: { type?: string }) => t.type === 'project' || t.type === 'general'
           );
-          const mapped = filteredData.map((t: { id: string | number; name: string; color?: string }) => ({
-            id: String(t.id),
-            name: t.name,
-            color: t.color || '#6B7280',
-            type: 'project'
-          }));
+          const mapped = filteredData.map((t: { id: string | number; name: string; color?: string; type?: string }) => {
+            const normalizedType =
+              (t.type as 'project' | 'general' | 'blog' | undefined) ?? 'project';
+            const safeType: AdminTagOption['type'] =
+              normalizedType === 'blog' ? 'project' : normalizedType;
+            const option: AdminTagOption = {
+              id: String(t.id),
+              name: t.name,
+              color: t.color || '#6B7280',
+              type: safeType ?? 'project'
+            };
+            return option;
+          });
           setAvailableTags(mapped);
         }
       } catch {
@@ -440,6 +453,21 @@ function EditProjectContent() {
                     className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
                     placeholder="https://github.com/username/repo"
                   />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    대표 이미지 URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.featured_image}
+                    onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    프로젝트 상세 페이지에 표시될 대표 이미지 URL을 입력하세요.
+                  </p>
                 </div>
               </div>
             </div>

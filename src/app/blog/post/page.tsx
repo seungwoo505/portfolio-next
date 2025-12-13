@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -86,6 +87,24 @@ function BlogPostContent() {
       </div>
     );
   }
+  const formattedDate = post.created_at
+    ? new Date(post.created_at).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
+
+  const readingTime = post.read_time_minutes
+    ? `${post.read_time_minutes}분 읽기`
+    : null;
+
+  const tagList = Array.isArray(post.tags)
+    ? post.tags.map(tag => (typeof tag === 'string' ? tag : tag.name))
+    : [];
+
+  const viewCount = post.view_count ?? 0;
+
   return (
     <>
       <Head>
@@ -161,112 +180,152 @@ function BlogPostContent() {
           }}
         />
       </Head>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <nav className="mb-8">
-          <div className="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
-            <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">홈</Link>
-            <span>/</span>
-            <Link href="/blog" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">블로그</Link>
-            <span>/</span>
-            <span className="text-slate-700 dark:text-slate-300">{post.title}</span>
-          </div>
-        </nav>
-        <div className="mb-8">
-          <Link href="/blog" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span>모든 포스트 보기</span>
-          </Link>
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="pointer-events-none absolute inset-0 opacity-70">
+          <div className="absolute -top-24 -right-28 h-80 w-80 rounded-full bg-gradient-to-br from-blue-500/20 via-cyan-400/10 to-transparent blur-3xl dark:from-blue-500/15 dark:via-cyan-500/10" />
+          <div className="absolute bottom-[-10rem] left-[-6rem] h-[24rem] w-[24rem] rounded-full bg-gradient-to-tr from-purple-500/20 via-slate-200/20 to-transparent blur-3xl dark:from-purple-500/12 dark:via-blue-500/10" />
         </div>
-        <header className="mb-12">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <div className="flex items-center justify-between flex-wrap gap-4 text-slate-600 dark:text-slate-400 mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center border-2 border-slate-300 dark:border-slate-600 shadow-sm">
-                  <svg className="w-7 h-7 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+
+        <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
+          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <Link href="/" className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
+              홈
+            </Link>
+            <span>/</span>
+            <Link href="/blog" className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
+              블로그
+            </Link>
+            <span>/</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/70 px-3 py-1 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+              상세
+            </span>
+          </nav>
+
+          <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 shadow-2xl shadow-blue-500/10 backdrop-blur-2xl dark:border-slate-700/70 dark:bg-slate-800">
+            {post.featured_image ? (
+              <Image
+                src={post.featured_image}
+                alt={post.title}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover opacity-40 dark:opacity-30"
+              />
+            ) : null}
+            <div className="absolute -top-24 left-8 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/25 via-teal-500/25 to-transparent blur-3xl dark:from-emerald-500/15 dark:via-teal-500/15" />
+            <div className="absolute -bottom-28 right-12 h-72 w-72 rounded-full bg-gradient-to-br from-cyan-400/20 via-green-500/15 to-transparent blur-3xl dark:from-cyan-400/12 dark:via-green-500/10" />
+
+            <div className="relative z-10 space-y-8 px-6 py-12 sm:px-10 sm:py-16 lg:px-16 lg:py-20">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
+                Featured Insight
+              </div>
+
+              <div className="space-y-5">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-[2.85rem] lg:leading-[1.1] dark:text-white">
+                  {post.title}
+                </h1>
+                {(post.excerpt || post.meta_description) && (
+                  <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+                    {post.excerpt || post.meta_description}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-400">
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                </div>
-                <div>
-                  <div className="text-slate-900 dark:text-white font-medium">승우</div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">웹 개발자</div>
-                </div>
+                  {formattedDate}
+                </span>
+                {readingTime && (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {readingTime}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  조회 {viewCount}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {tagList.length ? (
+                  tagList.map(tag => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-50/80 px-4 py-1.5 text-xs font-semibold text-blue-700 shadow-sm dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-300" />
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-slate-100/80 px-4 py-1.5 text-xs font-semibold text-slate-600 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-300">
+                    태그 없음
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-center space-x-2 text-sm">
-              <time className="flex items-center space-x-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>{new Date(post.created_at).toLocaleDateString('ko-KR')}</span>
-              </time>
-              {post.read_time_minutes && (
-                <span className="flex items-center space-x-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>{post.read_time_minutes}분 읽기</span>
-                </span>
-              )}
-              <span className="flex items-center space-x-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <span>조회 {post.view_count || 0}</span>
-              </span>
+          </section>
+
+          <article className="relative overflow-hidden rounded-3xl border border-slate-200/70 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
+            <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent dark:via-blue-500/30" />
+            <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+              <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
+                {post.content ? (
+                  <div dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }} />
+                ) : (
+                  <div className="py-12 text-center text-lg text-slate-500 dark:text-slate-400">
+                    콘텐츠를 불러올 수 없습니다.
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          {(post.excerpt || post.meta_description) && (
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 mb-6 border border-slate-200 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                요약
-              </h3>
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                {post.excerpt || post.meta_description}
-              </p>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.tags && post.tags.length > 0 ? (
-              post.tags.map((tag, index) => (
-                <span key={typeof tag === 'string' ? tag : tag.id || index} className="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full border border-blue-200 dark:border-blue-700 shadow-sm">
-                  <span className="w-1.5 h-1.5 bg-blue-400 dark:bg-blue-300 rounded-full mr-2"></span>
-                  {typeof tag === 'string' ? tag : tag.name}
-                </span>
-              ))
-            ) : (
-              <span className="inline-flex items-center px-3 py-1.5 bg-slate-50 dark:bg-slate-700/30 text-slate-600 dark:text-slate-400 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-600">
-                <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-slate-500 rounded-full mr-2"></span>
-                태그 없음
-              </span>
-            )}
-          </div>
-        </header>
-        <article className="prose prose-lg dark:prose-invert max-w-none">
-          <div
-            className="bg-white dark:bg-slate-800 rounded-xl p-8 md:p-12 shadow-sm border border-slate-200 dark:border-slate-700"
-          >
-            {post.content ? (
-              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }} />
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-slate-500 dark:text-slate-400 text-lg">
-                  콘텐츠를 불러올 수 없습니다.
+          </article>
+
+          <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 p-8 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
+            <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-300">
+                  다음 단계
+                </p>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  다른 콘텐츠도 함께 확인해 보세요.
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  다양한 블로그 포스트와 프로젝트 케이스를 정리해 두었습니다.
                 </p>
               </div>
-            )}
-          </div>
-        </article>
-      </main>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 hover:bg-blue-700"
+                >
+                  다른 포스트 보기
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h6m0 0v6m0-6L10 16" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/projects"
+                  className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-white px-4 py-2 text-sm font-semibold text-blue-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 dark:border-blue-400/30 dark:bg-slate-800/90 dark:text-blue-300 dark:hover:bg-slate-700/90"
+                >
+                  프로젝트 살펴보기
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h6m0 0v6m0-6L10 16" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </>
   );
