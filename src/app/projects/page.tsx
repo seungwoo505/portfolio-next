@@ -309,30 +309,40 @@ export default function Projects() {
               >
                 <button
                   onClick={() => setSelectedTechs([])}
-                  className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+                  data-all-projects="true"
+                  className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                     selectedTechs.length === 0
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-purple-700 ring-4 ring-purple-200 dark:ring-purple-800/50'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300 dark:hover:border-purple-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-purple-200 dark:hover:ring-purple-800/50'
                   }`}
                 >
                   전체
-                  {selectedTechs.length === 0 && (
-                    <span className="ml-1 text-xs">✓</span>
+                  {selectedTechs.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                      ↺
+                    </span>
                   )}
                 </button>
                 {availableTechs.map((tech) => (
                   <button
                     key={tech}
                     onClick={() => handleTechFilter(tech)}
-                    className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+                    className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                       selectedTechs.includes(tech)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-slate-400 hover:border-slate-500 hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-600 ring-4 ring-purple-200 dark:ring-purple-800/50'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300 dark:hover:border-purple-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-purple-200 dark:hover:ring-purple-800/50'
                     }`}
                   >
                     {tech}
+                    {!selectedTechs.includes(tech) && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        +
+                      </span>
+                    )}
                     {selectedTechs.includes(tech) && (
-                      <span className="ml-1 text-xs">✓</span>
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        ×
+                      </span>
                     )}
                   </button>
                 ))}
@@ -563,10 +573,10 @@ export default function Projects() {
                 새로운 아이디어나 협업 제안을 언제든 환영합니다
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                <Link href="/contact" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
                   연락하기
                 </Link>
-                <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 border border-slate-300 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium">
+                <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-white transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
                   GitHub 보기
                 </a>
               </div>

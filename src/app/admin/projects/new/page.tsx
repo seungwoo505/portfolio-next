@@ -147,9 +147,9 @@ function NewProjectContent() {
             const safeType: AdminTagOption['type'] =
               normalizedType === 'blog' ? 'project' : normalizedType;
             const option: AdminTagOption = {
-              id: String(t.id),
-              name: t.name,
-              color: t.color || '#6B7280',
+            id: String(t.id),
+            name: t.name,
+            color: t.color || '#6B7280',
               type: safeType ?? 'project'
             };
             return option;

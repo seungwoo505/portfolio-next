@@ -161,9 +161,9 @@ function EditBlogPostContent() {
                 const safeType: AdminTagOption['type'] =
                   normalizedType === 'project' ? 'blog' : normalizedType;
                 const entry: AdminTagOption = {
-                  id: String(tag.id),
-                  name: tag.name,
-                  color: tag.color || '#6B7280',
+              id: String(tag.id), 
+              name: tag.name,
+              color: tag.color || '#6B7280',
                   type: safeType
                 };
                 return entry;
@@ -205,9 +205,9 @@ function EditBlogPostContent() {
             const safeType: AdminTagOption['type'] =
               normalizedType === 'project' ? 'blog' : normalizedType;
             const option: AdminTagOption = {
-              id: String(t.id),
-              name: t.name,
-              color: t.color || '#6B7280',
+            id: String(t.id),
+            name: t.name,
+            color: t.color || '#6B7280',
               type: safeType
             };
             return option;

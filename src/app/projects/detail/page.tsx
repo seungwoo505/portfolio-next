@@ -220,10 +220,10 @@ function ProjectDetailContent() {
           }}
         />
       </Head>
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="project-detail-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="pointer-events-none absolute inset-0 opacity-70">
-          <div className="absolute -top-24 -right-28 h-96 w-96 rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-400/15 to-transparent blur-3xl dark:from-blue-500/15 dark:via-indigo-500/10" />
-          <div className="absolute bottom-[-10rem] left-[-8rem] h-[28rem] w-[28rem] rounded-full bg-gradient-to-tr from-purple-500/20 via-cyan-400/15 to-transparent blur-3xl dark:from-purple-500/12 dark:via-cyan-400/10" />
+          <div className="absolute -top-24 -right-28 h-96 w-96 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-blue-500/15 dark:via-indigo-500/10" />
+          <div className="absolute bottom-[-10rem] left-[-8rem] h-[28rem] w-[28rem] rounded-full bg-gradient-to-tr from-transparent via-transparent to-transparent blur-3xl dark:from-purple-500/12 dark:via-cyan-400/10" />
         </div>
 
         <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
@@ -239,11 +239,11 @@ function ProjectDetailContent() {
             <span className="inline-flex items-center gap-1 px-3 py-1 text-slate-500 dark:text-slate-400 line-clamp-1 max-w-xs">
               {project?.title || '상세'}
             </span>
-          </nav>
+        </nav>
 
-          <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-2xl shadow-blue-500/10 backdrop-blur dark:border-slate-700/70 dark:bg-slate-800">
-            <div className="absolute -top-28 left-12 h-56 w-56 rounded-full bg-gradient-to-br from-blue-500/25 via-purple-500/25 to-transparent blur-3xl dark:from-blue-500/15 dark:via-purple-500/15" />
-            <div className="absolute -bottom-20 right-10 h-64 w-64 rounded-full bg-gradient-to-br from-cyan-400/20 via-indigo-500/15 to-transparent blur-3xl dark:from-cyan-400/12 dark:via-indigo-500/10" />
+          <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl shadow-blue-500/10 backdrop-blur dark:border-slate-700/70 dark:bg-slate-800">
+            <div className="absolute -top-28 left-12 h-56 w-56 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-blue-500/15 dark:via-purple-500/15" />
+            <div className="absolute -bottom-20 right-10 h-64 w-64 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-cyan-400/12 dark:via-indigo-500/10" />
 
             <div className="relative grid gap-12 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)] lg:px-14 lg:py-16">
               <div className="space-y-6">
@@ -252,8 +252,8 @@ function ProjectDetailContent() {
                 </span>
 
                 <h1 className="text-3xl font-bold leading-snug text-slate-900 sm:text-4xl md:text-[2.8rem] md:leading-tight dark:text-white">
-                  {project.title}
-                </h1>
+            {project.title}
+          </h1>
 
                 <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">
                   {project.excerpt || project.meta_description || project.description}
@@ -262,19 +262,19 @@ function ProjectDetailContent() {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
                   <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                     {startDate}
                     {endDate ? ` ~ ${endDate}` : project.status === 'in_progress' ? ' · 진행 중' : ''}
-                  </span>
+                </span>
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
                       조회 {project.view_count || 0}
-                    </span>
-                </div>
+              </span>
+            </div>
 
                 <div className="flex flex-wrap gap-2">
                   {tagNames.length ? (
@@ -285,14 +285,14 @@ function ProjectDetailContent() {
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-300" />
                         {tag}
-                      </span>
-                    ))
-                  ) : (
+                </span>
+              ))
+            ) : (
                     <span className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-slate-100/70 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-300">
-                      태그 없음
-                    </span>
-                  )}
-                </div>
+                태그 없음
+              </span>
+            )}
+          </div>
               </div>
 
               <div className="relative">
@@ -313,17 +313,17 @@ function ProjectDetailContent() {
                           e.currentTarget.style.display = 'none';
                         }}
                       />
-                    </div>
+            </div>
                   ) : (
                     <div className="flex h-full min-h-[260px] flex-col items-center justify-center gap-3 px-6 py-10 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200/70 dark:bg-slate-700/70">
                         <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 13h18" />
-                        </svg>
-                      </div>
+                    </svg>
+                  </div>
                       <p className="text-sm font-medium">대표 이미지가 등록되지 않았습니다.</p>
-                    </div>
+                </div>
                   )}
                 </div>
               </div>
@@ -369,28 +369,28 @@ function ProjectDetailContent() {
                         {tech}
                       </span>
                     ))}
-                  </div>
+          </div>
                 </section>
-              )}
+        )}
 
-              {project.content && (
+        {project.content && (
                 <article className="relative overflow-hidden rounded-3xl border border-slate-200/70 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
                   <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent dark:via-blue-500/30" />
                   <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
                     <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
-                      <div dangerouslySetInnerHTML={{ __html: markdownToHtml(project.content) }} />
+              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(project.content) }} />
                     </div>
-                  </div>
-                </article>
-              )}
+            </div>
+          </article>
+        )}
 
               {(project.demo_url || project.project_url || project.github_url) && (
                 <section className="grid gap-6 sm:grid-cols-2">
                   {(project.demo_url || project.project_url) && (
-                    <a
+                <a
                       href={project.demo_url || project.project_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  target="_blank"
+                  rel="noopener noreferrer"
                       className="relative overflow-hidden rounded-3xl border border-blue-200/70 bg-blue-600/90 p-8 text-white shadow-xl shadow-blue-500/20 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-white/10" />
@@ -406,17 +406,17 @@ function ProjectDetailContent() {
                           바로가기
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h6m0 0v6m0-6L10 16" />
-                          </svg>
+                  </svg>
                         </span>
                       </div>
-                    </a>
-                  )}
+                </a>
+              )}
 
-                  {project.github_url && (
-                    <a
-                      href={project.github_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+              {project.github_url && (
+                <a
+                  href={project.github_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                       className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-900/90 p-8 text-white shadow-xl shadow-slate-900/20 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-900/30"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-slate-700/40 via-transparent to-slate-900/40" />
@@ -476,7 +476,7 @@ function ProjectDetailContent() {
               </div>
             </div>
           </section>
-        </main>
+      </main>
       </div>
     </>
   );

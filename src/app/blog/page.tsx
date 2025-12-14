@@ -292,25 +292,42 @@ export default function Blog() {
           >
             <button
               onClick={clearAllTags}
-              className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+              data-all-posts="true"
+              className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                 selectedTags.length === 0
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-blue-700 ring-4 ring-blue-200 dark:ring-blue-800/50'
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
               }`}
             >
               모든 포스트
+              {selectedTags.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                  ↺
+                </span>
+              )}
             </button>
             {tags.map((tag) => (
               <button
                 key={tag.id}
                 onClick={() => handleTagToggle(tag.slug)}
-                className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+                data-blog-tag="true"
+                className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                   selectedTags.includes(tag.slug)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-slate-400 hover:border-slate-500 hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-600 ring-4 ring-blue-200 dark:ring-blue-800/50'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
                 }`}
               >
                 {tag.name} {tag.post_count && `(${tag.post_count})`}
+                {!selectedTags.includes(tag.slug) && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                    +
+                  </span>
+                )}
+                {selectedTags.includes(tag.slug) && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                    ×
+                  </span>
+                )}
               </button>
             ))}
           </div>

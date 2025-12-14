@@ -140,7 +140,7 @@ export default function ProjectsPage() {
   };
   const filteredProjects = projects.filter(project => {
     const normalizedQuery = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery ||
+    const matchesSearch = !searchQuery || 
       project.title.toLowerCase().includes(normalizedQuery) ||
       project.description.toLowerCase().includes(normalizedQuery) ||
       (project.tags?.some(tag => {

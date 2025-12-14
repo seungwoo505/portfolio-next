@@ -180,10 +180,10 @@ function BlogPostContent() {
           }}
         />
       </Head>
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="blog-post-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="pointer-events-none absolute inset-0 opacity-70">
-          <div className="absolute -top-24 -right-28 h-80 w-80 rounded-full bg-gradient-to-br from-blue-500/20 via-cyan-400/10 to-transparent blur-3xl dark:from-blue-500/15 dark:via-cyan-500/10" />
-          <div className="absolute bottom-[-10rem] left-[-6rem] h-[24rem] w-[24rem] rounded-full bg-gradient-to-tr from-purple-500/20 via-slate-200/20 to-transparent blur-3xl dark:from-purple-500/12 dark:via-blue-500/10" />
+          <div className="absolute -top-24 -right-28 h-80 w-80 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-blue-500/15 dark:via-cyan-500/10" />
+          <div className="absolute bottom-[-10rem] left-[-6rem] h-[24rem] w-[24rem] rounded-full bg-gradient-to-tr from-transparent via-transparent to-transparent blur-3xl dark:from-purple-500/12 dark:via-blue-500/10" />
         </div>
 
         <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
@@ -199,9 +199,9 @@ function BlogPostContent() {
             <span className="inline-flex items-center gap-1 px-3 py-1 text-slate-500 dark:text-slate-400 line-clamp-1 max-w-xs">
               {post?.title || '상세'}
             </span>
-          </nav>
+        </nav>
 
-          <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 shadow-2xl shadow-blue-500/10 backdrop-blur-2xl dark:border-slate-700/70 dark:bg-slate-800">
+          <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-2xl shadow-blue-500/10 backdrop-blur-2xl dark:border-slate-700/70 dark:bg-slate-800">
             {post.featured_image ? (
               <Image
                 src={post.featured_image}
@@ -212,18 +212,18 @@ function BlogPostContent() {
                 className="object-cover opacity-40 dark:opacity-30"
               />
             ) : null}
-            <div className="absolute -top-24 left-8 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/25 via-teal-500/25 to-transparent blur-3xl dark:from-emerald-500/15 dark:via-teal-500/15" />
-            <div className="absolute -bottom-28 right-12 h-72 w-72 rounded-full bg-gradient-to-br from-cyan-400/20 via-green-500/15 to-transparent blur-3xl dark:from-cyan-400/12 dark:via-green-500/10" />
+            <div className="absolute -top-24 left-8 h-64 w-64 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-emerald-500/15 dark:via-teal-500/15" />
+            <div className="absolute -bottom-28 right-12 h-72 w-72 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-cyan-400/12 dark:via-green-500/10" />
 
             <div className="relative z-10 space-y-8 px-6 py-12 sm:px-10 sm:py-16 lg:px-16 lg:py-20">
               <div className="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
                 Featured Insight
-              </div>
+        </div>
 
               <div className="space-y-5">
                 <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-[2.85rem] lg:leading-[1.1] dark:text-white">
-                  {post.title}
-                </h1>
+            {post.title}
+          </h1>
                 {(post.excerpt || post.meta_description) && (
                   <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">
                     {post.excerpt || post.meta_description}
@@ -234,7 +234,7 @@ function BlogPostContent() {
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-400">
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   {formattedDate}
                 </span>
@@ -244,16 +244,16 @@ function BlogPostContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {readingTime}
-                  </span>
-                )}
+                </span>
+              )}
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
                   조회 {viewCount}
-                </span>
-              </div>
+              </span>
+            </div>
 
               <div className="flex flex-wrap gap-2">
                 {tagList.length ? (
@@ -264,14 +264,14 @@ function BlogPostContent() {
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-300" />
                       {tag}
-                    </span>
-                  ))
-                ) : (
+                </span>
+              ))
+            ) : (
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-slate-100/80 px-4 py-1.5 text-xs font-semibold text-slate-600 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-300">
-                    태그 없음
-                  </span>
-                )}
-              </div>
+                태그 없음
+              </span>
+            )}
+          </div>
             </div>
           </section>
 
@@ -279,11 +279,11 @@ function BlogPostContent() {
             <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent dark:via-blue-500/30" />
             <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
               <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
-                {post.content ? (
-                  <div dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }} />
-                ) : (
+            {post.content ? (
+              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }} />
+            ) : (
                   <div className="py-12 text-center text-lg text-slate-500 dark:text-slate-400">
-                    콘텐츠를 불러올 수 없습니다.
+                  콘텐츠를 불러올 수 없습니다.
                   </div>
                 )}
               </div>
@@ -323,9 +323,9 @@ function BlogPostContent() {
                   </svg>
                 </Link>
               </div>
-            </div>
+          </div>
           </section>
-        </main>
+      </main>
       </div>
     </>
   );
