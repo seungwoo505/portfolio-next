@@ -187,7 +187,7 @@ function BlogPostContent() {
         </div>
 
         <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
-          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-transparent">
             <Link href="/" className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
               홈
             </Link>
@@ -196,8 +196,8 @@ function BlogPostContent() {
               블로그
             </Link>
             <span>/</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/70 px-3 py-1 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-              상세
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-slate-500 dark:text-slate-400 line-clamp-1 max-w-xs">
+              {post?.title || '상세'}
             </span>
           </nav>
 

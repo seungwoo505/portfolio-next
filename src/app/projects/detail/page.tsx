@@ -227,7 +227,7 @@ function ProjectDetailContent() {
         </div>
 
         <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
-          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-transparent">
             <Link href="/" className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
               홈
             </Link>
@@ -236,8 +236,8 @@ function ProjectDetailContent() {
               프로젝트
             </Link>
             <span>/</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/70 px-3 py-1 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-              상세
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-slate-500 dark:text-slate-400 line-clamp-1 max-w-xs">
+              {project?.title || '상세'}
             </span>
           </nav>
 
@@ -323,9 +323,6 @@ function ProjectDetailContent() {
                         </svg>
                       </div>
                       <p className="text-sm font-medium">대표 이미지가 등록되지 않았습니다.</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">
-                        프로젝트 화면 캡처를 추가하면 정보가 더 풍성해집니다.
-                      </p>
                     </div>
                   )}
                 </div>

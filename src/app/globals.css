@@ -63,7 +63,7 @@ body {
 }
 
 .dark header,
-.dark nav {
+.dark nav:not(.bg-transparent) {
   background-color: #111111;
   color: #ffffff;
 }
@@ -860,7 +860,7 @@ html {
     }
     
     :root:not(.dark) header, 
-    :root:not(.dark) nav {
+    :root:not(.dark) nav:not(.bg-transparent) {
       background-color: #ffffff !important;
       color: #171717 !important;
     }
@@ -935,7 +935,7 @@ html {
     color: #171717 !important;
   }
   :root:not(.dark) header, 
-  :root:not(.dark) nav {
+  :root:not(.dark) nav:not(.bg-transparent) {
     background-color: #ffffff !important;
     color: #171717 !important;
   }
@@ -1124,7 +1124,7 @@ html {
     color: #ffffff !important;
   }
   :root.dark header, 
-  :root.dark nav {
+  :root.dark nav:not(.bg-transparent) {
     background-color: #111111 !important;
     color: #ffffff !important;
   }
