@@ -416,6 +416,7 @@ export default function Blog() {
                           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             <Link
                               href={`/blog/post?slug=${post.slug}`}
+                              prefetch={false}
                               onClick={(e) => e.stopPropagation()}
                             >
                               {post.title}
@@ -440,6 +441,7 @@ export default function Blog() {
                           <div className="flex items-center justify-between">
                             <Link
                               href={`/blog/post?slug=${post.slug}`}
+                              prefetch={false}
                               className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
                               onClick={(e) => e.stopPropagation()}
                             >

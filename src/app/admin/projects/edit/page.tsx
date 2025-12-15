@@ -371,7 +371,7 @@ function EditProjectContent() {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">프로젝트 슬러그가 필요합니다</h1>
             <p className="text-slate-600 dark:text-slate-400 mb-8">URL에 프로젝트 슬러그가 포함되어야 합니다.</p>
-            <Link href="/admin/projects" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            <Link href="/admin/projects" prefetch={false} className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
               <ArrowLeft className="w-4 h-4" />
               <span>프로젝트 목록으로 돌아가기</span>
             </Link>

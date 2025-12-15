@@ -196,7 +196,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 >
                   <Menu className="w-6 h-6" />
                 </button>
-                <Link href="/">
+                <Link href="/" prefetch={false}>
                   <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     승우.dev
                   </h1>

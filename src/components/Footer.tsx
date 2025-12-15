@@ -83,7 +83,7 @@ export default function Footer() {
             viewport={{ once: true }}
           >
             <div className="flex items-center space-x-4">
-              <Link href="/">
+              <Link href="/" prefetch={false}>
                 <h1 
                   className="text-xl font-bold"
                   style={{
@@ -111,19 +111,19 @@ export default function Footer() {
           >
             <h4 className="font-semibold text-slate-900 dark:text-slate-100">빠른 링크</h4>
             <div className="space-y-2">
-              <Link href="/about" className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/about" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
                 소개
               </Link>
-              <Link href="/projects" className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/projects" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
                 프로젝트
               </Link>
-              <Link href="/blog" className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/blog" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
                 블로그
               </Link>
-              <Link href="/contact" className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/contact" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
                 연락처
               </Link>
-              <Link href="/admin" className="block text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors text-xs">
+              <Link href="/admin" prefetch={false} className="block text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors text-xs">
                 관리자
               </Link>
             </div>

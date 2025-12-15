@@ -573,7 +573,7 @@ export default function Projects() {
                 새로운 아이디어나 협업 제안을 언제든 환영합니다
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                <Link href="/contact" prefetch={false} className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
                   연락하기
                 </Link>
                 <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-white transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">

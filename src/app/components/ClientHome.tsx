@@ -746,7 +746,7 @@ export default function ClientHome({
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 대표 블로그 포스트
               </h2>
-              <Link href="/blog" className="text-blue-600 hover:underline font-medium text-sm">
+              <Link href="/blog" prefetch={false} className="text-blue-600 hover:underline font-medium text-sm">
                 모든 포스트 보기 →
               </Link>
             </div>
@@ -830,7 +830,7 @@ export default function ClientHome({
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 대표 프로젝트
               </h2>
-              <Link href="/projects" className="text-blue-600 hover:underline font-medium text-sm">
+              <Link href="/projects" prefetch={false} className="text-blue-600 hover:underline font-medium text-sm">
                 모든 프로젝트 보기 →
               </Link>
             </div>

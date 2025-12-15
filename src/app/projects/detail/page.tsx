@@ -77,7 +77,7 @@ function ProjectDetailContent() {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">프로젝트를 찾을 수 없습니다</h1>
             <p className="text-slate-600 dark:text-slate-400 mb-8">요청하신 프로젝트를 찾을 수 없습니다.</p>
-            <Link href="/projects" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            <Link href="/projects" prefetch={false} className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -228,11 +228,11 @@ function ProjectDetailContent() {
 
         <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
           <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-transparent">
-            <Link href="/" className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
+            <Link href="/" prefetch={false} className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
               홈
             </Link>
             <span>/</span>
-            <Link href="/projects" className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
+            <Link href="/projects" prefetch={false} className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
               프로젝트
             </Link>
             <span>/</span>

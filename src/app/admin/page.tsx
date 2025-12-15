@@ -134,7 +134,7 @@ export default function AdminDashboard() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <Link href="/admin/blog" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <Link href="/admin/blog" prefetch={false} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
                 <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-          <Link href="/admin/projects" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
+          <Link href="/admin/projects" prefetch={false} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                 <FolderOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-          <Link href="/admin/contacts" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
+          <Link href="/admin/contacts" prefetch={false} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
                 <Mail className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-          <Link href="/admin/tags" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
+          <Link href="/admin/tags" prefetch={false} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
                 <Tag className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           {user?.role === 'super_admin' && (
-            <Link href="/admin/users" className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
+            <Link href="/admin/users" prefetch={false} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-4">
                 <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
                   <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">최근 연락 메시지</h3>
-              <Link href="/admin/contacts" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              <Link href="/admin/contacts" prefetch={false} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                 전체 보기
               </Link>
             </div>
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">최근 블로그 포스트</h3>
-              <Link href="/admin/blog" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              <Link href="/admin/blog" prefetch={false} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                 전체 보기
               </Link>
             </div>

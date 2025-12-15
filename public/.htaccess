@@ -1,0 +1,121 @@
+# 보안 헤더 설정
+<IfModule mod_headers.c>
+    # 클릭재킹 방지 (SAMEORIGIN이 DENY보다 유연함)
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # MIME 타입 스니핑 방지
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # 리퍼러 정책 설정
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # XSS 보호 (추가 보안)
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # HTTPS 강제 (선택사항)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    
+    # .txt, .rsc 파일 요청에 대해 캐시 완전 차단 및 ETag 제거
+    # (위의 FilesMatch에서 이미 접근 차단되지만, 헤더 설정용)
+    <FilesMatch "\.(txt|rsc)$">
+        Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate, private"
+        Header always set Pragma "no-cache"
+        Header always set Expires "0"
+        Header always unset ETag
+        Header always unset Last-Modified
+    </FilesMatch>
+    
+    # HTML 파일에 캐시 버스팅 추가 (브라우저가 항상 최신 버전 확인)
+    <FilesMatch "\.(html|htm)$">
+        Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header always set Pragma "no-cache"
+        Header always set Expires "0"
+        Header always unset ETag
+    </FilesMatch>
+</IfModule>
+
+# 디렉토리 인덱스 파일 우선순위 설정 (HTML 우선, .txt 명시적 제외)
+<IfModule mod_dir.c>
+    DirectoryIndex index.html index.htm
+    # .txt 파일을 DirectoryIndex 목록에서 완전히 제외
+    <Files "index.txt">
+        Require all denied
+    </Files>
+    <Files "*.txt">
+        Require all denied
+    </Files>
+</IfModule>
+
+# .txt, .rsc 파일 직접 접근 차단 (FilesMatch보다 우선순위 높음)
+<FilesMatch "\.(txt|rsc)$">
+    # Apache 2.4+
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    # Apache 2.2 이하 (호환성)
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Apache 모듈 활성화 확인
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Next.js RSC 페이로드 파일(.txt, .rsc) 직접 접근 차단 (백업 규칙)
+    # FilesMatch에서 이미 차단하지만, 혹시 모를 경우를 대비
+    # [G] 플래그: 410 Gone 반환 (캐시되지 않음, 다른 규칙 실행 방지)
+    RewriteCond %{REQUEST_URI} \.(txt|rsc)$
+    RewriteRule . - [G,L]
+    
+    # RSC 페이로드 요청 헤더가 있는 경우도 차단
+    RewriteCond %{HTTP_ACCEPT} text/x-component
+    RewriteCond %{REQUEST_URI} \.(txt|rsc)$
+    RewriteRule . - [G,L]
+    
+    # 디렉토리 접근 시 trailing slash 추가 (trailingSlash: true 지원)
+    # 주의: 실제 파일 시스템 경로가 아닌 URL 경로만 사용
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_URI} !/$
+    RewriteRule ^(.+)$ %{REQUEST_URI}/ [R=301,L]
+    
+    # SPA 라우팅을 위한 설정 (Next.js 정적 export용)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
+
+# 파일 압축 (성능 최적화)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# 캐시 설정 (성능 최적화)
+# 주의: HTML 파일은 위에서 캐시 비활성화 설정됨
+<IfModule mod_expires.c>
+    ExpiresActive On
+    # HTML 파일은 캐시하지 않음 (위에서 설정됨)
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>
+
+# ETag 비활성화 (캐시 문제 방지)
+<IfModule mod_headers.c>
+    Header always unset ETag
+</IfModule>
+FileETag None
