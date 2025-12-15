@@ -668,6 +668,20 @@ html {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) ;
 }
 
+/* @uiw/react-md-editor Markdown 컴포넌트 배경색 조정 */
+.wmde-markdown {
+  background-color: transparent !important;
+}
+
+.wmde-markdown code {
+  background-color: var(--color-neutral-muted) !important;
+}
+
+/* 라이트 모드에서 마크다운 콘텐츠 배경색을 흰색으로 설정 */
+:root:not(.dark) .wmde-markdown {
+  background-color: #ffffff !important;
+}
+
 /* 숙련도 슬라이더 스타일 */
 .slider {
   -webkit-appearance: none;
