@@ -1513,9 +1513,20 @@ button[data-all-posts]:not(.bg-blue-600):hover {
 
 /* 프로젝트 페이지 필터 버튼 호버 호환성 */
 /* 선택된 버튼(보라색) 호버 - 삭제될 것임을 표시 (회색으로 변화) */
-button.bg-purple-600.text-white.border-purple-600:hover:not([data-all-projects]) {
-  background-color: #64748b !important; /* slate-500 */
-  border-color: #475569 !important; /* slate-600 */
+/* 포인터 장치(마우스)에서만 hover 효과 적용 */
+@media (hover: hover) and (pointer: fine) {
+  button.bg-purple-600.text-white.border-purple-600:hover:not([data-all-projects]) {
+    background-color: #64748b !important; /* slate-500 */
+    border-color: #475569 !important; /* slate-600 */
+  }
+}
+
+/* 터치 디바이스에서 hover 상태일 때 원래 보라색을 강제로 유지 */
+@media (hover: none), (pointer: coarse) {
+  button.bg-purple-600.text-white.border-purple-600:hover:not([data-all-projects]) {
+    background-color: #9333ea !important; /* purple-600 - 원래 선택된 색상 강제 유지 */
+    border-color: #9333ea !important;
+  }
 }
 
 /* 프로젝트 페이지 선택되지 않은 버튼 호버 시 - 추가될 것임을 표시 (보라색으로 변화) */
@@ -1549,9 +1560,20 @@ button[data-all-projects]:not(.bg-purple-600):hover {
 
 /* 선택된 버튼 호버 시 - 삭제될 것임을 표시 (회색으로 변화) */
 /* 단, "모든 포스트" 버튼은 제외 (삭제 불가) */
-button.bg-blue-600.text-white.border-blue-600:hover:not([data-all-posts]) {
-  background-color: #64748b !important; /* slate-500 */
-  border-color: #475569 !important; /* slate-600 */
+/* 포인터 장치(마우스)에서만 hover 효과 적용 */
+@media (hover: hover) and (pointer: fine) {
+  button.bg-blue-600.text-white.border-blue-600:hover:not([data-all-posts]) {
+    background-color: #64748b !important; /* slate-500 */
+    border-color: #475569 !important; /* slate-600 */
+  }
+}
+
+/* 터치 디바이스에서 hover 상태일 때 원래 파란색을 강제로 유지 */
+@media (hover: none), (pointer: coarse) {
+  button.bg-blue-600.text-white.border-blue-600:hover:not([data-all-posts]) {
+    background-color: #2563eb !important; /* blue-600 - 원래 선택된 색상 강제 유지 */
+    border-color: #2563eb !important;
+  }
 }
 
 /* 선택되지 않은 버튼 호버 - 더 명확한 선택자 사용 */
@@ -1656,5 +1678,52 @@ html:not(.dark) .blog-post-bg,
     --tw-gradient-to: #f1f5f9 !important; /* slate-100 - 라이트 모드 유지 */
     --tw-gradient-stops: var(--tw-gradient-from), #ffffff, var(--tw-gradient-to) !important;
     background-image: linear-gradient(to bottom right, #f8fafc, #ffffff, #f1f5f9) !important;
+  }
+}
+
+/* 프로젝트 필터 버튼: 선택된 상태의 hover 효과는 포인터 장치(마우스)에서만 적용 */
+/* 모바일(터치 디바이스)에서는 hover 효과가 완전히 비활성화됨 */
+
+/* 포인터 장치(마우스)에서만 hover 효과 적용 */
+@media (hover: hover) and (pointer: fine) {
+  .project-filter-btn-selected:hover {
+    background-color: #94a3b8 !important; /* slate-400 */
+    border-color: #64748b !important; /* slate-500 */
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+    transform: translateY(-2px) !important;
+    --tw-ring-color: rgb(203 213 225 / 1) !important; /* slate-300 */
+    --tw-ring-width: 2px !important;
+  }
+  .dark .project-filter-btn-selected:hover {
+    --tw-ring-color: rgb(71 85 105 / 1) !important; /* slate-600 */
+  }
+}
+
+/* 터치 디바이스에서 hover 상태일 때 원래 보라색을 강제로 유지 - 나중에 선언하여 우선 적용 */
+@media (hover: none) {
+  .project-filter-btn-selected:hover {
+    background-color: #9333ea !important; /* purple-600 - 원래 선택된 색상 강제 유지 */
+    border-color: #9333ea !important;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+    transform: none !important;
+    --tw-ring-color: rgb(221 214 254 / 1) !important; /* purple-200 */
+    --tw-ring-width: 2px !important;
+  }
+  .dark .project-filter-btn-selected:hover {
+    --tw-ring-color: rgb(88 28 135 / 0.5) !important; /* purple-800/50 */
+  }
+}
+
+@media (pointer: coarse) {
+  .project-filter-btn-selected:hover {
+    background-color: #9333ea !important; /* purple-600 - 원래 선택된 색상 강제 유지 */
+    border-color: #9333ea !important;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+    transform: none !important;
+    --tw-ring-color: rgb(221 214 254 / 1) !important; /* purple-200 */
+    --tw-ring-width: 2px !important;
+  }
+  .dark .project-filter-btn-selected:hover {
+    --tw-ring-color: rgb(88 28 135 / 0.5) !important; /* purple-800/50 */
   }
 }

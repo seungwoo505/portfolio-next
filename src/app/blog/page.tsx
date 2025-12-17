@@ -11,13 +11,62 @@ import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
 const POST_CARD_REVEAL_INTERVAL = 120;
 const POSTS_PAGE_SIZE = 6;
+
+/**
+ * 한글 초성 변환 함수
+ * @param str 변환할 문자열
+ * @returns 초성으로 변환된 문자열
+ */
+const getInitialConsonant = (str: string): string => {
+  const initialConsonants = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  return str.split('').map(char => {
+    const code = char.charCodeAt(0);
+    // 한글 범위 (가-힣)
+    if (code >= 0xAC00 && code <= 0xD7A3) {
+      const initialIndex = Math.floor((code - 0xAC00) / 588);
+      return initialConsonants[initialIndex] || char;
+    }
+    // 초성이 이미 입력된 경우
+    if (initialConsonants.includes(char)) {
+      return char;
+    }
+    // 영문자나 숫자는 그대로 유지
+    return char.toLowerCase();
+  }).join('');
+};
+
+/**
+ * 초성 검색이 포함된 검색 함수
+ * @param text 검색 대상 텍스트
+ * @param query 검색어
+ * @returns 검색 결과 매치 여부
+ */
+const matchesSearch = (text: string | undefined | null, query: string): boolean => {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  
+  // 일반 문자열 검색 (대소문자 구분 없음)
+  if (lowerText.includes(lowerQuery)) {
+    return true;
+  }
+  
+  // 초성 검색
+  const textInitial = getInitialConsonant(text);
+  const queryInitial = getInitialConsonant(query);
+  if (textInitial.includes(queryInitial)) {
+    return true;
+  }
+  
+  return false;
+};
 /**
  * @component Blog
  * @description 블로그 메인 페이지를 렌더링하고 포스트 검색, 필터링, 페이지네이션을 처리한다.
  * @returns {JSX.Element} 렌더링된 블로그 페이지 컴포넌트.
  */
 export default function Blog() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [_blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [tags, setTags] = useState<BlogTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +78,57 @@ export default function Blog() {
   const [totalPosts, setTotalPosts] = useState(0);
   const [postRevealCount, setPostRevealCount] = useState(0);
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
+  const [allPosts, setAllPosts] = useState<BlogPost[]>([]); // 모든 포스트 저장
+
+  // 프론트엔드에서 검색, 필터, 정렬, 페이지네이션 처리
   const filteredPosts = useMemo(() => {
-    return blogPosts || [];
-  }, [blogPosts]);
+    let filtered = [...allPosts];
+
+    // 검색어 필터링 (대소문자 구분 없음, 초성 검색 포함)
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim();
+      filtered = filtered.filter(post => 
+        matchesSearch(post.title, query) ||
+        matchesSearch(post.excerpt, query) ||
+        matchesSearch(post.content, query) ||
+        matchesSearch(post.meta_description, query)
+      );
+    }
+
+    // 태그 필터링
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(post => {
+        const postTagSlugs = post.tags?.map(tag => typeof tag === 'string' ? tag : tag.slug) || [];
+        return selectedTags.some(selectedSlug => postTagSlugs.includes(selectedSlug));
+      });
+    }
+
+    // 정렬
+    filtered.sort((a, b) => {
+      switch (sortOrder) {
+        case 'title':
+          return a.title.localeCompare(b.title, 'ko');
+        case 'view_count':
+          return (b.view_count || 0) - (a.view_count || 0);
+        case 'created_at':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'published_at':
+        default:
+          const aDate = a.published_at ? new Date(a.published_at).getTime() : new Date(a.created_at).getTime();
+          const bDate = b.published_at ? new Date(b.published_at).getTime() : new Date(b.created_at).getTime();
+          return bDate - aDate;
+      }
+    });
+
+    return filtered;
+  }, [allPosts, searchQuery, selectedTags, sortOrder]);
+
+  // 페이지네이션된 포스트
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * POSTS_PAGE_SIZE;
+    const endIndex = startIndex + POSTS_PAGE_SIZE;
+    return filteredPosts.slice(startIndex, endIndex);
+  }, [filteredPosts, currentPage]);
   const postSkeletonCount = useMemo(() => {
     if (filteredPosts.length > 0) {
       return filteredPosts.length;
@@ -61,32 +158,25 @@ export default function Blog() {
     fetchSettings();
   }, []);
   /**
-   * @description 블로그 포스트와 태그 데이터를 서버에서 가져온다.
+   * @description 블로그 포스트와 태그 데이터를 초기에 한 번만 가져온다.
    * @returns {Promise<void>} 비동기 데이터 패치 결과
    */
   useEffect(() => {
     /**
      * @function fetchData
-     * @description 블로그 포스트와 태그 데이터를 서버에서 가져와 상태를 갱신한다.
+     * @description 모든 블로그 포스트와 태그 데이터를 한 번에 가져와 상태를 갱신한다.
      * @returns {Promise<void>} 데이터 패치가 완료되면 해결되는 프로미스.
      */
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: Record<string, string | number | boolean | string[]> = { 
-          limit: 6, 
-          page: currentPage,
-          sort: sortOrder,
-          order: 'desc'
-        };
-        if (searchQuery.trim()) {
-          params.search = searchQuery.trim();
-        }
-        if (selectedTags.length > 0) {
-          params.tags = selectedTags;
-        }
+        // 모든 포스트를 한 번에 가져오기 (페이지네이션 없이)
         const [postsResponse, tagsResponse] = await Promise.all([
-          blogApi.getPosts(params),
+          blogApi.getPosts({
+            limit: 1000, // 충분히 큰 값으로 모든 포스트 가져오기
+            sort: 'published_at',
+            order: 'desc'
+          }),
           blogApi.getTags(true)
         ]);
         if (postsResponse.success && postsResponse.data) {
@@ -103,11 +193,8 @@ export default function Blog() {
             }
             return post as BlogPost;
           });
-          setBlogPosts(postsWithTags);
-          if (postsResponse.pagination) {
-            setTotalPages(postsResponse.pagination.totalPages || Math.ceil(postsResponse.pagination.total / 6));
-            setTotalPosts(postsResponse.pagination.total);
-          }
+          setAllPosts(postsWithTags);
+          setTotalPosts(postsWithTags.length);
           setError(null);
         } else {
           setError('블로그 포스트를 불러올 수 없습니다.');
@@ -125,7 +212,21 @@ export default function Blog() {
       }
     };
     fetchData();
-  }, [currentPage, searchQuery, selectedTags, sortOrder]);
+  }, []); // 초기 로드만
+
+  // 필터링된 결과에 따라 페이지네이션 업데이트
+  useEffect(() => {
+    const total = Math.ceil(filteredPosts.length / POSTS_PAGE_SIZE);
+    setTotalPages(total || 1);
+    if (currentPage > total && total > 0) {
+      setCurrentPage(1);
+    }
+  }, [filteredPosts, currentPage]);
+
+  // 현재 페이지의 포스트 설정
+  useEffect(() => {
+    setBlogPosts(paginatedPosts);
+  }, [paginatedPosts]);
   /**
    * @description 카드가 순차적으로 나타나는 애니메이션을 제어한다.
    * @returns {void}
@@ -165,18 +266,7 @@ export default function Blog() {
    */
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); 
-    if (query.trim()) {
-      toast.success(`"${query}" 검색 결과를 불러오는 중...`, {
-        duration: 1500,
-        icon: '🔍',
-      });
-    } else if (query === '') {
-      toast('검색을 초기화했습니다.', {
-        duration: 1500,
-        icon: '✨',
-      });
-    }
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
   }, []);
   /**
    * @function handleTagToggle
@@ -204,8 +294,7 @@ export default function Blog() {
       }
       return newTags;
     });
-    setSearchQuery('');
-    setCurrentPage(1); 
+    setCurrentPage(1); // 필터 변경 시 첫 페이지로 이동 (검색어는 유지)
   }, [tags]); 
   const clearAllTags = useCallback(() => {
     setSelectedTags([]);
@@ -395,8 +484,8 @@ export default function Blog() {
               </select>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPosts.length > 0 ? (
-                filteredPosts.map((post, index) => {
+              {paginatedPosts.length > 0 ? (
+                paginatedPosts.map((post, index) => {
                   const isRevealed = index < postRevealCount;
                   const baseClass = "bg-white dark:bg-slate-800 rounded-lg shadow-sm transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 group";
                   const stateClass = isRevealed

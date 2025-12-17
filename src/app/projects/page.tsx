@@ -11,28 +11,123 @@ import { Project } from "@/types";
 import Pagination from "@/components/Pagination";
 const PROJECT_CARD_REVEAL_INTERVAL = 120;
 const PROJECTS_PAGE_SIZE = 6;
+
+/**
+ * 한글 초성 변환 함수
+ * @param str 변환할 문자열
+ * @returns 초성으로 변환된 문자열
+ */
+const getInitialConsonant = (str: string): string => {
+  const initialConsonants = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  return str.split('').map(char => {
+    const code = char.charCodeAt(0);
+    // 한글 범위 (가-힣)
+    if (code >= 0xAC00 && code <= 0xD7A3) {
+      const initialIndex = Math.floor((code - 0xAC00) / 588);
+      return initialConsonants[initialIndex] || char;
+    }
+    // 초성이 이미 입력된 경우
+    if (initialConsonants.includes(char)) {
+      return char;
+    }
+    // 영문자나 숫자는 그대로 유지
+    return char.toLowerCase();
+  }).join('');
+};
+
+/**
+ * 초성 검색이 포함된 검색 함수
+ * @param text 검색 대상 텍스트
+ * @param query 검색어
+ * @returns 검색 결과 매치 여부
+ */
+const matchesSearch = (text: string | undefined | null, query: string): boolean => {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  
+  // 일반 문자열 검색 (대소문자 구분 없음)
+  if (lowerText.includes(lowerQuery)) {
+    return true;
+  }
+  
+  // 초성 검색
+  const textInitial = getInitialConsonant(text);
+  const queryInitial = getInitialConsonant(query);
+  if (textInitial.includes(queryInitial)) {
+    return true;
+  }
+  
+  return false;
+};
 /**
  * @component Projects
  * @description 프로젝트 목록, 검색, 태그 필터링, 페이지네이션을 제공하는 공개 프로젝트 페이지.
  * @returns {JSX.Element} 프로젝트 페이지 컴포넌트.
  */
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTechs, setSelectedTechs] = useState<string[]>([]);
   const [availableTechs, setAvailableTechs] = useState<string[]>([]);
-  const [tags, setTags] = useState<Array<{id: string; name: string; slug: string}>>([]);
+  const [_tags, setTags] = useState<Array<{id: string; name: string; slug: string}>>([]);
   const [sortOrder, setSortOrder] = useState<'created_at' | 'title' | 'view_count' | 'display_order'>('created_at');
   const [githubUrl, setGithubUrl] = useState<string>('https://github.com');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProjects, setTotalProjects] = useState(0);
   const [projectRevealCount, setProjectRevealCount] = useState(0);
+  const [allProjects, setAllProjects] = useState<Project[]>([]); // 모든 프로젝트 저장
+
+  // 프론트엔드에서 검색, 필터, 정렬, 페이지네이션 처리
   const filteredProjects = useMemo(() => {
-    return projects || [];
-  }, [projects]);
+    let filtered = [...allProjects];
+
+    // 검색어 필터링 (대소문자 구분 없음, 초성 검색 포함)
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim();
+      filtered = filtered.filter(project => 
+        matchesSearch(project.title, query) ||
+        matchesSearch(project.description, query) ||
+        matchesSearch(project.excerpt, query)
+      );
+    }
+
+    // 기술 스택 필터링
+    if (selectedTechs.length > 0) {
+      filtered = filtered.filter(project => {
+        const projectSkills = project.skills?.map(s => typeof s === 'string' ? s : s.name) || [];
+        const projectTags = project.tags?.map(t => typeof t === 'string' ? t : t.name) || [];
+        const allTechs = [...projectSkills, ...projectTags];
+        return selectedTechs.some(tech => allTechs.includes(tech));
+      });
+    }
+
+    // 정렬
+    filtered.sort((a, b) => {
+      switch (sortOrder) {
+        case 'title':
+          return a.title.localeCompare(b.title, 'ko');
+        case 'view_count':
+          return (b.view_count || 0) - (a.view_count || 0);
+        case 'display_order':
+          return (a.display_order || 0) - (b.display_order || 0);
+        case 'created_at':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    return filtered;
+  }, [allProjects, searchQuery, selectedTechs, sortOrder]);
+
+  // 페이지네이션된 프로젝트
+  const paginatedProjects = useMemo(() => {
+    const startIndex = (currentPage - 1) * PROJECTS_PAGE_SIZE;
+    const endIndex = startIndex + PROJECTS_PAGE_SIZE;
+    return filteredProjects.slice(startIndex, endIndex);
+  }, [filteredProjects, currentPage]);
   const projectSkeletonCount = useMemo(() => {
     if (filteredProjects.length > 0) {
       return filteredProjects.length;
@@ -50,18 +145,7 @@ export default function Projects() {
    */
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); 
-    if (query.trim()) {
-      toast.success(`"${query}" 검색 결과를 불러오는 중...`, {
-        duration: 1500,
-        icon: '🔍',
-      });
-    } else if (query === '') {
-      toast('검색을 초기화했습니다.', {
-        duration: 1500,
-        icon: '✨',
-      });
-    }
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
   }, []);
   /**
    * @function handleTechFilter
@@ -158,48 +242,26 @@ export default function Projects() {
     };
     fetchTags();
   }, []); 
+  // 초기 데이터 로드 (한 번만)
   useEffect(() => {
     /**
      * @function fetchData
-     * @description 프로젝트 목록과 관련 설정을 로드하여 페이지 상태를 갱신한다.
+     * @description 모든 프로젝트 목록을 한 번에 로드하여 상태를 갱신한다.
      * @returns {Promise<void>} 데이터 로딩 작업.
      */
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: {
-          limit?: number;
-          page?: number;
-          featured?: boolean;
-          search?: string;
-          tags?: string[];
-          skills?: string[];
-          status?: 'published' | 'draft' | 'all';
-          sort?: 'created_at' | 'title' | 'view_count' | 'display_order';
-          order?: 'asc' | 'desc';
-        } = {
-          limit: 6, 
-          page: currentPage,
-          sort: sortOrder,
+        // 모든 프로젝트를 한 번에 가져오기 (페이지네이션 없이)
+        const projectsResponse = await projectApi.getProjects({
+          limit: 1000, // 충분히 큰 값으로 모든 프로젝트 가져오기
+          status: 'published',
+          sort: 'created_at',
           order: 'desc'
-        };
-        if (searchQuery.trim()) {
-          params.search = searchQuery.trim();
-        }
-        if (selectedTechs.length > 0) {
-          const selectedSlugs = selectedTechs.map(techName => {
-            const tag = tags.find(t => t.name === techName);
-            return tag ? tag.slug : techName; 
-          });
-          params.tags = selectedSlugs; 
-        }
-        const projectsResponse = await projectApi.getProjects(params);
+        });
         if (projectsResponse.success && projectsResponse.data) {
-          setProjects(projectsResponse.data);
-          if (projectsResponse.pagination) {
-            setTotalPages(projectsResponse.pagination.totalPages || Math.ceil(projectsResponse.pagination.total / 6));
-            setTotalProjects(projectsResponse.pagination.total);
-          }
+          setAllProjects(projectsResponse.data);
+          setTotalProjects(projectsResponse.data.length);
           setError(null);
         } else {
           setError('프로젝트를 불러올 수 없습니다.');
@@ -222,7 +284,17 @@ export default function Projects() {
       }
     };
     fetchData();
-  }, [currentPage, searchQuery, selectedTechs, sortOrder, tags]);
+  }, []); // 초기 로드만
+
+  // 필터링된 결과에 따라 페이지네이션 업데이트
+  useEffect(() => {
+    const total = Math.ceil(filteredProjects.length / PROJECTS_PAGE_SIZE);
+    setTotalPages(total || 1);
+    if (currentPage > total && total > 0) {
+      setCurrentPage(1);
+    }
+  }, [filteredProjects, currentPage]);
+
   useEffect(() => {
     if (loading || filteredProjects.length === 0) {
       setProjectRevealCount(0);
@@ -327,9 +399,9 @@ export default function Projects() {
                   <button
                     key={tech}
                     onClick={() => handleTechFilter(tech)}
-                    className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
+                    className={`project-filter-btn px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                       selectedTechs.includes(tech)
-                        ? 'bg-purple-600 text-white border-purple-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-slate-400 hover:border-slate-500 hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-600 ring-4 ring-purple-200 dark:ring-purple-800/50'
+                        ? 'project-filter-btn-selected bg-purple-600 text-white border-purple-600 shadow-lg ring-2 ring-purple-200 dark:ring-purple-800/50'
                         : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300 dark:hover:border-purple-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-purple-200 dark:hover:ring-purple-800/50'
                     }`}
                   >
@@ -409,7 +481,7 @@ export default function Projects() {
               </div>
             ) : (
               <div className="grid lg:grid-cols-2 gap-8">
-                {filteredProjects.map((project, index) => {
+                {paginatedProjects.map((project, index) => {
                   const isRevealed = index < projectRevealCount;
                   const baseClass = "bg-white dark:bg-slate-800 rounded-xl shadow-sm transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700";
                   const stateClass = isRevealed
