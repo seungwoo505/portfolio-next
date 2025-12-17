@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -10,12 +10,13 @@ import { Menu, X } from "lucide-react";
  * @returns {JSX.Element} 주요 네비게이션을 담은 고정형 헤더 요소를 반환합니다.
  */
 export default function Header() {
+  // 초기 상태를 null로 설정하여 서버와 클라이언트가 같은 HTML 렌더링 (hydration mismatch 방지)
+  // useLayoutEffect 이후에 올바른 아이콘 표시
   const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null);
-  const [isClient, setIsClient] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  useEffect(() => {
-    setIsClient(true);
+  // useLayoutEffect를 사용하여 DOM이 페인트되기 전에 올바른 아이콘 표시
+  useLayoutEffect(() => {
     const root = document.documentElement;
     const currentTheme = root.getAttribute('data-theme');
     setIsDarkMode(currentTheme === 'dark');
@@ -27,7 +28,8 @@ export default function Header() {
    */
   const toggleTheme = () => {
     const root = document.documentElement;
-    const newDarkMode = !(isDarkMode ?? root.classList.contains('dark'));
+    const currentDarkMode = isDarkMode ?? (root.getAttribute('data-theme') === 'dark');
+    const newDarkMode = !currentDarkMode;
     setIsDarkMode(newDarkMode);
     if (newDarkMode) {
       root.classList.add('dark');
@@ -163,13 +165,14 @@ export default function Header() {
             </div>
               <button
                 onClick={toggleTheme}
-              className={`p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95 ${
-                !isClient ? 'opacity-0 pointer-events-none' : 'opacity-100'
-              }`}
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95"
                 title="다크모드 토글"
-              suppressHydrationWarning
+                suppressHydrationWarning
               >
-              {isClient && ((isDarkMode ?? false) ? (
+                {isDarkMode === null ? (
+                  // 초기 렌더링 시 공간을 유지하기 위한 빈 박스 (서버와 클라이언트가 같은 HTML 렌더링)
+                  <div className="w-5 h-5" />
+                ) : isDarkMode ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
@@ -177,19 +180,20 @@ export default function Header() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
-              ))}
+                )}
               </button>
           </div>
           <div className="md:hidden flex items-center space-x-2">
               <button
                 onClick={toggleTheme}
-              className={`p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95 ${
-                !isClient ? 'opacity-0 pointer-events-none' : 'opacity-100'
-              }`}
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95"
                 title="다크모드 토글"
-              suppressHydrationWarning
+                suppressHydrationWarning
               >
-              {isClient && ((isDarkMode ?? false) ? (
+                {isDarkMode === null ? (
+                  // 초기 렌더링 시 공간을 유지하기 위한 빈 박스 (서버와 클라이언트가 같은 HTML 렌더링)
+                  <div className="w-5 h-5" />
+                ) : isDarkMode ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
@@ -197,7 +201,7 @@ export default function Header() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
-              ))}
+                )}
               </button>
             <button
               onClick={toggleMobileMenu}
