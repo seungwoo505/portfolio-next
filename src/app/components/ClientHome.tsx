@@ -925,7 +925,7 @@ export default function ClientHome({
           <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-200 dark:border-slate-600">
             <button
               onClick={() => setActiveSkillTab('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`skill-tab-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 activeSkillTab === 'all'
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-md border border-slate-200 dark:border-slate-600'
                   : 'text-slate-600 dark:text-slate-400 bg-transparent hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600'
@@ -937,7 +937,7 @@ export default function ClientHome({
               <button
                 key={category}
                 onClick={() => setActiveSkillTab(category)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`skill-tab-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   activeSkillTab === category
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-md border border-slate-200 dark:border-slate-600'
                     : 'text-slate-600 dark:text-slate-400 bg-transparent hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600'

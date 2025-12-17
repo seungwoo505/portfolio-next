@@ -1287,6 +1287,24 @@ html {
   }
 }
 
+/* 기술 스택 필터 버튼 호버 스타일 (모든 브라우저) */
+/* skill-tab-btn 클래스를 사용하여 명확하게 타겟팅 */
+button.skill-tab-btn.bg-transparent:hover:not(.bg-white):not(.dark\:bg-slate-700) {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* slate-900 */
+}
+
+.dark button.skill-tab-btn.bg-transparent:hover:not(.bg-white):not(.dark\:bg-slate-700) {
+  background-color: #475569 !important; /* slate-600 */
+  color: #ffffff !important;
+}
+
+/* 라이트 모드 명시적 처리 */
+html:not(.dark) button.skill-tab-btn.bg-transparent:hover:not(.bg-white) {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* slate-900 */
+}
+
 /* Safari 호버 호환성 - 기술 스택 필터 버튼 */
 @supports (-webkit-appearance: none) {
   /* Safari에서 hover:bg-slate-50와 hover:text-slate-900 클래스가 제대로 작동하도록 강제 */

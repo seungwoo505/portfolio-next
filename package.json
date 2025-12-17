@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "export": "next build",
+    "export": "next build && node scripts/fix-css-scripts.js",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "fix-css": "node scripts/fix-css-scripts.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
