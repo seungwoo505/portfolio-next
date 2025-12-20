@@ -154,12 +154,94 @@ export default function ClientHome({
         setIsDataLoading(false);
       }
     };
+    
+    // 초기 데이터가 없으면 로드
     if (initialBlogPosts.length === 0 && initialProjects.length === 0 && initialSkills.length === 0) {
       loadData();
     } else {
+      // 초기 데이터로 먼저 설정 (빠른 렌더링을 위해)
+      setBlogPosts(initialBlogPosts);
+      setProjects(initialProjects);
+      setSkills(initialSkills);
       setIsDataLoading(false);
     }
-  }, [initialBlogPosts.length, initialProjects.length, initialSkills.length]);
+  }, [initialBlogPosts, initialProjects, initialSkills]);
+  
+  // 페이지가 포커스를 받을 때 조회수만 조용히 갱신 (깜박임 방지)
+  useEffect(() => {
+    /**
+     * @function updateViewCounts
+     * @description 조회수만 조용히 업데이트합니다. 다른 데이터는 변경하지 않습니다.
+     * @returns {Promise<void>} 조회수 갱신이 완료되면 해결됩니다.
+     */
+    const updateViewCounts = async () => {
+      try {
+        const [blogResponse, projectResponse] = await Promise.all([
+          blogApi.getPosts({ limit: 2, featured: true }),
+          projectApi.getProjects({ limit: 2, featured: true })
+        ]);
+        
+        // 블로그 포스트 조회수만 업데이트 (깜박임 방지)
+        if (blogResponse.success && blogResponse.data && Array.isArray(blogResponse.data)) {
+          setBlogPosts(prevPosts => {
+            return prevPosts.map(prevPost => {
+              const updatedPost = blogResponse.data!.find(p => p.id === prevPost.id);
+              // 조회수가 실제로 변경된 경우에만 업데이트
+              if (updatedPost && updatedPost.view_count !== prevPost.view_count) {
+                return { ...prevPost, view_count: updatedPost.view_count };
+              }
+              return prevPost;
+            });
+          });
+        }
+        
+        // 프로젝트 조회수만 업데이트 (깜박임 방지)
+        if (projectResponse.success && projectResponse.data && Array.isArray(projectResponse.data)) {
+          setProjects(prevProjects => {
+            return prevProjects.map(prevProject => {
+              const updatedProject = projectResponse.data!.find(p => p.id === prevProject.id);
+              // 조회수가 실제로 변경된 경우에만 업데이트
+              if (updatedProject && updatedProject.view_count !== prevProject.view_count) {
+                return { ...prevProject, view_count: updatedProject.view_count };
+              }
+              return prevProject;
+            });
+          });
+        }
+      } catch (error) {
+        console.error('조회수 갱신 실패:', error);
+      }
+    };
+    
+    // 페이지가 포커스를 받을 때만 갱신 (너무 자주 호출되지 않도록 디바운스)
+    let visibilityTimer: NodeJS.Timeout | null = null;
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        if (visibilityTimer) clearTimeout(visibilityTimer);
+        visibilityTimer = setTimeout(() => {
+          updateViewCounts();
+        }, 500); // 500ms 디바운스
+      }
+    };
+    
+    let focusTimer: NodeJS.Timeout | null = null;
+    const handleFocus = () => {
+      if (focusTimer) clearTimeout(focusTimer);
+      focusTimer = setTimeout(() => {
+        updateViewCounts();
+      }, 500); // 500ms 디바운스
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      if (visibilityTimer) clearTimeout(visibilityTimer);
+      if (focusTimer) clearTimeout(focusTimer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
   useEffect(() => {
     /**
      * @function loadPersonalInfo
