@@ -38,10 +38,7 @@ export default function ExperiencesPage() {
    */
   const fetchExperiences = async () => {
     try {
-      const response = await authApi.get<AdminExperience[]>('/experiences', {
-        sort: 'start_date',
-        order: 'desc'
-      });
+      const response = await authApi.get<AdminExperience[]>('/experiences/timeline');
       if (response.data) {
         setExperiences(response.data);
       }

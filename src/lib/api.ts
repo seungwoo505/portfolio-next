@@ -188,12 +188,8 @@ export const personalApi = {
     api.get<Interest[]>('/interests'),
   getInterestsByCategory: (category: 'technical' | 'personal') =>
     api.get<Interest[]>('/interests', { category }),
-  getExperiences: (params?: { sort?: 'start_date' | 'end_date'; order?: 'asc' | 'desc' }) => {
-    const searchParams: Record<string, string> = {};
-    if (params?.sort) searchParams.sort = params.sort;
-    if (params?.order) searchParams.order = params.order;
-    return api.get<unknown[]>('/experiences', searchParams);
-  },
+  getExperiencesTimeline: () =>
+    api.get<unknown[]>('/experiences/timeline'),
 };
 export const skillApi = {
   createSkill: (skill: Partial<Skill>) =>

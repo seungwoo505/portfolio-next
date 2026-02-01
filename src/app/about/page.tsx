@@ -40,7 +40,7 @@ export default function AboutPage() {
           api.get('/settings'),
           api.get('/personal-info'),
           api.get('/skills'),
-          personalApi.getExperiences({ sort: 'start_date', order: 'desc' }),
+          personalApi.getExperiencesTimeline(),
           api.get('/interests')
         ]);
         let settingsPersonalInfo = {};
