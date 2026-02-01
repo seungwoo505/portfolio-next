@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Head from 'next/head';
-import { api } from '@/lib/api';
+import { api, personalApi } from '@/lib/api';
 import DynamicHead from '@/components/DynamicHead';
 import ScrollProgress from '@/components/ScrollProgress';
 import { generateStructuredData } from '@/lib/seo';
@@ -40,7 +40,7 @@ export default function AboutPage() {
           api.get('/settings'),
           api.get('/personal-info'),
           api.get('/skills'),
-          api.get('/experiences'),
+          personalApi.getExperiences({ sort: 'start_date', order: 'desc' }),
           api.get('/interests')
         ]);
         let settingsPersonalInfo = {};
