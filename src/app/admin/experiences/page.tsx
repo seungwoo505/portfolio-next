@@ -352,17 +352,18 @@ export default function ExperiencesPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label htmlFor="exp-type" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     타입 *
                   </label>
                   <select
+                    id="exp-type"
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   >
                     <option value="work">직장 경험</option>
                     <option value="education">교육</option>
@@ -370,89 +371,100 @@ export default function ExperiencesPage() {
                     <option value="volunteer">봉사활동</option>
                   </select>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="exp-title" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                       직책/제목 *
                     </label>
                     <input
+                      id="exp-title"
                       type="text"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      placeholder="예: 프론트엔드 개발자"
+                      className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-400 transition-colors"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <div className="space-y-1.5">
+                    <label htmlFor="exp-company" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                       회사/기관
                     </label>
                     <input
+                      id="exp-company"
                       type="text"
                       name="company"
                       value={formData.company}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      placeholder="예: (주)회사명"
+                      className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-400 transition-colors"
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="exp-start" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                       시작일
                     </label>
                     <input
+                      id="exp-start"
                       type="date"
                       name="start_date"
                       value={formData.start_date}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors [color-scheme:light] dark:[color-scheme:dark]"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      종료일 (현재 재직 중이면 비워두세요)
+                  <div className="space-y-1.5">
+                    <label htmlFor="exp-end" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                      종료일
                     </label>
                     <input
+                      id="exp-end"
                       type="date"
                       name="end_date"
                       value={formData.end_date}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors [color-scheme:light] dark:[color-scheme:dark]"
                     />
+                    <p className="text-xs text-gray-500 dark:text-slate-400">재직 중이면 비워두세요</p>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="exp-desc" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     설명
                   </label>
                   <textarea
+                    id="exp-desc"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    placeholder="경험에 대한 간단한 설명을 입력하세요."
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-400 resize-y min-h-[76px] transition-colors"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    주요 성과 (한 줄에 하나씩)
+                <div className="space-y-1.5">
+                  <label htmlFor="exp-achievements" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                    주요 성과
                   </label>
                   <textarea
+                    id="exp-achievements"
                     name="achievements"
                     value={formData.achievements}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    placeholder="• 프로젝트 성과 1&#10;• 프로젝트 성과 2&#10;• 프로젝트 성과 3"
+                    placeholder="한 줄에 하나씩 입력하세요. (예: 프로젝트 성과 1)"
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-400 resize-y min-h-[100px] transition-colors"
                   />
+                  <p className="text-xs text-gray-500 dark:text-slate-400">줄바꿈으로 구분해 입력하면 목록으로 저장됩니다.</p>
                 </div>
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-slate-600">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                    className="px-4 py-2 rounded-lg text-gray-600 dark:text-slate-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     취소
                   </button>

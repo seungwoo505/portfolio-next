@@ -139,50 +139,54 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               {skill ? '기술 스택 수정' : '새 기술 스택 추가'}
             </h2>
             <button
+              type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              aria-label="닫기"
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label htmlFor="skill-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 기술명 *
               </label>
               <input
+                id="skill-name"
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => handleChange('name', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-400 ${
                   errors.name 
                     ? 'border-red-500 dark:border-red-400' 
-                    : 'border-gray-300 dark:border-slate-600'
-                } bg-white dark:bg-slate-700 text-gray-900 dark:text-white`}
+                    : 'border-slate-300 dark:border-slate-600'
+                } bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100`}
                 placeholder="예: React, TypeScript, Node.js"
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.name}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="space-y-1.5">
+              <label htmlFor="skill-category" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 카테고리 *
               </label>
               <select
+                id="skill-category"
                 value={formData.category_id || ''}
                 onChange={(e) => handleChange('category_id', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                   errors.category_id 
                     ? 'border-red-500 dark:border-red-400' 
-                    : 'border-gray-300 dark:border-slate-600'
-                } bg-white dark:bg-slate-700 text-gray-900 dark:text-white`}
+                    : 'border-slate-300 dark:border-slate-600'
+                } bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100`}
                 required
               >
                 <option value="">카테고리 선택</option>
@@ -193,20 +197,21 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
                 ))}
               </select>
               {categories.length === 0 && (
-                <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
+                <p className="text-sm text-amber-600 dark:text-amber-400">
                   카테고리가 설정되지 않았습니다. 관리자에게 문의하세요.
                 </p>
               )}
               {errors.category_id && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category_id}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.category_id}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="space-y-1.5">
+              <label htmlFor="skill-proficiency" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 숙련도: {formData.proficiency_level}%
               </label>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-4">
                 <input
+                  id="skill-proficiency"
                   type="range"
                   min="1"
                   max="100"
@@ -215,21 +220,21 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
                     const value = parseInt(e.target.value);
                     handleChange('proficiency_level', value);
                   }}
-                  className="flex-1 h-2 bg-gray-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
+                  className="flex-1 h-2.5 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   style={{
-                    background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(formData.proficiency_level || 50)}%, #E5E7EB ${(formData.proficiency_level || 50)}%, #E5E7EB 100%)`
+                    background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(formData.proficiency_level || 50)}%, #e2e8f0 ${(formData.proficiency_level || 50)}%, #e2e8f0 100%)`
                   }}
                 />
               </div>
               {errors.proficiency_level && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.proficiency_level}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.proficiency_level}</p>
               )}
             </div>
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center">
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  id="is_featured"
+                  id="skill-is-featured"
                   checked={formData.is_featured || false}
                   onChange={(e) => {
                     const isFeatured = e.target.checked;
@@ -241,25 +246,26 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
                       handleChange('display_order', 1);
                     }
                   }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-slate-600 rounded"
+                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                 />
-                <label htmlFor="is_featured" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="skill-is-featured" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   추천 기술 스택으로 설정
                 </label>
               </div>
               {showDisplayOrder && (
-                <div className="flex items-center space-x-3">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    표시 순서:
+                <div className="flex items-center gap-3">
+                  <label htmlFor="skill-display-order" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    표시 순서
                   </label>
                   <select
+                    id="skill-display-order"
                     value={formData.display_order || ''}
                     onChange={(e) => handleChange('display_order', parseInt(e.target.value) || 1)}
-                    className={`w-20 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-20 px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                       errors.display_order 
                         ? 'border-red-500 dark:border-red-400' 
-                        : 'border-gray-300 dark:border-slate-600'
-                    } bg-white dark:bg-slate-700 text-gray-900 dark:text-white`}
+                        : 'border-slate-300 dark:border-slate-600'
+                    } bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100`}
                   >
                     {[...Array(12)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -271,20 +277,20 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
               )}
             </div>
             {showDisplayOrder && errors.display_order && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.display_order}</p>
+              <p className="text-sm text-red-500 dark:text-red-400">{errors.display_order}</p>
             )}
-            <div className="flex justify-end space-x-3 pt-4">
+            <div className="flex justify-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-600">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                className="px-4 py-2 rounded-lg text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors"
               >
                 {loading ? '저장 중...' : (skill ? '수정' : '추가')}
               </button>

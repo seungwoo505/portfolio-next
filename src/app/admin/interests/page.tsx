@@ -338,70 +338,79 @@ export default function InterestsPage() {
                   {editingInterest ? '관심사 수정' : '관심사 추가'}
                 </h3>
                 <button
+                  type="button"
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  aria-label="닫기"
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label htmlFor="interest-title" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     제목 *
                   </label>
                   <input
+                    id="interest-title"
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    placeholder="예: 웹 성능 최적화"
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-400 transition-colors"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="interest-description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     설명
                   </label>
                   <textarea
+                    id="interest-description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    placeholder="관심사에 대한 간단한 설명 (선택)"
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-400 resize-y min-h-[76px] transition-colors"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="interest-category" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     카테고리
                   </label>
                   <select
+                    id="interest-category"
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   >
                     <option value="technical">기술적 관심사</option>
                     <option value="personal">개인적 관심사</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="interest-display-order" className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     표시 순서
                   </label>
                   <input
+                    id="interest-display-order"
                     type="number"
                     name="display_order"
                     value={formData.display_order}
                     onChange={handleInputChange}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="w-full px-3 py-2.5 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   />
+                  <p className="text-xs text-gray-500 dark:text-slate-400">숫자가 작을수록 먼저 표시됩니다.</p>
                 </div>
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-slate-600">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                    className="px-4 py-2 rounded-lg text-gray-600 dark:text-slate-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     취소
                   </button>
@@ -410,7 +419,7 @@ export default function InterestsPage() {
                     disabled={saving}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <Save className="w-4 h-4" />
                     <span>{saving ? '저장 중...' : '저장'}</span>

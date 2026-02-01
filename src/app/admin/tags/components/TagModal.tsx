@@ -136,29 +136,29 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
   };
   if (!isOpen) return null;
   return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-    >
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             {editingTag ? '태그 편집' : '새 태그 추가'}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            aria-label="닫기"
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="space-y-1.5">
+            <label htmlFor="tag-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               태그명 *
             </label>
             <input
+              id="tag-name"
               type="text"
               value={formData.name}
               onChange={(e) => {
@@ -169,78 +169,82 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
                   slug: generateSlug(name)
                 }));
               }}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700 ${
+              className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-400 ${
                 errors.name ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
-              }`}
-              placeholder="태그명을 입력하세요"
+              } bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100`}
+              placeholder="예: React, Next.js"
             />
             {errors.name && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center space-x-1">
-                <AlertCircle className="w-3 h-3" />
+              <p className="text-red-500 dark:text-red-400 text-sm flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errors.name}</span>
               </p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              슬러그 *
+          <div className="space-y-1.5">
+            <label htmlFor="tag-slug" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              슬러그
             </label>
             <input
+              id="tag-slug"
               type="text"
               value={formData.slug}
               readOnly
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white cursor-not-allowed"
-              placeholder="태그명을 기반으로 자동 생성됩니다"
+              aria-readonly
+              className="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 cursor-not-allowed"
+              placeholder="태그명 입력 시 자동 생성"
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              슬러그는 태그명을 기반으로 URL 친화적으로 자동 생성됩니다.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              태그명을 기반으로 URL 친화적으로 자동 생성됩니다.
             </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              설명 (선택사항)
+          <div className="space-y-1.5">
+            <label htmlFor="tag-description" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              설명 (선택)
             </label>
             <textarea
+              id="tag-description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700"
-              placeholder="태그에 대한 설명을 입력하세요"
+              className="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-400 resize-y min-h-[76px] bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              placeholder="태그에 대한 설명 (선택)"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label htmlFor="tag-type" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               타입 *
             </label>
             <select
+              id="tag-type"
               value={formData.type}
               onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'blog' | 'project' | 'general' }))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700"
+              className="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
             >
               <option value="general">일반</option>
               <option value="blog">블로그</option>
               <option value="project">프로젝트</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               색상
             </label>
-            <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">미리보기:</p>
-              <div className="inline-flex items-center">
+            <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">미리보기</p>
+              <div className="inline-flex items-center gap-2">
                 <span 
                   className="px-3 py-1 rounded-full text-sm font-medium text-white"
                   style={{ backgroundColor: formData.color }}
                 >
                   {formData.name || '태그 이름'}
                 </span>
-                <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
                   {formData.color}
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex flex-wrap gap-2">
                 {colorOptions.map((color) => (
                   <button
@@ -249,7 +253,7 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
                     onClick={() => setFormData(prev => ({ ...prev, color }))}
                     className={`w-8 h-8 rounded-full border-2 transition-all ${
                       formData.color === color 
-                        ? 'border-slate-400 dark:border-slate-300 ring-2 ring-slate-300 dark:ring-slate-500' 
+                        ? 'border-slate-500 dark:border-slate-300 ring-2 ring-slate-300 dark:ring-slate-500' 
                         : 'border-transparent hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                     style={{ backgroundColor: color }}
@@ -257,7 +261,7 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
                   />
                 ))}
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Palette className="w-4 h-4 text-slate-400" />
                 <input
                   type="color"
@@ -269,19 +273,19 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               </div>
             </div>
           </div>
-          <div className="flex space-x-3 pt-4">
+          <div className="flex gap-3 pt-2 border-t border-slate-200 dark:border-slate-600">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{isSubmitting ? '저장 중...' : (editingTag ? '수정' : '생성')}</span>

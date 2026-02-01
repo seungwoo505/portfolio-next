@@ -124,11 +124,8 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
   };
   if (!isOpen) return null;
   return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-    >
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             새 사용자 추가
@@ -141,148 +138,156 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
             <X className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="space-y-1.5">
+            <label htmlFor="user-username" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               사용자명 *
             </label>
             <input
+              id="user-username"
               type="text"
               value={formData.username}
               onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700 ${
+              className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                 errors.username ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
               }`}
-              placeholder="사용자명을 입력하세요"
+              placeholder="3자 이상 입력"
             />
             {errors.username && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center space-x-1">
-                <AlertCircle className="w-3 h-3" />
+              <p className="text-red-500 dark:text-red-400 text-sm flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errors.username}</span>
               </p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label htmlFor="user-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               이메일 *
             </label>
             <input
+              id="user-email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700 ${
+              className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                 errors.email ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
               }`}
-              placeholder="이메일을 입력하세요"
+              placeholder="예: admin@example.com"
             />
             {errors.email && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center space-x-1">
-                <AlertCircle className="w-3 h-3" />
+              <p className="text-red-500 dark:text-red-400 text-sm flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errors.email}</span>
               </p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label htmlFor="user-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               비밀번호 *
             </label>
             <div className="relative">
               <input
+                id="user-password"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700 ${
+                className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                   errors.password ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
                 }`}
-                placeholder="비밀번호를 입력하세요"
+                placeholder="6자 이상"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center space-x-1">
-                <AlertCircle className="w-3 h-3" />
+              <p className="text-red-500 dark:text-red-400 text-sm flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errors.password}</span>
               </p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label htmlFor="user-confirm-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               비밀번호 확인 *
             </label>
             <div className="relative">
               <input
+                id="user-confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700 ${
+                className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                   errors.confirmPassword ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
                 }`}
-                placeholder="비밀번호를 다시 입력하세요"
+                placeholder="비밀번호를 다시 입력"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                aria-label={showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center space-x-1">
-                <AlertCircle className="w-3 h-3" />
+              <p className="text-red-500 dark:text-red-400 text-sm flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errors.confirmPassword}</span>
               </p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label htmlFor="user-role" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               역할 *
             </label>
             <select
+              id="user-role"
               value={formData.role}
               onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'editor' | 'admin' | 'super_admin' }))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700"
+              className="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 transition-colors"
             >
               <option value="editor">에디터</option>
               <option value="admin">관리자</option>
               <option value="super_admin">슈퍼 관리자</option>
             </select>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {getRoleInfo(formData.role).description}
             </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="space-y-1.5">
+            <label htmlFor="user-status" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               상태
             </label>
             <select
+              id="user-status"
               value={formData.status}
               onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' }))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white dark:bg-slate-700"
+              className="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 transition-colors"
             >
               <option value="active">활성</option>
               <option value="inactive">비활성</option>
             </select>
           </div>
-          <div className="flex space-x-3 pt-4">
+          <div className="flex gap-3 pt-2 border-t border-slate-200 dark:border-slate-600">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{isSubmitting ? '생성 중...' : '사용자 생성'}</span>

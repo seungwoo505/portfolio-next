@@ -82,8 +82,10 @@ export default function ConfirmModal({
             {title}
           </h3>
           <button
+            type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            aria-label="닫기"
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -95,12 +97,14 @@ export default function ConfirmModal({
         </div>
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
           >
             {cancelText}
           </button>
           <button
+            type="button"
             onClick={handleConfirm}
             className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${
               isDestructive
