@@ -47,7 +47,7 @@ function EditUserContent() {
   const [saving, setSaving] = useState(false);
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/admin/login');
+      router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
   useEffect(() => {
