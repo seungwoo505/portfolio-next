@@ -1,4 +1,13 @@
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    ADD_ATTR: ['target'],
+  });
+};
+
 export function convertGitHubImageUrls(text: string): string {
   return text.replace(
     /https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/([^"'\s)]+)/g,
@@ -44,7 +53,7 @@ export function markdownToHtml(text: string): string {
     gfm: true,
     renderer: renderer
   });
-  return marked.parse(convertedText) as string;
+  return sanitizeHtml(marked.parse(convertedText) as string);
 }
 export function markdownToHtmlInline(text: string): string {
   if (!text) return '';
@@ -53,5 +62,5 @@ export function markdownToHtmlInline(text: string): string {
     breaks: true,        // 줄바꿈을 <br>로 변환
     gfm: true            // GitHub Flavored Markdown 지원
   });
-  return marked.parseInline(convertedText) as string;
+  return sanitizeHtml(marked.parseInline(convertedText) as string);
 }
