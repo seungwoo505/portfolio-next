@@ -1,4 +1,4 @@
-export default {
+const config = {
   content: [
     './src/pages*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
@@ -17,4 +17,6 @@ export default {
     },
   },
   plugins: [],
-}
+};
+
+export default config;

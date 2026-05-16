@@ -1,4 +1,10 @@
 import type { NextConfig } from "next";
+
+type WebpackConfig = {
+  optimization?: Record<string, unknown>;
+  plugins?: unknown[];
+};
+
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
@@ -22,7 +28,7 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   compress: true,
-  webpack: (config: any, { isServer }) => {
+  webpack: (config: WebpackConfig, { isServer }) => {
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
@@ -47,6 +53,7 @@ const nextConfig: NextConfig = {
       };
     }
     if (process.env.ANALYZE === 'true') {
+      config.plugins = config.plugins || [];
       config.plugins.push(
         new (require('@next/bundle-analyzer'))({
           enabled: true,
