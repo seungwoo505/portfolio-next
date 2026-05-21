@@ -2,9 +2,9 @@ import { api, authApi } from '@/lib/api';
 import { Skill, SkillCategory } from '@/types';
 export const skillApi = {
   getSkills: () =>
-    api.get<{ skills: Skill[]; categories: SkillCategory[]; skillsByCategory: SkillCategory[] }>('/skills'),
+    api.get<{ skills: Skill[]; categories: SkillCategory[]; skillsByCategory: SkillCategory[] }>('/public/skills'),
   getFeaturedSkills: () =>
-    api.get<Skill[]>('/skills/featured'),
+    api.get<Skill[]>('/public/skills/featured'),
 };
 export const adminSkillApi = {
   createSkill: (skill: Partial<Skill>) =>

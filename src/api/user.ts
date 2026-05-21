@@ -2,11 +2,11 @@ import { api, authApi } from '@/lib/api';
 import { PersonalInfo, AdminUser, AdminLoginResponse } from '@/types';
 export const personalApi = {
   getPersonalInfo: () =>
-    api.get<PersonalInfo>('/personal-info'),
+    api.get<PersonalInfo>('/public/profile'),
   getInterests: () =>
-    api.get<PersonalInfo[]>('/interests'),
+    api.get<PersonalInfo[]>('/public/interests'),
   getInterestsByCategory: (category: 'technical' | 'personal') =>
-    api.get<PersonalInfo[]>('/interests', { category }),
+    api.get<PersonalInfo[]>('/public/interests', { category }),
 };
 export const adminPersonalApi = {
   getPersonalInfo: () =>

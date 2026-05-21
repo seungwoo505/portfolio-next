@@ -2,17 +2,17 @@ import { api, authApi } from '@/lib/api';
 import { BlogPost, BlogTag } from '@/types';
 export const blogApi = {
   getPosts: (params?: { limit?: number; page?: number; featured?: boolean }) =>
-    api.get<BlogPost[]>('/blog/posts', params),
+    api.get<BlogPost[]>('/public/posts', params),
   getPostBySlug: (slug: string) =>
-    api.get<BlogPost>(`/blog/posts/${slug}`),
+    api.get<BlogPost>(`/public/posts/${slug}`),
   searchPosts: (query: string, limit?: number) =>
-    api.get<BlogPost[]>('/blog/search', { q: query, ...(limit && { limit }) }),
+    api.get<BlogPost[]>('/public/posts', { search: query, ...(limit && { limit }) }),
   getTags: (popular?: boolean) =>
-    api.get<BlogTag[]>('/tags', popular ? { popular: 'true' } : undefined),
+    api.get<BlogTag[]>('/public/tags', popular ? { popular: 'true' } : undefined),
   getPostsByTag: (tagSlug: string, params?: { limit?: number; page?: number }) =>
-    api.get<BlogPost[]>(`/blog/posts/tag/${tagSlug}`, params),
+    api.get<BlogPost[]>(`/public/posts/tag/${tagSlug}`, params),
   incrementViewCount: (postSlug: string) =>
-    api.post<{ success: boolean }>(`/blog/posts/${postSlug}/view`),
+    api.post<{ success: boolean }>(`/public/posts/${postSlug}/view`),
 };
 export const adminBlogApi = {
   getPosts: (params?: { page?: number; limit?: number; status?: string }) =>

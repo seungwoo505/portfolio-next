@@ -18,13 +18,41 @@ class ApiClient {
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
   }
+  private normalizeEndpoint(endpoint: string): string {
+    if (
+      endpoint.startsWith('/public') ||
+      endpoint.startsWith('/admin') ||
+      endpoint.startsWith('/monitoring') ||
+      endpoint === '/health'
+    ) {
+      return endpoint;
+    }
+
+    const publicPrefixes = [
+      '/personal-info',
+      '/social-links',
+      '/skills',
+      '/projects',
+      '/blog/posts',
+      '/tags',
+      '/experiences',
+      '/interests',
+      '/settings',
+      '/contact',
+    ];
+
+    return publicPrefixes.some((prefix) => endpoint === prefix || endpoint.startsWith(`${prefix}/`) || endpoint.startsWith(`${prefix}?`))
+      ? `/public${endpoint}`
+      : endpoint;
+  }
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    let url = `${this.baseURL}${endpoint}`;
+    const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+    let url = `${this.baseURL}${normalizedEndpoint}`;
     if (options.method === 'GET' || !options.method) {
-      const separator = endpoint.includes('?') ? '&' : '?';
+      const separator = normalizedEndpoint.includes('?') ? '&' : '?';
       url += `${separator}_t=${Date.now()}`;
     }
     const config: RequestInit = {
@@ -106,7 +134,7 @@ interface SeoSettings {
 }
 export const seoApi = {
   async getSeoSettings(): Promise<ApiResponse<SeoSettings>> {
-    return api.get<SeoSettings>('/settings');
+    return api.get<SeoSettings>('/public/settings');
   }
 };
 export const blogApi = {
@@ -129,18 +157,18 @@ export const blogApi = {
     if (params?.status) searchParams.status = params.status;
     if (params?.sort) searchParams.sort = params.sort;
     if (params?.order) searchParams.order = params.order;
-    return api.get<BlogPost[]>('/blog/posts', searchParams);
+    return api.get<BlogPost[]>('/public/posts', searchParams);
   },
   getPostBySlug: (slug: string) =>
-    api.get<BlogPost>(`/blog/posts/${slug}`),
+    api.get<BlogPost>(`/public/posts/${slug}`),
   searchPosts: (query: string, limit?: number) =>
-    api.get<BlogPost[]>('/blog/search', { q: query, ...(limit && { limit }) }),
+    api.get<BlogPost[]>('/public/posts', { search: query, ...(limit && { limit }) }),
   getTags: (popular?: boolean) =>
-    api.get<BlogTag[]>('/tags', popular ? { popular: 'true' } : undefined),
+    api.get<BlogTag[]>('/public/tags', popular ? { popular: 'true' } : undefined),
   getPostsByTag: (tagSlug: string, params?: { limit?: number; page?: number }) =>
-    api.get<BlogPost[]>(`/blog/posts/tag/${tagSlug}`, params),
+    api.get<BlogPost[]>(`/public/posts/tag/${tagSlug}`, params),
   incrementViewCount: (slug: string) =>
-    api.post<{ success: boolean }>(`/blog/posts/${slug}/view?t=${Date.now()}`),
+    api.post<{ success: boolean }>(`/public/posts/${slug}/view?t=${Date.now()}`),
 };
 export const projectApi = {
   getProjects: (params?: { 
@@ -164,14 +192,14 @@ export const projectApi = {
     if (params?.status) searchParams.status = params.status;
     if (params?.sort) searchParams.sort = params.sort;
     if (params?.order) searchParams.order = params.order;
-    return api.get<Project[]>('/projects', searchParams);
+    return api.get<Project[]>('/public/projects', searchParams);
   },
   getProject: (slug: string) =>
-    api.get<Project>(`/projects/slug/${slug}`),
+    api.get<Project>(`/public/projects/${slug}`),
   getFeaturedProjects: () =>
-    api.get<Project[]>('/projects', { featured: 'true' }),
+    api.get<Project[]>('/public/projects', { featured: 'true' }),
   incrementViewCount: (projectSlug: string) =>
-    api.post<{ success: boolean }>(`/projects/slug/${projectSlug}/view?t=${Date.now()}`),
+    api.post<{ success: boolean }>(`/public/projects/${projectSlug}/view?t=${Date.now()}`),
 };
 export const contactApi = {
   sendMessage: (message: ContactMessage) =>
@@ -179,17 +207,17 @@ export const contactApi = {
 };
 export const personalApi = {
   getPersonalInfo: () =>
-    api.get<PersonalInfo>('/personal-info'),
+    api.get<PersonalInfo>('/public/profile'),
   getSkills: () =>
-    api.get<{ skills: Skill[]; categories: SkillCategory[]; skillsByCategory: SkillCategory[] }>('/skills'),
+    api.get<{ skills: Skill[]; categories: SkillCategory[]; skillsByCategory: SkillCategory[] }>('/public/skills'),
   getFeaturedSkills: () =>
-    api.get<Skill[]>('/skills/featured'),
+    api.get<Skill[]>('/public/skills/featured'),
   getInterests: () =>
-    api.get<Interest[]>('/interests'),
+    api.get<Interest[]>('/public/interests'),
   getInterestsByCategory: (category: 'technical' | 'personal') =>
-    api.get<Interest[]>('/interests', { category }),
+    api.get<Interest[]>('/public/interests', { category }),
   getExperiencesTimeline: () =>
-    api.get<unknown[]>('/experiences/timeline'),
+    api.get<unknown[]>('/public/experiences/timeline'),
 };
 export const skillApi = {
   createSkill: (skill: Partial<Skill>) =>

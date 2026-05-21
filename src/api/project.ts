@@ -2,13 +2,13 @@ import { api, authApi } from '@/lib/api';
 import { Project } from '@/types';
 export const projectApi = {
   getProjects: (params?: { limit?: number; page?: number; featured?: boolean }) =>
-    api.get<Project[]>('/projects', params),
+    api.get<Project[]>('/public/projects', params),
   getProject: (slug: string) =>
-    api.get<Project>(`/projects/slug/${slug}`),
+    api.get<Project>(`/public/projects/${slug}`),
   getFeaturedProjects: () =>
-    api.get<Project[]>('/projects', { featured: 'true' }),
+    api.get<Project[]>('/public/projects', { featured: 'true' }),
   incrementViewCount: (projectSlug: string) =>
-    api.post<{ success: boolean }>(`/projects/slug/${projectSlug}/view`),
+    api.post<{ success: boolean }>(`/public/projects/${projectSlug}/view`),
 };
 export const adminProjectApi = {
   getProjects: (params?: { page?: number; limit?: number }) =>

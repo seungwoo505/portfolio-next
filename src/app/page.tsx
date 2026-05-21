@@ -119,20 +119,21 @@ function normalizeProjectSkills(skills: unknown): string[] {
  */
 async function getHomeData(): Promise<HomePageData> {
   try {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api';
     const [blogResponse, projectResponse, skillsResponse, personalResponse] = await Promise.allSettled([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api'}/blog/posts?limit=2&featured=true`, {
+      fetch(`${apiBase}/public/posts?limit=2&featured=true`, {
         cache: 'force-cache',
         next: { revalidate: 300 }
       }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api'}/projects?limit=2&featured=true`, {
+      fetch(`${apiBase}/public/projects?limit=2&featured=true`, {
         cache: 'force-cache',
         next: { revalidate: 300 }
       }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api'}/skills/featured`, {
+      fetch(`${apiBase}/public/skills/featured`, {
         cache: 'force-cache',
         next: { revalidate: 300 }
       }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api'}/personal-info`, {
+      fetch(`${apiBase}/public/profile`, {
         cache: 'force-cache',
         next: { revalidate: 300 }
       })
