@@ -12,13 +12,13 @@ export const projectApi = {
 };
 export const adminProjectApi = {
   getProjects: (params?: { page?: number; limit?: number }) =>
-    authApi.get<Project[]>('/projects', params),
+    authApi.get<Project[]>('/admin/projects', params),
   getProject: (id: string) =>
-    authApi.get<Project>(`/projects/${id}`),
+    authApi.get<Project>(`/admin/projects/slug/${id}`),
   createProject: (project: Partial<Project>) =>
-    authApi.post<Project>('/projects', project),
+    authApi.post<Project>('/admin/projects', project),
   updateProject: (id: string, project: Partial<Project>) =>
-    authApi.put<Project>(`/projects/${id}`, project),
+    authApi.put<Project>(`/admin/projects/slug/${id}`, project),
   deleteProject: (id: string) =>
-    authApi.delete<{ message: string }>(`/projects/${id}`),
+    authApi.delete<{ message: string }>(`/admin/projects/slug/${id}`),
 };

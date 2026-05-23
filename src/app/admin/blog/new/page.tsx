@@ -283,7 +283,7 @@ export default function NewBlogPost() {
         author_id: null, 
         published_at: publish ? new Date().toISOString() : null
       };
-      const response = await authApi.post('/blog/posts', postData);
+      const response = await authApi.post('/admin/blog/posts', postData);
       if (response.success) {
         toast.success(publish ? '포스트가 발행되었습니다!' : '포스트가 저장되었습니다!');
         router.push('/admin/blog');

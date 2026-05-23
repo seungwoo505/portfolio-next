@@ -35,7 +35,7 @@ export default function InterestsPage() {
    */
   const fetchInterests = async () => {
     try {
-      const response = await authApi.get<AdminInterest[]>('/interests');
+      const response = await authApi.get<AdminInterest[]>('/admin/interests');
       if (response.data) {
         setInterests(response.data);
       }
@@ -109,9 +109,9 @@ export default function InterestsPage() {
     try {
       let response;
       if (editingInterest) {
-        response = await authApi.put(`/interests/${editingInterest.id}`, formData);
+        response = await authApi.put(`/admin/interests/${editingInterest.id}`, formData);
       } else {
-        response = await authApi.post('/interests', formData);
+        response = await authApi.post('/admin/interests', formData);
       }
       if (response.success) {
         toast.success(editingInterest ? '관심사가 수정되었습니다.' : '관심사가 추가되었습니다.');
@@ -144,7 +144,7 @@ export default function InterestsPage() {
   const handleDelete = async () => {
     if (!deleteModal.interestId) return;
     try {
-      const response = await authApi.delete(`/interests/${deleteModal.interestId}`);
+      const response = await authApi.delete(`/admin/interests/${deleteModal.interestId}`);
       if (response.success) {
         toast.success('관심사가 삭제되었습니다.');
         await fetchInterests();

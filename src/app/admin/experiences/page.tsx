@@ -38,7 +38,7 @@ export default function ExperiencesPage() {
    */
   const fetchExperiences = async () => {
     try {
-      const response = await authApi.get<AdminExperience[]>('/experiences/timeline');
+      const response = await authApi.get<AdminExperience[]>('/admin/experiences/timeline');
       if (response.data) {
         setExperiences(response.data);
       }
@@ -130,9 +130,9 @@ export default function ExperiencesPage() {
       };
       let response;
       if (editingExperience) {
-        response = await authApi.put(`/experiences/${editingExperience.id}`, data);
+        response = await authApi.put(`/admin/experiences/${editingExperience.id}`, data);
       } else {
-        response = await authApi.post('/experiences', data);
+        response = await authApi.post('/admin/experiences', data);
       }
       if (response.success) {
         toast.success(editingExperience ? '경험이 수정되었습니다.' : '경험이 추가되었습니다.');
@@ -165,7 +165,7 @@ export default function ExperiencesPage() {
   const handleDelete = async () => {
     if (!deleteModal.experienceId) return;
     try {
-      const response = await authApi.delete(`/experiences/${deleteModal.experienceId}`);
+      const response = await authApi.delete(`/admin/experiences/${deleteModal.experienceId}`);
       if (response.success) {
         toast.success('경험이 삭제되었습니다.');
         await fetchExperiences();

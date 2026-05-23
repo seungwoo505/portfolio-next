@@ -18,15 +18,15 @@ export const adminBlogApi = {
   getPosts: (params?: { page?: number; limit?: number; status?: string }) =>
     authApi.get<BlogPost[]>('/admin/blog/posts', params),
   getPost: (id: string) =>
-    authApi.get<BlogPost>(`/blog/posts/id/${id}`),
+    authApi.get<BlogPost>(`/admin/blog/posts/slug/${id}`),
   createPost: (post: Partial<BlogPost>) =>
-    authApi.post<BlogPost>('/blog/posts', post),
+    authApi.post<BlogPost>('/admin/blog/posts', post),
   updatePost: (id: string, post: Partial<BlogPost>) =>
-    authApi.put<BlogPost>(`/blog/posts/${id}`, post),
+    authApi.put<BlogPost>(`/admin/blog/posts/slug/${id}`, post),
   deletePost: (id: string) =>
-    authApi.delete<{ message: string }>(`/admin/blog/posts/${id}`),
+    authApi.delete<{ message: string }>(`/admin/blog/posts/slug/${id}`),
   publishPost: (id: string) =>
-    authApi.put<{ message: string }>(`/admin/blog/posts/${id}/publish`, { is_published: true }),
+    authApi.put<{ message: string }>(`/admin/blog/posts/slug/${id}/publish`, { is_published: true }),
   unpublishPost: (id: string) =>
-    authApi.put<{ message: string }>(`/admin/blog/posts/${id}/publish`, { is_published: false }),
+    authApi.put<{ message: string }>(`/admin/blog/posts/slug/${id}/publish`, { is_published: false }),
 };
