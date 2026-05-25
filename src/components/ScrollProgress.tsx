@@ -1,32 +1,52 @@
 "use client";
-import { motion, useScroll, useSpring } from 'framer-motion';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 /**
  * @component ScrollProgress
  * @description 사용자의 세로 스크롤 진행률을 보여주는 고정형 진행 바를 렌더링합니다.
- * @returns {JSX.Element | null} SSR 중에는 null, 그 외에는 애니메이션 진행 바 요소를 반환합니다.
+ * @returns {JSX.Element} 스크롤 진행률을 CSS transform으로 표시하는 진행 바 요소를 반환합니다.
  */
 export default function ScrollProgress() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
+  const progressRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    setIsMounted(true);
+    let frameId = 0;
+
+    const updateProgress = () => {
+      const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0;
+      const clampedProgress = Math.min(Math.max(progress, 0), 1);
+
+      progressRef.current?.style.setProperty('transform', `scaleX(${clampedProgress})`);
+    };
+
+    const scheduleUpdate = () => {
+      if (frameId) return;
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updateProgress();
+      });
+    };
+
+    updateProgress();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+    };
   }, []);
-  const progressBar = useMemo(() => {
-    if (!isMounted) return null;
-    return (
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 origin-left z-50"
-        style={{ scaleX }}
-        data-scroll-behavior="ignore"
-        data-nextjs-scroll-focus-boundary
-      />
-    );
-  }, [isMounted, scaleX]);
-  return progressBar;
+
+  return (
+    <div
+      ref={progressRef}
+      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 origin-left z-50 scale-x-0"
+      data-scroll-behavior="ignore"
+      data-nextjs-scroll-focus-boundary
+    />
+  );
 }
