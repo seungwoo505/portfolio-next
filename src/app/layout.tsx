@@ -122,23 +122,28 @@ export default function RootLayout({
               {children}
             </ConditionalLayout>
           <Toaster 
-            position="top-right"
+            position="bottom-right"
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#363636',
+                background: 'rgba(15, 23, 42, 0.94)',
+                border: '1px solid rgba(148, 163, 184, 0.28)',
+                borderRadius: '14px',
+                boxShadow: '0 20px 45px rgba(15, 23, 42, 0.35)',
                 color: '#fff',
+                maxWidth: '360px',
+                padding: '12px 14px',
               },
               success: {
                 duration: 3000,
                 style: {
-                  background: '#10b981',
+                  background: 'rgba(6, 95, 70, 0.96)',
                 },
               },
               error: {
                 duration: 5000,
                 style: {
-                  background: '#ef4444',
+                  background: 'rgba(127, 29, 29, 0.96)',
                 },
               },
             }}

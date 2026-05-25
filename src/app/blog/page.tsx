@@ -437,14 +437,14 @@ export default function Blog() {
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
               포스트
             </h2>
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">데이터를 불러올 수 없습니다</h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">{error}</p>
+            <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-sm dark:border-white/10 dark:bg-[rgba(15,23,42,0.55)]">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">
+                Signal Pending
+              </p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">블로그 데이터를 연결하는 중입니다</h3>
+              <p className="text-slate-600 dark:text-slate-300 mb-5">
+                라이브 서버가 연결되면 최신 개발 기록이 표시됩니다. 지금은 탐색 구조를 먼저 확인할 수 있습니다.
+              </p>
               <button 
                 onClick={() => window.location.reload()} 
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"

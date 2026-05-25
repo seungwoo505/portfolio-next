@@ -11,6 +11,21 @@ import { AboutPersonalInfo, AboutSkill, AboutExperience, AboutInterest, AboutCat
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
 const EXPERIENCE_REVEAL_INTERVAL = 120;
+const FALLBACK_ABOUT_PROFILE: AboutPersonalInfo = {
+  full_name: '승우.dev',
+  title: '웹 프론트엔드 개발자',
+  bio: 'Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 설계합니다.',
+  about:
+    '인터랙션, 콘텐츠 구조, 운영 도구가 하나의 흐름으로 이어지는 웹 서비스를 지향합니다. 갤럭시 컨셉의 시각적 개성은 유지하면서도 사용자가 정보를 빠르게 이해할 수 있는 구조를 중요하게 봅니다.',
+};
+const FALLBACK_ABOUT_SKILLS: AboutSkill[] = [
+  { id: 1, name: 'Next.js', proficiency_level: 90, category_name: '프론트엔드' },
+  { id: 2, name: 'TypeScript', proficiency_level: 88, category_name: '프론트엔드' },
+  { id: 3, name: 'React', proficiency_level: 90, category_name: '프론트엔드' },
+  { id: 4, name: 'Node.js', proficiency_level: 82, category_name: '백엔드' },
+  { id: 5, name: 'API Integration', proficiency_level: 84, category_name: '백엔드' },
+  { id: 6, name: 'UI Engineering', proficiency_level: 86, category_name: '기타' },
+];
 /**
  * @component AboutPage
  * @description 개인 소개, 기술 스택, 경력, 관심사를 보여주는 소개 페이지를 렌더링한다.
@@ -81,7 +96,12 @@ export default function AboutPage() {
         setInterests((interestsResponse.data as AboutInterest[]) ?? []);
         setError(null);
       } catch {
-        setError('서버와의 연결에 문제가 발생했습니다.');
+        setPersonalInfo(FALLBACK_ABOUT_PROFILE);
+        setSkills(FALLBACK_ABOUT_SKILLS);
+        setCategories([]);
+        setExperiences([]);
+        setInterests([]);
+        setError(null);
         setHasApiError(true);
       } finally {
         setIsLoading(false);

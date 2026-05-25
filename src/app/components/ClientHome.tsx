@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import ScrollProgress from "./ScrollProgress";
 import { seoApi, personalApi, blogApi, projectApi } from "@/lib/api";
-import toast from "react-hot-toast";
 import { BlogPost } from "@/types";
 const BLOG_PLACEHOLDER_COUNT = 1;
 const PROJECT_PLACEHOLDER_COUNT = 1;
@@ -13,6 +12,22 @@ const SKILL_PLACEHOLDER_COUNT = 1;
 const CARD_REVEAL_INTERVAL = 120;
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
+const FALLBACK_PROFILE = {
+  name: "승우.dev",
+  titleWords: ["웹", "프론트엔드", "개발자"],
+  description:
+    "Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 만듭니다. 인터랙션, 콘텐츠 구조, 운영 도구까지 하나의 흐름으로 다듬습니다.",
+};
+const FALLBACK_SKILLS = [
+  "Next.js",
+  "TypeScript",
+  "React",
+  "Node.js",
+  "UI Engineering",
+  "Performance",
+  "Accessibility",
+  "Admin Tools",
+];
 const Galaxy = lazy(() => import("./OptimizedGalaxy"));
 /**
  * @interface Project
@@ -254,11 +269,9 @@ export default function ClientHome({
           const response = await personalApi.getPersonalInfo();
           if (response.success && response.data) {
             setPersonalInfo(response.data);
-          } else {
-            toast.error('개인정보를 불러올 수 없습니다. 서버 상태를 확인해주세요.');
           }
         } catch {
-          toast.error('개인정보 서버에 연결할 수 없습니다.');
+          setDataError(true);
         }
       }
     };
@@ -368,6 +381,8 @@ export default function ClientHome({
     if (!projects || projects.length === 0) return [];
     return projects.filter((project) => project.featured);
   }, [projects]);
+  const displayName = personalInfo?.full_name || personalInfo?.name || FALLBACK_PROFILE.name;
+  const displayDescription = personalInfo?.bio || personalInfo?.about || FALLBACK_PROFILE.description;
   const blogSkeletonCount = blogPosts.length > 0 ? blogPosts.length : BLOG_PLACEHOLDER_COUNT;
   const projectSkeletonCount = featuredProjectItems.length > 0 ? featuredProjectItems.length : PROJECT_PLACEHOLDER_COUNT;
   const skillSkeletonCount = currentSkills.length > 0 ? currentSkills.length : SKILL_PLACEHOLDER_COUNT;
@@ -528,6 +543,40 @@ export default function ClientHome({
       <SkillSkeletonContent />
     </div>
   );
+  const EmptyState = ({
+    eyebrow,
+    title,
+    description,
+    href,
+    action,
+  }: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    href?: string;
+    action?: string;
+  }) => (
+    <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-[rgba(15,23,42,0.55)]">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">
+        {eyebrow}
+      </p>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+        {title}
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+        {description}
+      </p>
+      {href && action ? (
+        <Link
+          href={href}
+          prefetch={false}
+          className="mt-5 inline-flex items-center text-sm font-semibold text-blue-600 transition hover:text-cyan-500 dark:text-blue-300 dark:hover:text-cyan-200"
+        >
+          {action} →
+        </Link>
+      ) : null}
+    </div>
+  );
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
@@ -604,7 +653,7 @@ export default function ClientHome({
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <ScrollProgress />
       <motion.section 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-24 sm:px-6 lg:px-8"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
@@ -619,19 +668,27 @@ export default function ClientHome({
             </Suspense>
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-transparent to-slate-900/80 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-950/20 to-black/90 pointer-events-none"></div>
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black to-transparent pointer-events-none" />
         <motion.div
           className="absolute inset-0 opacity-30 pointer-events-none"
           style={{
             background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`
           }}
         />
-        <motion.div className="relative z-10 text-center px-4 sm:px-6 lg:px-8" variants={itemVariants}>
-          <motion.div className="mb-8" variants={nameVariants}>
+        <motion.div className="relative z-10 mx-auto max-w-6xl text-center" variants={itemVariants}>
+          <motion.div
+            className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100 shadow-2xl shadow-blue-500/10 backdrop-blur"
+            variants={itemVariants}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
+            Galaxy Interface
+          </motion.div>
+          <motion.div className="mb-7" variants={nameVariants}>
             <motion.h1 
-              className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-tight cursor-pointer"
+              className="mx-auto max-w-5xl cursor-pointer text-5xl font-black leading-[0.95] tracking-normal sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem]"
               whileHover={{ 
-                scale: 1.05,
+                scale: 1.02,
                 transition: { type: "spring", stiffness: 300 }
               }}
               whileTap={{ scale: 0.98 }}
@@ -650,7 +707,7 @@ export default function ClientHome({
                   backgroundSize: "200% 200%"
                 }}
               >
-                {personalInfo?.full_name || personalInfo?.name || '개인 정보를 불러올 수 없습니다'}
+                {displayName}
               </motion.span>
             </motion.h1>
             <motion.div 
@@ -694,9 +751,9 @@ export default function ClientHome({
               />
             </motion.div>
           </motion.div>
-                   <motion.div className="mb-12" variants={itemVariants}>
-                     <motion.p className="text-2xl md:text-3xl lg:text-4xl font-light text-slate-200 mb-4">
-                       {["웹", "프론트엔드", "개발자"].map((word, index) => (
+                   <motion.div className="mb-10" variants={itemVariants}>
+                     <motion.p className="text-xl font-light text-slate-200 sm:text-2xl md:text-3xl">
+                       {FALLBACK_PROFILE.titleWords.map((word, index) => (
                          <motion.span
                            key={word}
                            className="inline-block mx-2"
@@ -714,12 +771,12 @@ export default function ClientHome({
                        ))}
                      </motion.p>
                      <motion.p
-                       className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto"
+                       className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg md:text-xl"
                        initial={{ opacity: 0 }}
                        animate={{ opacity: 1 }}
                        transition={{ delay: 1.2, duration: 0.8 }}
                      >
-{personalInfo?.bio || personalInfo?.about || '개인 정보를 불러올 수 없습니다'}
+                       {displayDescription}
                      </motion.p>
                    </motion.div>
                    <motion.div 
@@ -743,8 +800,23 @@ export default function ClientHome({
                        연락하기
                      </motion.a>
                    </motion.div>
+                   <motion.div
+                     className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3"
+                     variants={itemVariants}
+                   >
+                     {[
+                       ["Focus", "인터랙션과 콘텐츠가 함께 살아있는 화면"],
+                       ["Stack", "Next.js, TypeScript, 운영형 관리자 경험"],
+                       ["Mission", "빠르고 읽기 쉬운 웹 경험 설계"],
+                     ].map(([label, text]) => (
+                       <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur">
+                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">{label}</p>
+                         <p className="mt-2 text-sm leading-6 text-slate-200">{text}</p>
+                       </div>
+                     ))}
+                   </motion.div>
                    <motion.div 
-                     className="flex flex-col items-center mt-8 scroll-indicator"
+                     className="flex flex-col items-center mt-10 scroll-indicator"
                      animate={{ 
                        y: [0, 10, 0],
                        opacity: 1 
@@ -825,9 +897,12 @@ export default function ClientHome({
         <div className="grid lg:grid-cols-2 gap-12">
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                대표 블로그 포스트
-              </h2>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Signal Notes</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  대표 블로그 포스트
+                </h2>
+              </div>
               <Link href="/blog" prefetch={false} className="text-blue-600 hover:underline font-medium text-sm">
                 모든 포스트 보기 →
               </Link>
@@ -899,19 +974,24 @@ export default function ClientHome({
                   );
                 })
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    아직 블로그 포스트가 없습니다.
-                  </p>
-                </div>
+                <EmptyState
+                  eyebrow="Content Standby"
+                  title="대표 글을 연결하는 중입니다"
+                  description="라이브 API가 준비되면 최신 개발 기록이 이 영역에 표시됩니다. 지금은 포트폴리오의 방향과 탐색 흐름을 먼저 확인할 수 있습니다."
+                  href="/blog"
+                  action="블로그 화면 보기"
+                />
               )}
             </div>
           </div>
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                대표 프로젝트
-              </h2>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">Mission Archive</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  대표 프로젝트
+                </h2>
+              </div>
               <Link href="/projects" prefetch={false} className="text-blue-600 hover:underline font-medium text-sm">
                 모든 프로젝트 보기 →
               </Link>
@@ -987,11 +1067,13 @@ export default function ClientHome({
                   );
                 })
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    아직 대표 프로젝트가 없습니다.
-                  </p>
-                </div>
+                <EmptyState
+                  eyebrow="Project Standby"
+                  title="대표 프로젝트를 연결하는 중입니다"
+                  description="프로젝트 데이터가 연결되면 이미지, 기술 스택, 결과 중심의 카드로 보여줍니다. 빈 상태에서도 화면 흐름이 무너지지 않도록 정리했습니다."
+                  href="/projects"
+                  action="프로젝트 화면 보기"
+                />
               )}
             </div>
           </div>
@@ -1000,9 +1082,12 @@ export default function ClientHome({
       <section 
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
       >
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white text-center mb-12">
-          주요 기술 스택
-        </h2>
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Tool Orbit</p>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+            주요 기술 스택
+          </h2>
+        </div>
         <div className="flex justify-center mb-8">
           <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 shadow-lg border border-slate-200 dark:border-slate-600">
             <button
@@ -1053,14 +1138,16 @@ export default function ClientHome({
               );
             })
           ) : (
-            <div className="col-span-full text-center py-8">
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
-                {activeSkillTab === 'all' 
-                  ? '기술 스택 정보를 불러올 수 없습니다.'
-                  : `${activeSkillTab} 카테고리에 기술 스택이 없습니다.`
-                }
-              </p>
-            </div>
+            FALLBACK_SKILLS.map((skill) => (
+              <div
+                key={skill}
+                className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 text-center shadow-sm transition hover:-translate-y-1 dark:border-white/10 dark:bg-[rgba(15,23,42,0.55)]"
+              >
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {skill}
+                </span>
+              </div>
+            ))
           )}
         </div>
       </section>

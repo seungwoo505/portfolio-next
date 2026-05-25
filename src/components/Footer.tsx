@@ -14,6 +14,8 @@ interface PersonalInfo {
   twitter_url?: string;
   instagram_url?: string;
 }
+const FOOTER_FALLBACK_DESCRIPTION =
+  'Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 설계합니다.';
 /**
  * @component Footer
  * @description 빠른 링크, 연락처, 소셜 정보가 포함된 사이트 푸터를 렌더링합니다.
@@ -22,7 +24,6 @@ interface PersonalInfo {
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({});
-  const [hasApiError, setHasApiError] = useState(false);
   useEffect(() => {
     /**
      * @function fetchPersonalInfo
@@ -60,7 +61,6 @@ export default function Footer() {
           ...settingsPersonalInfo
         });
       } catch {
-        setHasApiError(true);
       }
     };
     fetchPersonalInfo();
@@ -99,7 +99,7 @@ export default function Footer() {
               </Link>
             </div>
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              {personalInfo.bio || personalInfo.about || (hasApiError ? '데이터를 불러올 수 없습니다.' : '소개를 입력해주세요.')}
+              {personalInfo.bio || personalInfo.about || FOOTER_FALLBACK_DESCRIPTION}
             </p>
           </motion.div>
           <motion.div 

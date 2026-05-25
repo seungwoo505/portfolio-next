@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { api } from '@/lib/api';
-import toast from 'react-hot-toast';
 import { SiteSettings } from '@/types';
 interface DynamicHeadProps {
   title?: string;
@@ -39,7 +38,6 @@ export default function DynamicHead({
           setSettings(response.data.data);
         }
       } catch {
-        toast.error('설정을 가져오는데 실패했습니다');
       } finally {
         setLoading(false);
       }
