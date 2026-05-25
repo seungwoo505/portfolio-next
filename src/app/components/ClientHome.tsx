@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import ScrollProgress from "./ScrollProgress";
+import ScrollProgress from "@/components/ScrollProgress";
 import { seoApi, personalApi, blogApi, projectApi } from "@/lib/api";
 import { BlogPost } from "@/types";
 const BLOG_PLACEHOLDER_COUNT = 1;

@@ -2,15 +2,15 @@
 import Link from "next/link";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAdmin } from '@/contexts/AdminContext';
+import { AdminProvider, useAdmin } from '@/contexts/AdminContext';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
 /**
- * @component AdminLogin
+ * @component AdminLoginContent
  * @description 관리자 인증을 위한 로그인 폼을 제공하는 페이지 컴포넌트.
  * @returns {JSX.Element} 관리자 로그인 페이지.
  */
-export default function AdminLogin() {
+function AdminLoginContent() {
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -156,5 +156,18 @@ export default function AdminLogin() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * @component AdminLogin
+ * @description 관리자 로그인 페이지에서 필요한 관리자 컨텍스트 범위를 페이지 내부로 제한합니다.
+ * @returns {JSX.Element} 관리자 로그인 페이지.
+ */
+export default function AdminLogin() {
+  return (
+    <AdminProvider>
+      <AdminLoginContent />
+    </AdminProvider>
   );
 }

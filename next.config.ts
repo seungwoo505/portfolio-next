@@ -1,10 +1,5 @@
 import type { NextConfig } from "next";
 
-type WebpackConfig = {
-  optimization?: Record<string, unknown>;
-  plugins?: unknown[];
-};
-
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
@@ -13,8 +8,7 @@ const nextConfig: NextConfig = {
       'framer-motion', 
       'lucide-react', 
       '@heroicons/react',
-      'react-hot-toast',
-      'date-fns'
+      'react-hot-toast'
     ],
     webpackBuildWorker: true, 
   },
@@ -28,40 +22,6 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   compress: true,
-  webpack: (config: WebpackConfig, { isServer }) => {
-    if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              priority: 10,
-              chunks: 'all',
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              priority: 5,
-              chunks: 'all',
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
-    }
-    if (process.env.ANALYZE === 'true') {
-      config.plugins = config.plugins || [];
-      config.plugins.push(
-        new (require('@next/bundle-analyzer'))({
-          enabled: true,
-        })
-      );
-    }
-    return config;
-  },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn']

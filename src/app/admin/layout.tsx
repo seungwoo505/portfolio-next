@@ -3,6 +3,7 @@ import { useState } from 'react';
 import AdminHeader from './components/AdminHeader';
 import AdminSidebar from './components/AdminSidebar';
 import AuthGuard from '@/components/AuthGuard';
+import { AdminProvider } from '@/contexts/AdminContext';
 /**
  * @component AdminLayout
  * @description 관리자 영역의 공통 헤더, 사이드바, 인증 가드를 적용하는 레이아웃.
@@ -32,18 +33,20 @@ export default function AdminLayout({
     setSidebarOpen(false);
   };
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 safari-admin-layout">
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <AdminHeader onMenuToggle={handleMenuToggle} />
+    <AdminProvider>
+      <AuthGuard>
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 safari-admin-layout">
+          <div className="fixed top-0 left-0 right-0 z-50">
+            <AdminHeader onMenuToggle={handleMenuToggle} />
+          </div>
+          <div className="flex pt-20 lg:pt-16">
+            <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
+            <main className="flex-1 p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 lg:ml-0 safari-admin-main">
+              {children}
+            </main>
+          </div>
         </div>
-        <div className="flex pt-20 lg:pt-16">
-          <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
-          <main className="flex-1 p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 lg:ml-0 safari-admin-main">
-            {children}
-          </main>
-        </div>
-      </div>
-    </AuthGuard>
+      </AuthGuard>
+    </AdminProvider>
   );
 }

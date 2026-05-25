@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AdminProvider } from '@/contexts/AdminContext';
 import ConditionalLayout from '@/components/ConditionalLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
@@ -117,10 +116,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
-          <AdminProvider>
-            <ConditionalLayout>
-              {children}
-            </ConditionalLayout>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
           <Toaster 
             position="bottom-right"
             toastOptions={{
@@ -148,7 +146,6 @@ export default function RootLayout({
               },
             }}
           />
-        </AdminProvider>
         </ErrorBoundary>
       </body>
     </html>
