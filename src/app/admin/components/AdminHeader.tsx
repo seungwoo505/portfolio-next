@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
-import { motion } from 'framer-motion';
 import { 
   LogOut,
   ArrowLeft,
@@ -207,13 +206,10 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   {user?.username}님
                 </span>
                 {isClient && (
-                  <motion.button
+                  <button
                     onClick={toggleTheme}
-                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors"
+                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-500 transition duration-150 hover:scale-110 active:scale-95"
                     title="다크모드 토글"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
                     {(isDarkMode ?? false) ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,29 +220,25 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                       </svg>
                     )}
-                  </motion.button>
+                  </button>
                 )}
-                <motion.button
+                <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition duration-150 hover:scale-105 active:scale-95"
                 >
                   <LogOut className="w-5 h-5" />
-                </motion.button>
+                </button>
               </div>
             </div>
             <div className="pb-3 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center space-x-2">
                 {pageInfo.showBackButton && (
-                  <motion.button
+                  <button
                     onClick={handleBackNavigation}
-                    className="p-1 rounded text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    className="p-1 rounded text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition duration-150 hover:scale-110 active:scale-90"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                  </motion.button>
+                  </button>
                 )}
                 <h2 className="text-base font-semibold text-slate-700 dark:text-slate-300">
                   {pageInfo.title}
@@ -256,10 +248,8 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
           </div>
           <div className="hidden lg:block">
             <div className="flex justify-between items-center h-16">
-              <motion.div 
-                className="flex items-center space-x-4"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              <div
+                className="flex origin-left items-center space-x-4 transition-transform duration-150 hover:scale-[1.02]"
               >
                 <Link href="/">
                   <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -271,29 +261,24 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   {pageInfo.title}
                 </h2>
                 {pageInfo.showBackButton && (
-                  <motion.button
+                  <button
                     onClick={handleBackNavigation}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    whileHover={{ y: -2 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition duration-150 hover:-translate-y-0.5"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>{pageInfo.backText}</span>
-                  </motion.button>
+                  </button>
                 )}
-              </motion.div>
+              </div>
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-slate-600 dark:text-slate-400">
                   안녕하세요, <span className="font-medium text-slate-900 dark:text-white">{user?.username}</span>님
                 </span>
                 {isClient && (
-                  <motion.button
+                  <button
                     onClick={toggleTheme}
-                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors"
+                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-500 transition duration-150 hover:scale-110 active:scale-95"
                     title="다크모드 토글"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
                     {(isDarkMode ?? false) ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,17 +289,15 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                       </svg>
                     )}
-                  </motion.button>
+                  </button>
                 )}
-                <motion.button
+                <button
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                  whileHover={{ y: -2 }}
-                  transition={{ type: "spring", stiffness: 400 }}
+                  className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition duration-150 hover:-translate-y-0.5"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>로그아웃</span>
-                </motion.button>
+                </button>
               </div>
             </div>
           </div>

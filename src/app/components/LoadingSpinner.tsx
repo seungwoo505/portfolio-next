@@ -1,5 +1,4 @@
 "use client";
-import { motion } from 'framer-motion';
 /**
  * @interface LoadingSpinnerProps
  * @description 애니메이션 로딩 스피너를 구성하는 속성입니다.
@@ -24,24 +23,11 @@ export default function LoadingSpinner({ size = 'md', text }: LoadingSpinnerProp
   };
   return (
     <div className="flex flex-col items-center justify-center space-y-4">
-      <motion.div
-        className={`${sizeClasses[size]} border-2 border-slate-200 dark:border-slate-700 border-t-blue-500 rounded-full`}
-        animate={{ rotate: 360 }}
-        transition={{
-          duration: 1,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-      />
+      <div className={`${sizeClasses[size]} animate-spin rounded-full border-2 border-slate-200 border-t-blue-500 dark:border-slate-700`} />
       {text && (
-        <motion.p
-          className="text-slate-600 dark:text-slate-400 text-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
+        <p className="animate-pulse text-sm text-slate-600 dark:text-slate-400">
           {text}
-        </motion.p>
+        </p>
       )}
     </div>
   );
