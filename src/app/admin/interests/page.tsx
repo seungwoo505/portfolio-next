@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -181,11 +180,7 @@ export default function InterestsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
               <Heart className="w-8 h-8 text-pink-600 dark:text-pink-400" />
@@ -193,15 +188,13 @@ export default function InterestsPage() {
                 관심사 관리
               </h1>
             </div>
-            <motion.button
+            <button
               onClick={() => openModal()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>관심사 추가</span>
-            </motion.button>
+            </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
@@ -217,11 +210,9 @@ export default function InterestsPage() {
                 </div>
                 <div className="space-y-3">
                   {technicalInterests.map((interest) => (
-                    <motion.div
+                    <div
                       key={interest.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg transition-colors"
                     >
                       <div className="flex items-center space-x-3">
                         <div>
@@ -249,7 +240,7 @@ export default function InterestsPage() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                   {technicalInterests.length === 0 && (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -272,11 +263,9 @@ export default function InterestsPage() {
                 </div>
                 <div className="space-y-3">
                   {personalInterests.map((interest) => (
-                    <motion.div
+                    <div
                       key={interest.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg transition-colors"
                     >
                       <div className="flex items-center space-x-3">
                         <div>
@@ -304,7 +293,7 @@ export default function InterestsPage() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                   {personalInterests.length === 0 && (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -315,24 +304,17 @@ export default function InterestsPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-            onClick={closeModal}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingInterest ? '관심사 수정' : '관심사 추가'}
@@ -414,22 +396,19 @@ export default function InterestsPage() {
                   >
                     취소
                   </button>
-                  <motion.button
+                  <button
                     type="submit"
                     disabled={saving}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100"
                   >
                     <Save className="w-4 h-4" />
                     <span>{saving ? '저장 중...' : '저장'}</span>
-                  </motion.button>
+                  </button>
                 </div>
               </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}

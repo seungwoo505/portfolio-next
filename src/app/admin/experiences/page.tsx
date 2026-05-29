@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -210,11 +209,7 @@ export default function ExperiencesPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
               <Briefcase className="w-8 h-8 text-blue-600 dark:text-blue-400" />
@@ -222,24 +217,19 @@ export default function ExperiencesPage() {
                 경험 관리
               </h1>
             </div>
-            <motion.button
+            <button
               onClick={() => openModal()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>경험 추가</span>
-            </motion.button>
+            </button>
           </div>
           <div className="space-y-4">
-            {experiences.map((experience, index) => (
-              <motion.div
+            {experiences.map((experience) => (
+              <div
                 key={experience.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6"
+                className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -297,7 +287,7 @@ export default function ExperiencesPage() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
             {experiences.length === 0 && (
               <div className="text-center py-12">
@@ -308,36 +298,27 @@ export default function ExperiencesPage() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   첫 번째 경험을 추가해보세요.
                 </p>
-                <motion.button
+                <button
                   onClick={() => openModal()}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98] mx-auto"
                 >
                   <Plus className="w-4 h-4" />
                   <span>경험 추가</span>
-                </motion.button>
+                </button>
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-            onClick={closeModal}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingExperience ? '경험 수정' : '경험 추가'}
@@ -465,22 +446,19 @@ export default function ExperiencesPage() {
                   >
                     취소
                   </button>
-                  <motion.button
+                  <button
                     type="submit"
                     disabled={saving}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100"
                   >
                     <Save className="w-4 h-4" />
                     <span>{saving ? '저장 중...' : '저장'}</span>
-                  </motion.button>
+                  </button>
                 </div>
               </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
