@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
-import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import ScrollProgress from "@/components/ScrollProgress";
 import { seoApi, personalApi, blogApi, projectApi } from "@/lib/api";
@@ -450,41 +449,6 @@ export default function ClientHome({
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delayChildren: 0.1,
-        staggerChildren: 0.1
-      }
-    }
-  };
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring" as const,
-        damping: 12,
-        stiffness: 100
-      }
-    }
-  };
-  const nameVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        type: "spring" as const,
-        damping: 15,
-        stiffness: 80,
-        duration: 0.8
-      }
-    }
-  };
   /**
    * @component CardSkeletonContent
    * @description 로딩 중 프로젝트/블로그 카드를 대신할 플레이스홀더 콘텐츠를 렌더링합니다.
@@ -652,12 +616,7 @@ export default function ClientHome({
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <ScrollProgress />
-      <motion.section 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-24 sm:px-6 lg:px-8"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-24 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-black overflow-hidden galaxy-section">
           <div className="w-full h-full relative galaxy-container">
             <Suspense fallback={<div className="w-full h-full bg-black" />}>
@@ -670,229 +629,99 @@ export default function ClientHome({
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-950/20 to-black/90 pointer-events-none"></div>
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-        <motion.div
+        <div
           className="absolute inset-0 opacity-30 pointer-events-none"
           style={{
             background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`
           }}
         />
-        <motion.div className="relative z-10 mx-auto max-w-6xl text-center" variants={itemVariants}>
-          <motion.div
-            className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100 shadow-2xl shadow-blue-500/10 backdrop-blur"
-            variants={itemVariants}
-          >
+        <div className="relative z-10 mx-auto max-w-6xl text-center animate-fade-in-up">
+          <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100 shadow-2xl shadow-blue-500/10 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
             Galaxy Interface
-          </motion.div>
-          <motion.div className="mb-7" variants={nameVariants}>
-            <motion.h1 
-              className="mx-auto max-w-5xl cursor-pointer text-5xl font-black leading-[0.95] tracking-normal sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem]"
-              whileHover={{ 
-                scale: 1.02,
-                transition: { type: "spring", stiffness: 300 }
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <motion.span 
-                className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
+          </div>
+          <div className="mb-7 animate-fade-in-up">
+            <h1 className="mx-auto max-w-5xl cursor-pointer text-5xl font-black leading-[0.95] tracking-normal transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem]">
+              <span
+                className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient-x"
                 style={{
                   backgroundSize: "200% 200%"
                 }}
               >
                 {displayName}
-              </motion.span>
-            </motion.h1>
-            <motion.div 
-              className="flex justify-center items-center space-x-4 mt-6"
-              variants={itemVariants}
+              </span>
+            </h1>
+            <div className="flex justify-center items-center space-x-4 mt-6">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-blue-500" />
+              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse-slow" />
+              <div className="h-px w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse-slow animation-delay-1000" />
+            </div>
+          </div>
+          <div className="mb-10 animate-fade-in-up">
+            <p className="text-xl font-light text-slate-200 sm:text-2xl md:text-3xl">
+              {FALLBACK_PROFILE.titleWords.map((word, index) => (
+                <span
+                  key={word}
+                  className={`inline-block mx-2 animate-fade-in-up ${
+                    index === 0 ? 'animation-delay-500' : index === 1 ? 'animation-delay-700' : 'animation-delay-900'
+                  }`}
+                >
+                  {word}
+                </span>
+              ))}
+            </p>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg md:text-xl animate-fade-in-up animation-delay-1100">
+              {displayDescription}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 animate-fade-in-up">
+            <a
+              href="/projects"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 active:scale-95"
             >
-              <motion.div 
-                className="h-px w-16 bg-gradient-to-r from-transparent to-blue-500"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 1, duration: 1 }}
-              />
-              <motion.div 
-                className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.7, 1, 0.7]
-                }}
-                transition={{ 
-                  duration: 2, 
-                  repeat: Infinity 
-                }}
-              />
-              <motion.div 
-                className="h-px w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 1.2, duration: 1.5 }}
-              />
-              <motion.div 
-                className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.7, 1, 0.7]
-                }}
-                transition={{ 
-                  duration: 2, 
-                  repeat: Infinity,
-                  delay: 1
-                }}
-              />
-            </motion.div>
-          </motion.div>
-                   <motion.div className="mb-10" variants={itemVariants}>
-                     <motion.p className="text-xl font-light text-slate-200 sm:text-2xl md:text-3xl">
-                       {FALLBACK_PROFILE.titleWords.map((word, index) => (
-                         <motion.span
-                           key={word}
-                           className="inline-block mx-2"
-                           initial={{ opacity: 0, y: 20 }}
-                           animate={{ opacity: 1, y: 0 }}
-                           transition={{
-                             delay: 0.5 + index * 0.1,
-                             duration: 0.6,
-                             type: "spring" as const,
-                             stiffness: 120
-                           }}
-                         >
-                           {word}
-                         </motion.span>
-                       ))}
-                     </motion.p>
-                     <motion.p
-                       className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg md:text-xl"
-                       initial={{ opacity: 0 }}
-                       animate={{ opacity: 1 }}
-                       transition={{ delay: 1.2, duration: 0.8 }}
-                     >
-                       {displayDescription}
-                     </motion.p>
-                   </motion.div>
-                   <motion.div 
-                     className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
-                     variants={itemVariants}
-                   >
-                     <motion.a
-                       href="/projects"
-                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-                       whileHover={{ scale: 1.05 }}
-                       whileTap={{ scale: 0.95 }}
-                     >
-                       프로젝트 보기
-                     </motion.a>
-                     <motion.a
-                       href="/contact"
-                       className="px-8 py-3 border-2 border-slate-300 text-slate-300 font-semibold rounded-lg hover:bg-slate-300 hover:text-slate-900 transition-all duration-300 contact-btn"
-                       whileHover={{ scale: 1.05 }}
-                       whileTap={{ scale: 0.95 }}
-                     >
-                       연락하기
-                     </motion.a>
-                   </motion.div>
-                   <motion.div
-                     className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3"
-                     variants={itemVariants}
-                   >
-                     {[
-                       ["Focus", "인터랙션과 콘텐츠가 함께 살아있는 화면"],
-                       ["Stack", "Next.js, TypeScript, 운영형 관리자 경험"],
-                       ["Mission", "빠르고 읽기 쉬운 웹 경험 설계"],
-                     ].map(([label, text]) => (
-                       <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur">
-                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">{label}</p>
-                         <p className="mt-2 text-sm leading-6 text-slate-200">{text}</p>
-                       </div>
-                     ))}
-                   </motion.div>
-                   <motion.div 
-                     className="flex flex-col items-center mt-10 scroll-indicator"
-                     animate={{ 
-                       y: [0, 10, 0],
-                       opacity: 1 
-                     }}
-                     initial={{ opacity: 0 }}
-                     transition={{ 
-                       y: { duration: 2, repeat: Infinity },
-                       opacity: { delay: 2, duration: 0.8 }
-                     }}
-                   >
-                     <motion.div 
-                       className="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center cursor-pointer"
-                       whileHover={{ scale: 1.1 }}
-                       onClick={() => {
-                         document.querySelector('#latest-content')?.scrollIntoView({ 
-                           behavior: 'smooth' 
-                         });
-                       }}
-                     >
-                       <motion.div 
-                         className="w-1 h-3 bg-slate-400 rounded-full mt-2"
-                         animate={{ 
-                           opacity: [0.5, 1, 0.5],
-                           scale: [1, 1.2, 1]
-                         }}
-                         transition={{ 
-                           duration: 1.5, 
-                           repeat: Infinity 
-                         }}
-                       />
-                     </motion.div>
-                     <ChevronDown className="w-4 h-4 text-slate-400 mx-auto mt-2" />
-                   </motion.div>
-                   <motion.div 
-                     className="flex justify-center items-center space-x-6 mt-6"
-                     variants={itemVariants}
-                   >
-                     <motion.div 
-                       className="w-2 h-2 rounded-full bg-blue-400"
-                       animate={{ 
-                         scale: [1, 1.5, 1],
-                         opacity: [0.5, 1, 0.5]
-                       }}
-                       transition={{ 
-                         duration: 1.5, 
-                         repeat: Infinity,
-                         delay: 0.5
-                       }}
-                     />
-                     <motion.div 
-                       className="w-1 h-1 rounded-full bg-purple-400"
-                       animate={{ 
-                         scale: [1, 2, 1],
-                         opacity: [0.3, 1, 0.3]
-                       }}
-                       transition={{ 
-                         duration: 2, 
-                         repeat: Infinity,
-                         delay: 1
-                       }}
-                     />
-                     <motion.div 
-                       className="w-2 h-2 rounded-full bg-pink-400"
-                       animate={{ 
-                         scale: [1, 1.5, 1],
-                         opacity: [0.5, 1, 0.5]
-                       }}
-                       transition={{ 
-                         duration: 1.5, 
-                         repeat: Infinity,
-                         delay: 1.5
-                       }}
-                     />
-                   </motion.div>
-                 </motion.div>
-      </motion.section>
+              프로젝트 보기
+            </a>
+            <a
+              href="/contact"
+              className="px-8 py-3 border-2 border-slate-300 text-slate-300 font-semibold rounded-lg hover:bg-slate-300 hover:text-slate-900 transition-all duration-300 contact-btn active:scale-95"
+            >
+              연락하기
+            </a>
+          </div>
+          <div className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3 animate-fade-in-up">
+            {[
+              ["Focus", "인터랙션과 콘텐츠가 함께 살아있는 화면"],
+              ["Stack", "Next.js, TypeScript, 운영형 관리자 경험"],
+              ["Mission", "빠르고 읽기 쉬운 웹 경험 설계"],
+            ].map(([label, text]) => (
+              <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">{label}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-200">{text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col items-center mt-10 scroll-indicator animate-float">
+            <button
+              type="button"
+              className="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center cursor-pointer transition-transform duration-150 hover:scale-110"
+              onClick={() => {
+                document.querySelector('#latest-content')?.scrollIntoView({
+                  behavior: 'smooth'
+                });
+              }}
+            >
+              <div className="w-1 h-3 bg-slate-400 rounded-full mt-2 animate-pulse-slow" />
+            </button>
+            <ChevronDown className="w-4 h-4 text-slate-400 mx-auto mt-2" />
+          </div>
+          <div className="flex justify-center items-center space-x-6 mt-6 animate-fade-in-up">
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse-slow animation-delay-500" />
+            <div className="w-1 h-1 rounded-full bg-purple-400 animate-pulse-slow animation-delay-1000" />
+            <div className="w-2 h-2 rounded-full bg-pink-400 animate-pulse-slow animation-delay-1500" />
+          </div>
+        </div>
+      </section>
       <section id="latest-content" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-x-hidden">
         <div className="grid lg:grid-cols-2 gap-12">
           <div>
