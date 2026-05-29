@@ -11,7 +11,6 @@
     "fix-css": "node scripts/fix-css-scripts.js"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
     "@uiw/react-md-editor": "^4.0.8",
     "dompurify": "^3.4.3",
     "framer-motion": "^12.23.12",

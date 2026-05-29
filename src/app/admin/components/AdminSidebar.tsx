@@ -2,34 +2,34 @@
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { 
-  HomeIcon, 
-  DocumentTextIcon, 
-  FolderIcon, 
-  UserGroupIcon, 
-  CogIcon, 
-  TagIcon,
-  EnvelopeIcon,
-  ChartBarIcon,
-  WrenchScrewdriverIcon,
-  HeartIcon,
-  BriefcaseIcon,
-  UserIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import {
+  BarChart3,
+  Briefcase,
+  FileText,
+  Folder,
+  Heart,
+  Home,
+  Mail,
+  Settings,
+  Tag,
+  User,
+  Users,
+  Wrench,
+  X,
+} from 'lucide-react';
 const navigation = [
-  { name: '대시보드', href: '/admin', icon: HomeIcon },
-  { name: '개인정보 관리', href: '/admin/personal-info', icon: UserIcon },
-  { name: '블로그 관리', href: '/admin/blog', icon: DocumentTextIcon },
-  { name: '프로젝트 관리', href: '/admin/projects', icon: FolderIcon },
-  { name: '관심사 관리', href: '/admin/interests', icon: HeartIcon },
-  { name: '경험 관리', href: '/admin/experiences', icon: BriefcaseIcon },
-  { name: '태그 관리', href: '/admin/tags', icon: TagIcon },
-  { name: '기술 스택 관리', href: '/admin/skills', icon: WrenchScrewdriverIcon },
-  { name: '사용자 관리', href: '/admin/users', icon: UserGroupIcon },
-  { name: '연락처 관리', href: '/admin/contacts', icon: EnvelopeIcon },
-  { name: '활동 로그', href: '/admin/logs', icon: ChartBarIcon },
-  { name: '설정', href: '/admin/settings', icon: CogIcon },
+  { name: '대시보드', href: '/admin', icon: Home },
+  { name: '개인정보 관리', href: '/admin/personal-info', icon: User },
+  { name: '블로그 관리', href: '/admin/blog', icon: FileText },
+  { name: '프로젝트 관리', href: '/admin/projects', icon: Folder },
+  { name: '관심사 관리', href: '/admin/interests', icon: Heart },
+  { name: '경험 관리', href: '/admin/experiences', icon: Briefcase },
+  { name: '태그 관리', href: '/admin/tags', icon: Tag },
+  { name: '기술 스택 관리', href: '/admin/skills', icon: Wrench },
+  { name: '사용자 관리', href: '/admin/users', icon: Users },
+  { name: '연락처 관리', href: '/admin/contacts', icon: Mail },
+  { name: '활동 로그', href: '/admin/logs', icon: BarChart3 },
+  { name: '설정', href: '/admin/settings', icon: Settings },
 ];
 interface AdminSidebarProps {
   isOpen?: boolean;
@@ -69,7 +69,7 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
             onClick={onClose}
             className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
         <nav className="p-4">
