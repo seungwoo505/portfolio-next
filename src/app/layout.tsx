@@ -63,12 +63,13 @@ const themeInitializer = `(function() {
   }
 })();`;
 export const metadata: Metadata = {
-  title: "포트폴리오 | 웹 개발자",
-  description: "웹 개발자 포트폴리오입니다.",
-  keywords: "개발자,포트폴리오,웹개발,프론트엔드,백엔드",
-  authors: [{ name: "개발자" }],
-  creator: "개발자",
-  publisher: "개발자",
+  metadataBase: new URL("https://seungwoo.i234.me"),
+  title: "승우의 포트폴리오 | 프론트엔드 개발자",
+  description: "Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 만드는 프론트엔드 개발자 승우의 포트폴리오입니다.",
+  keywords: ["승우", "포트폴리오", "프론트엔드 개발자", "Next.js", "TypeScript", "React", "웹개발"],
+  authors: [{ name: "승우", url: "https://seungwoo.i234.me" }],
+  creator: "승우",
+  publisher: "승우의 포트폴리오",
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -86,9 +87,33 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "승우 포트폴리오 | 웹 개발자",
-    description: "풀스택 웹 개발자 승우의 포트폴리오",
+    title: "승우의 포트폴리오 | 프론트엔드 개발자",
+    description: "Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 만드는 프론트엔드 개발자 승우의 포트폴리오입니다.",
     type: "website",
+    url: "https://seungwoo.i234.me",
+    siteName: "승우의 포트폴리오",
+    locale: "ko_KR",
+    images: [
+      {
+        url: "https://seungwoo.i234.me/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "승우의 포트폴리오",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "승우의 포트폴리오 | 프론트엔드 개발자",
+    description: "Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 만드는 프론트엔드 개발자 승우의 포트폴리오입니다.",
+    creator: "@seungwoo",
+    images: ["https://seungwoo.i234.me/og-image.jpg"],
+  },
+  alternates: {
+    canonical: "https://seungwoo.i234.me",
+  },
+  verification: {
+    google: "Vl181oV3jRYtolyEhTMDgGAlcusVl2qWA71k43xV_YQ",
   },
 };
 /**

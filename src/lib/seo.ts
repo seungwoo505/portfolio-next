@@ -1,4 +1,9 @@
 import { Metadata } from 'next';
+
+const SITE_URL = 'https://seungwoo.i234.me';
+const SITE_NAME = '승우의 포트폴리오';
+const DEFAULT_OG_IMAGE = '/og-image.jpg';
+
 interface SEOConfig {
   title: string;
   description: string;
@@ -17,7 +22,7 @@ export function generateMetadata(config: SEOConfig): Metadata {
     title,
     description,
     keywords,
-    image = '/og-image.jpg',
+    image = DEFAULT_OG_IMAGE,
     url,
     type = 'website',
     publishedTime,
@@ -28,11 +33,14 @@ export function generateMetadata(config: SEOConfig): Metadata {
   } = config;
   const fullTitle = title.includes('승우') ? title : `${title} | 승우의 포트폴리오`;
   const fullDescription = description || '웹 개발자 승우의 포트폴리오입니다. React, Next.js, Node.js를 활용한 프로젝트들을 확인해보세요.';
-  const fullUrl = url ? `https://seungwoo.i234.me${url}` : 'https://seungwoo.i234.me';
+  const fullUrl = url ? `${SITE_URL}${url}` : SITE_URL;
+  const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
   const finalKeywords = keywords || 
     (tags.length > 0 ? tags.join(', ') : '') || 
     '웹개발, 포트폴리오';
   return {
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
     title: fullTitle,
     description: fullDescription,
     keywords: finalKeywords,
@@ -44,10 +52,10 @@ export function generateMetadata(config: SEOConfig): Metadata {
       title: fullTitle,
       description: fullDescription,
       url: fullUrl,
-      siteName: '승우의 포트폴리오',
+      siteName: SITE_NAME,
       images: [
         {
-          url: image.startsWith('http') ? image : `https://seungwoo.i234.me${image}`,
+          url: fullImageUrl,
           width: 1200,
           height: 630,
           alt: fullTitle,
@@ -64,7 +72,7 @@ export function generateMetadata(config: SEOConfig): Metadata {
       card: 'summary_large_image',
       title: fullTitle,
       description: fullDescription,
-      images: [image.startsWith('http') ? image : `https://seungwoo.i234.me${image}`],
+      images: [fullImageUrl],
       creator: '@seungwoo',
       site: '@seungwoo',
     },
@@ -84,8 +92,6 @@ export function generateMetadata(config: SEOConfig): Metadata {
     },
     verification: {
       google: 'Vl181oV3jRYtolyEhTMDgGAlcusVl2qWA71k43xV_YQ',
-      yandex: 'your-yandex-verification-code',
-      yahoo: 'your-yahoo-verification-code',
     },
   };
 }
@@ -94,7 +100,7 @@ export function generateStructuredData(config: {
   data: Record<string, unknown>;
 }) {
   const { type, data } = config;
-  const baseUrl = 'https://seungwoo.i234.me';
+  const baseUrl = SITE_URL;
   const baseStructuredData = {
     '@context': 'https://schema.org',
     '@type': type,
@@ -180,7 +186,7 @@ export function generateSitemapData(): Array<{
   changeFrequency: 'weekly' | 'monthly' | 'daily' | 'always' | 'hourly' | 'yearly' | 'never';
   priority: number;
 }> {
-  const baseUrl = 'https://seungwoo.i234.me';
+  const baseUrl = SITE_URL;
   const currentDate = new Date().toISOString();
   return [
     {

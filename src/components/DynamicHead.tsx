@@ -98,14 +98,6 @@ export default function DynamicHead({
       <meta name="format-detection" content="date=no" />
       <meta name="format-detection" content="address=no" />
       <meta name="format-detection" content="email=no" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-      <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-      <meta property="og:type" content="website" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={finalTitle} />
-      <meta name="twitter:description" content={finalDescription} />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <meta charSet="utf-8" />
       {settings?.primary_color && (
         <meta name="theme-color" content={settings?.primary_color} />
       )}
