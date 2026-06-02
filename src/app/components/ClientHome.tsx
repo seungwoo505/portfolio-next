@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { ChevronDown } from "lucide-react";
 import ScrollProgress from "@/components/ScrollProgress";
-import { seoApi, personalApi, blogApi, projectApi } from "@/lib/api";
+import { personalApi, blogApi, projectApi } from "@/lib/api";
 import { BlogPost } from "@/types";
 const BLOG_PLACEHOLDER_COUNT = 1;
 const PROJECT_PLACEHOLDER_COUNT = 1;
@@ -276,74 +276,6 @@ export default function ClientHome({
     };
     loadPersonalInfo();
   }, [personalInfo]);
-  /**
-   * @function updateSeoMetadata
-   * @description 백엔드의 SEO 설정과 문서 메타 태그를 동기화합니다.
-   * @returns {Promise<void>} 메타 태그와 문서 제목 갱신이 끝나면 해결됩니다.
-   */
-  const updateSeoMetadata = useCallback(async () => {
-    try {
-      const seoResponse = await seoApi.getSeoSettings();
-      if (seoResponse.success && seoResponse.data) {
-        const seo = seoResponse.data;
-        if (seo.seo_title || seo.site_title) {
-          document.title = seo.seo_title || seo.site_title || '승우의 포트폴리오 | 프론트엔드 개발자';
-        }
-        const metaDescription = document.querySelector('meta[name="description"]');
-        if (metaDescription) {
-          metaDescription.setAttribute('content', seo.seo_description || seo.site_description || '프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.');
-        }
-        const metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (metaKeywords && seo.seo_keywords) {
-          metaKeywords.setAttribute('content', seo.seo_keywords);
-        }
-        const ogTitle = document.querySelector('meta[property="og:title"]');
-        if (ogTitle) {
-          ogTitle.setAttribute('content', seo.og_title || seo.seo_title || seo.site_title || '승우의 포트폴리오 | 프론트엔드 개발자');
-        }
-        const ogDescription = document.querySelector('meta[property="og:description"]');
-        if (ogDescription) {
-          ogDescription.setAttribute('content', seo.og_description || seo.seo_description || seo.site_description || '프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.');
-        }
-        const ogImage = document.querySelector('meta[property="og:image"]');
-        if (ogImage && seo.og_image) {
-          ogImage.setAttribute('content', seo.og_image);
-        }
-        const ogAlt = document.querySelector('meta[property="og:image:alt"]');
-        if (ogAlt && seo.og_alt) {
-          ogAlt.setAttribute('content', seo.og_alt);
-        }
-        const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-        if (twitterTitle) {
-          twitterTitle.setAttribute('content', seo.twitter_title || seo.og_title || seo.seo_title || seo.site_title || '승우의 포트폴리오 | 프론트엔드 개발자');
-        }
-        const twitterDescription = document.querySelector('meta[name="twitter:description"]');
-        if (twitterDescription) {
-          twitterDescription.setAttribute('content', seo.twitter_description || seo.og_description || seo.seo_description || seo.site_description || '프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.');
-        }
-        const twitterImage = document.querySelector('meta[name="twitter:image"]');
-        if (twitterImage && seo.og_image) {
-          twitterImage.setAttribute('content', seo.og_image);
-        }
-        const twitterUsername = document.querySelector('meta[name="twitter:creator"]');
-        if (twitterUsername && seo.twitter_username) {
-          twitterUsername.setAttribute('content', seo.twitter_username);
-        }
-        const googleVerification = document.querySelector('meta[name="google-site-verification"]');
-        if (googleVerification && seo.google_verification) {
-          googleVerification.setAttribute('content', seo.google_verification);
-        }
-        const canonical = document.querySelector('link[rel="canonical"]');
-        if (canonical && seo.canonical_url) {
-          canonical.setAttribute('href', seo.canonical_url);
-        }
-      }
-    } catch {
-    }
-  }, []);
-  useEffect(() => {
-    updateSeoMetadata();
-  }, [updateSeoMetadata]);
   const galaxyProps = useMemo(() => ({
     mouseRepulsion: true,
     mouseInteraction: true,

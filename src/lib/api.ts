@@ -113,30 +113,6 @@ class ApiClient {
   }
 }
 export const api = new ApiClient();
-interface SeoSettings {
-  seo_title?: string;
-  seo_description?: string;
-  seo_keywords?: string;
-  og_title?: string;
-  og_description?: string;
-  og_image?: string;
-  og_alt?: string;
-  twitter_title?: string;
-  twitter_description?: string;
-  twitter_username?: string;
-  google_verification?: string;
-  robots_index?: string;
-  robots_follow?: string;
-  canonical_url?: string;
-  site_title?: string;
-  site_description?: string;
-  personal_name?: string;
-}
-export const seoApi = {
-  async getSeoSettings(): Promise<ApiResponse<SeoSettings>> {
-    return api.get<SeoSettings>('/public/settings');
-  }
-};
 export const blogApi = {
   getPosts: (params?: { 
     limit?: number; 
