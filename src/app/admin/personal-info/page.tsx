@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
-import { adminPersonalApi } from '@/api/user';
+import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { PersonalInfo } from '@/types';
 /**
@@ -43,7 +43,7 @@ export default function PersonalInfoPage() {
   const fetchPersonalInfo = async () => {
     try {
       setLoading(true);
-      const response = await adminPersonalApi.getPersonalInfo();
+      const response = await authApi.get<PersonalInfo>('/admin/personal-info');
       if (response.success && response.data) {
         setPersonalInfo(response.data);
       } else {
@@ -82,7 +82,8 @@ export default function PersonalInfoPage() {
     }
     setSaving(true);
     try {
-      const response = await adminPersonalApi.updatePersonalInfo(personalInfo);
+      const payload: Record<string, unknown> = { ...personalInfo };
+      const response = await authApi.put<PersonalInfo>('/admin/personal-info', payload);
       if (response.success) {
         toast.success('개인정보가 성공적으로 저장되었습니다!', {
           duration: 3000,
