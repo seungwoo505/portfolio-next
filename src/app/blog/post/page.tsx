@@ -8,7 +8,6 @@ import Head from "next/head";
 import { blogApi } from "@/lib/api";
 import { BlogPost as BlogPostType } from "@/types";
 import toast from 'react-hot-toast';
-import { markdownToHtml } from '@/utils/markdown';
 /**
  * @component BlogPostContent
  * @description 블로그 상세 데이터를 로딩하고 렌더링하는 클라이언트 컴포넌트.
@@ -19,6 +18,8 @@ function BlogPostContent() {
   const slug = searchParams.get('slug');
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [postContentHtml, setPostContentHtml] = useState('');
+
   useEffect(() => {
     if (!slug) {
       toast.error('포스트를 찾을 수 없습니다.');
@@ -57,6 +58,21 @@ function BlogPostContent() {
     };
     fetchPost();
   }, [slug]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!post?.content) {
+      setPostContentHtml('');
+      return;
+    }
+    import('@/utils/markdown').then(({ markdownToHtml }) => {
+      if (!cancelled) {
+        setPostContentHtml(markdownToHtml(post.content || ''));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [post?.content]);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -280,7 +296,11 @@ function BlogPostContent() {
             <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
               <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
             {post.content ? (
-              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }} />
+              postContentHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: postContentHtml }} />
+              ) : (
+                <p className="text-slate-500 dark:text-slate-400">포스트 내용을 렌더링하는 중입니다.</p>
+              )
             ) : (
                   <div className="py-12 text-center text-lg text-slate-500 dark:text-slate-400">
                   콘텐츠를 불러올 수 없습니다.
