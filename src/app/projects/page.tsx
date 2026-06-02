@@ -2,9 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import Head from "next/head";
 import toast from "react-hot-toast";
-import DynamicHead from "@/components/DynamicHead";
 import ScrollProgress from "../../components/ScrollProgress";
 import { projectApi, api } from "@/lib/api";
 import { Project } from "@/types";
@@ -324,28 +322,6 @@ export default function Projects() {
   };
   return (
     <>
-      <Head>
-        <title>프로젝트 | 승우의 포트폴리오</title>
-        <meta name="description" content="웹 개발자 승우의 프로젝트 포트폴리오입니다. React, Next.js, Node.js 등을 활용한 다양한 웹 프로젝트들을 확인해보세요." />
-        <meta name="keywords" content="웹개발, 프로젝트, 포트폴리오, React, Next.js, Node.js, 프론트엔드, 백엔드" />
-        <meta name="author" content="승우" />
-        <meta name="robots" content="index, follow" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="프로젝트 | 승우의 포트폴리오" />
-        <meta property="og:description" content="웹 개발자 승우의 프로젝트 포트폴리오입니다. React, Next.js, Node.js 등을 활용한 다양한 웹 프로젝트들을 확인해보세요." />
-        <meta property="og:url" content="https://seungwoo.i234.me/projects" />
-        <meta property="og:image" content="https://seungwoo.i234.me/og-image.jpg" />
-        <meta property="og:image:alt" content="승우의 프로젝트 포트폴리오" />
-        <meta property="og:site_name" content="승우의 포트폴리오" />
-        <meta property="og:locale" content="ko_KR" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="프로젝트 | 승우의 포트폴리오" />
-        <meta name="twitter:description" content="웹 개발자 승우의 프로젝트 포트폴리오입니다. React, Next.js, Node.js 등을 활용한 다양한 웹 프로젝트들을 확인해보세요." />
-        <meta name="twitter:image" content="https://seungwoo.i234.me/og-image.jpg" />
-        <meta name="twitter:creator" content="@seungwoo" />
-        <link rel="canonical" href="https://seungwoo.i234.me/projects" />
-      </Head>
-      <DynamicHead pageTitle="프로젝트" />
       <ScrollProgress />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

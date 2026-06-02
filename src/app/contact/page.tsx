@@ -1,9 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import Head from "next/head";
 import { contactApi } from "@/lib/api";
 import { ContactMessage, SiteSettings } from "@/types";
-import DynamicHead from "@/components/DynamicHead";
 import ScrollProgress from "../../components/ScrollProgress";
 import { api } from "@/lib/api";
 import toast from 'react-hot-toast';
@@ -82,49 +80,6 @@ export default function ContactPage() {
 
   return (
     <>
-      <Head>
-        <title>연락처 | 승우의 포트폴리오</title>
-        <meta name="description" content="웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다." />
-        <meta name="keywords" content="연락처, 문의, 채용, 프로젝트, 웹개발, React, Next.js, Node.js, 개발자" />
-        <meta name="author" content="승우" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="연락처 | 승우의 포트폴리오" />
-        <meta property="og:description" content="웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다." />
-        <meta property="og:url" content="https://seungwoo.i234.me/contact" />
-        <meta property="og:image" content="https://seungwoo.i234.me/og-image.jpg" />
-        <meta property="og:site_name" content="승우의 포트폴리오" />
-        <meta property="og:locale" content="ko_KR" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="연락처 | 승우의 포트폴리오" />
-        <meta name="twitter:description" content="웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다." />
-        <meta name="twitter:image" content="https://seungwoo.i234.me/og-image.jpg" />
-        <meta name="twitter:creator" content="@seungwoo" />
-        <link rel="canonical" href="https://seungwoo.i234.me/contact" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "ContactPage",
-              "name": "연락처",
-              "description": "웹 개발자 승우에게 연락하세요. 프로젝트 문의, 채용 제안, 기술 상담 등 다양한 기회를 환영합니다.",
-              "url": "https://seungwoo.i234.me/contact",
-              "mainEntity": {
-                "@type": "Person",
-                "name": "승우",
-                "jobTitle": "웹 개발자",
-                "description": "React, Next.js, Node.js를 활용한 웹 개발자",
-                "url": "https://seungwoo.i234.me",
-                "sameAs": [
-                  "https://github.com/seungwoo",
-                  "https://linkedin.com/in/seungwoo"
-                ]
-              }
-            })
-          }}
-        />
-      </Head>
-      <DynamicHead pageTitle="연락처" />
       <ScrollProgress />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

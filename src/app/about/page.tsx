@@ -2,11 +2,8 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import Head from 'next/head';
 import { api, personalApi } from '@/lib/api';
-import DynamicHead from '@/components/DynamicHead';
 import ScrollProgress from '@/components/ScrollProgress';
-import { generateStructuredData } from '@/lib/seo';
 import { AboutPersonalInfo, AboutSkill, AboutExperience, AboutInterest, AboutCategory } from '@/types';
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
@@ -261,48 +258,6 @@ export default function AboutPage() {
   }
   return (
     <>
-      <Head>
-        <title>소개 | 포트폴리오</title>
-        <meta name="description" content="웹 개발자에 대해 알아보세요." />
-        <meta name="keywords" content="웹개발자, 소개, 이력서" />
-        <meta name="author" content="개발자" />
-        <meta property="og:type" content="profile" />
-        <meta property="og:title" content="소개 | 포트폴리오" />
-        <meta property="og:description" content="웹 개발자에 대해 알아보세요." />
-        <meta property="og:url" content="/about" />
-        <meta property="og:image" content={personalInfo?.avatar_url || '/og-image.jpg'} />
-        <meta property="og:site_name" content="포트폴리오" />
-        <meta property="og:locale" content="ko_KR" />
-        <meta property="profile:first_name" content="개발자" />
-        <meta property="profile:last_name" content="" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="소개 | 포트폴리오" />
-        <meta name="twitter:description" content="웹 개발자에 대해 알아보세요." />
-        <meta name="twitter:image" content={personalInfo?.avatar_url || '/og-image.jpg'} />
-        <meta name="twitter:creator" content="@developer" />
-        <link rel="canonical" href="/about" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(generateStructuredData({
-              type: 'Person',
-              data: {
-                name: personalInfo?.full_name || '승우',
-                title: personalInfo?.title || '웹 개발자',
-                description: personalInfo?.bio || personalInfo?.about || 'React, Next.js, Node.js를 활용한 웹 개발자',
-                url: '/about',
-                image: personalInfo?.avatar_url,
-                github_url: personalInfo?.github_url,
-                linkedin_url: personalInfo?.linkedin_url,
-                twitter_url: personalInfo?.twitter_url,
-                email: personalInfo?.email,
-                location: personalInfo?.location,
-              }
-            }))
-          }}
-        />
-      </Head>
-      <DynamicHead pageTitle="소개" />
       <ScrollProgress />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
