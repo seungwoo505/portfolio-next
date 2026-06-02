@@ -8,12 +8,6 @@ import Head from "next/head";
 import { projectApi } from "@/lib/api";
 import { Project } from "@/types";
 import toast from 'react-hot-toast';
-import dynamic from 'next/dynamic';
-
-const Markdown = dynamic(
-  () => import('@uiw/react-md-editor').then((mod) => mod.default.Markdown),
-  { ssr: false }
-);
 /**
  * @component ProjectDetailContent
  * @description 프로젝트 상세 데이터를 로드하고 렌더링하는 클라이언트 컴포넌트.
@@ -24,21 +18,8 @@ function ProjectDetailContent() {
   const slug = searchParams.get('slug');
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const root = document.documentElement;
-      setIsDarkMode(root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark');
-    };
-    checkDarkMode();
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class', 'data-theme']
-    });
-    return () => observer.disconnect();
-  }, []);
+  const [projectContentHtml, setProjectContentHtml] = useState('');
+
   useEffect(() => {
     if (!slug) {
       toast.error('프로젝트를 찾을 수 없습니다.');
@@ -78,6 +59,21 @@ function ProjectDetailContent() {
     };
     fetchProject();
   }, [slug]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!project?.content) {
+      setProjectContentHtml('');
+      return;
+    }
+    import('@/utils/markdown').then(({ markdownToHtml }) => {
+      if (!cancelled) {
+        setProjectContentHtml(markdownToHtml(project.content || ''));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [project?.content]);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -398,9 +394,11 @@ function ProjectDetailContent() {
                   <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent dark:via-blue-500/30" />
                   <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
                     <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
-              <div data-color-mode={isDarkMode ? 'dark' : 'light'}>
-                <Markdown source={project.content} />
-              </div>
+              {projectContentHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: projectContentHtml }} />
+              ) : (
+                <p className="text-slate-500 dark:text-slate-400">프로젝트 내용을 렌더링하는 중입니다.</p>
+              )}
                     </div>
             </div>
           </article>
