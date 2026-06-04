@@ -2,7 +2,7 @@
 
 **Next.js 15 기반의 현대적이고 반응형 포트폴리오 프론트엔드 애플리케이션**
 
-개인 포트폴리오 웹사이트를 위한 고성능, SEO 최적화된 Next.js 애플리케이션입니다. 정적 사이트 생성(SSG)을 지원하며, 관리자 대시보드, 블로그, 프로젝트 포트폴리오 등 완전한 기능을 제공합니다.
+개인 포트폴리오 웹사이트를 위한 고성능, SEO 최적화된 Next.js 애플리케이션입니다. Next 서버 실행 방식을 기준으로 관리자 대시보드, 블로그, 프로젝트 포트폴리오 등 완전한 기능을 제공합니다.
 
 ## 📋 목차
 
@@ -54,7 +54,7 @@
 
 ### ⚡ **성능 최적화**
 
-- ✅ 정적 사이트 생성 (SSG)
+- ✅ Next 서버 실행 배포
 - ✅ 이미지 최적화 및 지연 로딩
 - ✅ 코드 스플리팅 및 번들 최적화
 - ✅ 캐싱 전략
@@ -189,8 +189,8 @@ portfolio-next/
 │       ├── 📄 performance.ts       # 성능 유틸리티
 │       └── 📄 validation.ts        # 유효성 검사
 │
-└── 📁 out/                         # 정적 빌드 결과물
-    └── 📄 *.html                   # 생성된 HTML 파일들
+└── 📁 public/                      # 정적 에셋
+    └── 📄 favicon.svg              # 파비콘
 ```
 
 ## 🚀 설치 및 실행
@@ -239,10 +239,11 @@ pnpm dev
 ### **5. 프로덕션 빌드**
 
 ```bash
-# 정적 사이트 생성
+# 프로덕션 빌드
 npm run build
 
-# 빌드 결과물은 out/ 디렉토리에 생성됩니다
+# 빌드 후 Next 서버 실행
+npm run start
 ```
 
 ## ⚙️ 환경 설정
@@ -388,12 +389,11 @@ interface BlogPost {
 
 ## ⚡ 성능 최적화
 
-### **정적 사이트 생성 (SSG)**
+### **Next 서버 실행**
 
 ```typescript
 // next.config.ts
 export const nextConfig = {
-  output: "export", // 정적 사이트 생성
   trailingSlash: true, // URL 일관성
   compress: true, // 압축 활성화
 };
@@ -518,14 +518,16 @@ export default async function sitemap() {
 
 ## 🚀 배포
 
-### **정적 사이트 배포**
+### **Next 서버 배포**
 
 ```bash
 # 빌드
 npm run build
 
-# out/ 디렉토리의 파일들을 웹 서버에 업로드
-# (Nginx, Apache, Vercel, Netlify 등)
+# Next 서버 실행
+npm run start
+
+# Nginx 등 리버스 프록시에서 Next 서버로 프록시
 ```
 
 ### **Vercel 배포 (권장)**
@@ -657,9 +659,12 @@ npm run type-check
 #### **2. 이미지 최적화 에러**
 
 ```typescript
-// next.config.ts에서 이미지 최적화 비활성화 (정적 export용)
+// 외부 이미지 도메인을 최적화 대상으로 사용할 경우 next.config.ts에서 remotePatterns 설정
+// 현재 프로젝트는 동적 이미지 URL 호환성을 위해 unoptimized 설정을 유지할 수 있습니다.
 images: {
-  unoptimized: true,
+  remotePatterns: [
+    { protocol: "https", hostname: "example.com" },
+  ],
 }
 ```
 

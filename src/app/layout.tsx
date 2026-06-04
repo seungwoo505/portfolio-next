@@ -127,8 +127,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // 정적 export를 사용하므로 서버에서 쿠키를 읽을 수 없음
-  // 클라이언트에서 themeInitializer 스크립트가 data-theme을 설정함
+  // 초기 렌더링 전에 클라이언트에서 themeInitializer 스크립트가 data-theme을 설정함
   return (
     <html lang="ko" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>

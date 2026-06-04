@@ -5,10 +5,8 @@
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev --turbopack",
     "build": "next build",
-    "export": "next build && node scripts/fix-css-scripts.js",
     "start": "next start",
-    "lint": "eslint .",
-    "fix-css": "node scripts/fix-css-scripts.js"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@uiw/react-md-editor": "^4.0.8",
