@@ -534,7 +534,32 @@ npm run build
 # Next 서버 실행
 npm run start
 
-# Nginx 등 리버스 프록시에서 Next 서버로 프록시
+# Nginx 등 리버스 프록시에서 Next 서버와 API 서버로 프록시
+```
+
+운영 환경에서는 일반적으로 Nginx에서 `/` 요청은 Next 서버로, `/api/` 요청은 백엔드 API 서버로, `/uploads/images/` 요청은 업로드 이미지 경로로 전달합니다.
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location /api/ {
+    proxy_pass http://127.0.0.1:3001/api/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location /uploads/images/ {
+    alias /var/www/portfolio-server/uploads/images/;
+    expires 1y;
+}
 ```
 
 ### **Vercel 배포 (권장)**
@@ -555,18 +580,27 @@ vercel env add INTERNAL_API_URL
 
 ```dockerfile
 # Dockerfile
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package*.json ./
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
-COPY --from=builder /app/out /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=deps /app/node_modules ./node_modules
+EXPOSE 3000
+CMD ["npm", "run", "start"]
 ```
 
 ## 👨‍💻 개발 가이드
@@ -574,14 +608,11 @@ CMD ["nginx", "-g", "daemon off;"]
 ### **개발 환경 설정**
 
 ```bash
-# TypeScript 타입 체킹
-npm run type-check
-
 # ESLint 실행
 npm run lint
 
-# 코드 포맷팅
-npm run format
+# 프로덕션 빌드 검증
+npm run build
 ```
 
 ### **컴포넌트 개발**
@@ -660,8 +691,9 @@ getTTFB(sendToAnalytics);
 rm -rf node_modules package-lock.json
 npm install
 
-# TypeScript 에러 확인
-npm run type-check
+# 린트와 빌드 확인
+npm run lint
+npm run build
 ```
 
 #### **2. 이미지 최적화 에러**
