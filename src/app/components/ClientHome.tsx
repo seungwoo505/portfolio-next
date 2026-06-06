@@ -608,18 +608,18 @@ export default function ClientHome({
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 animate-fade-in-up">
-            <a
+            <Link
               href="/projects"
               className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 active:scale-95"
             >
               프로젝트 보기
-            </a>
-            <a
+            </Link>
+            <Link
               href="/contact"
               className="px-8 py-3 border-2 border-slate-300 text-slate-300 font-semibold rounded-lg hover:bg-slate-300 hover:text-slate-900 transition-all duration-300 contact-btn active:scale-95"
             >
               연락하기
-            </a>
+            </Link>
           </div>
           <div className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3 animate-fade-in-up">
             {[
@@ -684,7 +684,7 @@ export default function ClientHome({
                     <article
                       key={post.id}
                       className={`${cardBaseClass} ${stateClass}`}
-                      onClick={isRevealed ? () => (window.location.href = `/blog/post?slug=${encodeURIComponent(post.slug)}`) : undefined}
+                      onClick={isRevealed ? () => (window.location.href = `/blog/${encodeURIComponent(post.slug)}`) : undefined}
                     >
                       {isRevealed ? (
                         <div className="p-6">
@@ -694,7 +694,7 @@ export default function ClientHome({
                           </div>
                           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             <Link
-                              href={`/blog/post?slug=${post.slug}`}
+                              href={`/blog/${encodeURIComponent(post.slug)}`}
                               onClick={(e) => e.stopPropagation()}
                             >
                               {post.title}
@@ -717,7 +717,7 @@ export default function ClientHome({
                           </div>
                           <div className="flex items-center justify-between">
                             <Link
-                              href={`/blog/post?slug=${post.slug}`}
+                              href={`/blog/${encodeURIComponent(post.slug)}`}
                               className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
                               onClick={(e) => e.stopPropagation()}
                             >
@@ -773,7 +773,7 @@ export default function ClientHome({
                     <article
                       key={project.id}
                       className={`${cardBaseClass} ${stateClass}`}
-                      onClick={isRevealed ? () => (window.location.href = `/projects/detail?slug=${encodeURIComponent(project.slug)}`) : undefined}
+                      onClick={isRevealed ? () => (window.location.href = `/projects/${encodeURIComponent(project.slug)}`) : undefined}
                     >
                       {isRevealed ? (
                         <div className="p-6">
@@ -810,7 +810,7 @@ export default function ClientHome({
                           </div>
                           <div className="flex items-center justify-between">
                             <Link
-                              href={`/projects/detail?slug=${encodeURIComponent(project.slug)}`}
+                              href={`/projects/${encodeURIComponent(project.slug)}`}
                               className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
                               onClick={(e) => e.stopPropagation()}
                             >

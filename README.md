@@ -283,9 +283,9 @@ NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX      # Google Tag Manager
 | 홈페이지      | `/`                     | 메인 포트폴리오 페이지   |
 | 소개          | `/about`                | 개인 정보 및 소개        |
 | 블로그        | `/blog`                 | 블로그 포스트 목록       |
-| 블로그 포스트 | `/blog/post/[slug]`     | 개별 블로그 포스트       |
+| 블로그 포스트 | `/blog/[slug]`          | 개별 블로그 포스트       |
 | 프로젝트      | `/projects`             | 프로젝트 포트폴리오 목록 |
-| 프로젝트 상세 | `/projects/detail/[id]` | 프로젝트 상세 정보       |
+| 프로젝트 상세 | `/projects/[slug]`      | 프로젝트 상세 정보       |
 | 연락처        | `/contact`              | 연락처 폼                |
 
 ### **🔐 관리자 페이지**
@@ -478,7 +478,7 @@ export const metadata: Metadata = {
 ### **동적 메타데이터**
 
 ```typescript
-// app/blog/post/[slug]/page.tsx
+// app/blog/[slug]/page.tsx
 export async function generateMetadata({
   params,
 }: {
@@ -512,11 +512,11 @@ export default async function sitemap() {
       lastModified: new Date(),
     },
     ...posts.map((post) => ({
-      url: `https://your-domain.com/blog/post/${post.slug}`,
+      url: `https://your-domain.com/blog/${post.slug}`,
       lastModified: new Date(post.updated_at),
     })),
     ...projects.map((project) => ({
-      url: `https://your-domain.com/projects/detail/${project.id}`,
+      url: `https://your-domain.com/projects/${project.slug}`,
       lastModified: new Date(project.updated_at),
     })),
   ];

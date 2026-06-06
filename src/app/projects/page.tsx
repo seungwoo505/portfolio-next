@@ -483,7 +483,7 @@ export default function Projects() {
                     <article
                       key={project.id}
                       className={`${baseClass} ${stateClass}`}
-                      onClick={isRevealed ? () => (window.location.href = `/projects/detail?slug=${encodeURIComponent(project.slug)}`) : undefined}
+                      onClick={isRevealed ? () => (window.location.href = `/projects/${encodeURIComponent(project.slug)}`) : undefined}
                     >
                       {isRevealed ? (
                         <div className="p-6">
@@ -578,7 +578,7 @@ export default function Projects() {
                           </div>
                           <div className="flex items-center justify-between">
                             <a
-                              href={`/projects/detail?slug=${encodeURIComponent(project.slug)}`}
+                              href={`/projects/${encodeURIComponent(project.slug)}`}
                               className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline font-medium text-sm transition-transform transform hover:translate-x-1"
                               onClick={(e) => e.stopPropagation()}
                             >
