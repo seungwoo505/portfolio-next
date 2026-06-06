@@ -178,14 +178,14 @@ function ProjectDetailContent() {
         <meta property="og:title" content={project.title} />
         <meta property="og:description" content={project.excerpt || project.meta_description || project.description || '웹 개발자 승우의 프로젝트입니다.'} />
         <meta property="og:url" content={`https://seungwoo.i234.me/projects/detail?slug=${encodeURIComponent(slug || '')}`} />
-        <meta property="og:image" content={project.image_url || 'https://seungwoo.i234.me/og-image.jpg'} />
+        <meta property="og:image" content={project.image_url || 'https://seungwoo.i234.me/og-image.svg'} />
         <meta property="og:image:alt" content={project.title} />
         <meta property="og:site_name" content="승우의 포트폴리오" />
         <meta property="og:locale" content="ko_KR" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={project.title} />
         <meta name="twitter:description" content={project.excerpt || project.meta_description || project.description || '웹 개발자 승우의 프로젝트입니다.'} />
-        <meta name="twitter:image" content={project.image_url || 'https://seungwoo.i234.me/og-image.jpg'} />
+        <meta name="twitter:image" content={project.image_url || 'https://seungwoo.i234.me/og-image.svg'} />
         <meta name="twitter:creator" content="@seungwoo" />
         <link rel="canonical" href={`https://seungwoo.i234.me/projects/detail?slug=${encodeURIComponent(slug || '')}`} />
         <script

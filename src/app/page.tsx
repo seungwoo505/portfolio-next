@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "승우의 포트폴리오",
     images: [
       {
-        url: "https://seungwoo.i234.me/og-image.jpg",
+        url: "https://seungwoo.i234.me/og-image.svg",
         width: 1200,
         height: 630,
         alt: "승우의 포트폴리오",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: "승우의 포트폴리오 | 프론트엔드 개발자",
     description: "프론트엔드 개발자 승우의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 블로그를 확인해보세요.",
     creator: "@seungwoo",
-    images: ["https://seungwoo.i234.me/og-image.jpg"],
+    images: ["https://seungwoo.i234.me/og-image.svg"],
   },
   robots: {
     index: true,

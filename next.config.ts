@@ -4,9 +4,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   experimental: {
     optimizePackageImports: [
-      'framer-motion', 
       'lucide-react', 
-      '@heroicons/react',
       'react-hot-toast'
     ],
     webpackBuildWorker: true, 

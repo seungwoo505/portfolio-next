@@ -133,7 +133,7 @@ function BlogPostContent() {
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.meta_description || post.excerpt || post.content?.substring(0, 160) || '웹 개발자 승우의 블로그 포스트입니다.'} />
         <meta property="og:url" content={`https://seungwoo.i234.me/blog/post?slug=${slug}`} />
-        <meta property="og:image" content={post.featured_image || 'https://seungwoo.i234.me/og-image.jpg'} />
+        <meta property="og:image" content={post.featured_image || 'https://seungwoo.i234.me/og-image.svg'} />
         <meta property="og:image:alt" content={post.title} />
         <meta property="og:site_name" content="승우의 포트폴리오" />
         <meta property="og:locale" content="ko_KR" />
@@ -146,7 +146,7 @@ function BlogPostContent() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt || post.content?.substring(0, 160) || '웹 개발자 승우의 블로그 포스트입니다.'} />
-        <meta name="twitter:image" content={post.featured_image || 'https://seungwoo.i234.me/og-image.jpg'} />
+        <meta name="twitter:image" content={post.featured_image || 'https://seungwoo.i234.me/og-image.svg'} />
         <meta name="twitter:creator" content="@seungwoo" />
         <link rel="canonical" href={`https://seungwoo.i234.me/blog/post?slug=${slug}`} />
         <script
@@ -167,7 +167,7 @@ function BlogPostContent() {
                 "name": "승우의 포트폴리오",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://seungwoo.i234.me/images/logo.png"
+                  "url": "https://seungwoo.i234.me/images/logo.svg"
                 }
               },
               "datePublished": post.published_at || post.created_at,

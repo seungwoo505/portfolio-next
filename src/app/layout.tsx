@@ -95,7 +95,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     images: [
       {
-        url: "https://seungwoo.i234.me/og-image.jpg",
+        url: "https://seungwoo.i234.me/og-image.svg",
         width: 1200,
         height: 630,
         alt: "승우의 포트폴리오",
@@ -107,7 +107,7 @@ export const metadata: Metadata = {
     title: "승우의 포트폴리오 | 프론트엔드 개발자",
     description: "Next.js와 TypeScript로 빠르고 안정적인 웹 경험을 만드는 프론트엔드 개발자 승우의 포트폴리오입니다.",
     creator: "@seungwoo",
-    images: ["https://seungwoo.i234.me/og-image.jpg"],
+    images: ["https://seungwoo.i234.me/og-image.svg"],
   },
   alternates: {
     canonical: "https://seungwoo.i234.me",

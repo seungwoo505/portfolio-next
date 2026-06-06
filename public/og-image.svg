@@ -1,0 +1,22 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0F172A"/>
+  <circle cx="1020" cy="110" r="220" fill="#2563EB" opacity="0.35"/>
+  <circle cx="170" cy="520" r="250" fill="#7C3AED" opacity="0.28"/>
+  <rect x="88" y="88" width="1024" height="454" rx="36" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <g transform="translate(136 132)">
+    <circle cx="48" cy="48" r="48" fill="url(#logoGradient)"/>
+    <path d="M34 38L22 50L34 62" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M62 38L74 50L62 62" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M54 26L42 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="136" y="292" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700">승우의 포트폴리오</text>
+  <text x="140" y="360" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="500">Frontend Developer · Next.js · TypeScript</text>
+  <text x="140" y="430" fill="#93C5FD" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="600">seungwoo.i234.me</text>
+  <defs>
+    <linearGradient id="logoGradient" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="0.5" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+</svg>

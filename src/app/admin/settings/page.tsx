@@ -88,7 +88,7 @@ export default function SettingsPage() {
         updated_at: new Date().toISOString()
       },
       og_image: {
-        value: 'https://seungwoo.i234.me/og-image.jpg',
+        value: 'https://seungwoo.i234.me/og-image.svg',
         type: 'string',
         is_public: true,
         description: 'Open Graph 이미지 URL',

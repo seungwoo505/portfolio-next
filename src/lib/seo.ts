@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 const SITE_URL = 'https://seungwoo.i234.me';
 const SITE_NAME = '승우의 포트폴리오';
-const DEFAULT_OG_IMAGE = '/og-image.jpg';
+const DEFAULT_OG_IMAGE = '/og-image.svg';
 
 interface SEOConfig {
   title: string;
@@ -107,7 +107,7 @@ export function generateStructuredData(config: {
     url: `${baseUrl}${data.url || ''}`,
     name: data.name || data.title,
     description: data.description,
-    image: data.image ? `${baseUrl}${data.image}` : `${baseUrl}/og-image.jpg`,
+    image: data.image ? `${baseUrl}${data.image}` : `${baseUrl}${DEFAULT_OG_IMAGE}`,
     datePublished: data.publishedTime || data.created_at,
     dateModified: data.modifiedTime || data.updated_at,
     author: {

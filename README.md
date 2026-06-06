@@ -107,6 +107,9 @@ portfolio-next/
 │
 ├── 📁 public/                      # 정적 파일
 │   ├── 📄 favicon.svg              # 파비콘
+│   ├── 📄 og-image.svg             # 기본 Open Graph 이미지
+│   ├── 📁 images/
+│   │   └── 📄 logo.svg             # 구조화 데이터 로고
 │   ├── 📄 robots.txt               # SEO 설정
 │   └── 📄 sitemap.xml              # 사이트맵
 │
@@ -188,9 +191,6 @@ portfolio-next/
 │       ├── 📄 markdown.ts          # 마크다운 처리
 │       ├── 📄 performance.ts       # 성능 유틸리티
 │       └── 📄 validation.ts        # 유효성 검사
-│
-└── 📁 public/                      # 정적 에셋
-    └── 📄 favicon.svg              # 파비콘
 ```
 
 ## 🚀 설치 및 실행
@@ -465,7 +465,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "승우 포트폴리오",
     description: "웹 개발자 포트폴리오",
-    images: ["/og-image.jpg"],
+    images: ["/og-image.svg"],
   },
   twitter: {
     card: "summary_large_image",
