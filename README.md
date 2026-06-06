@@ -401,8 +401,10 @@ interface BlogPost {
 ```typescript
 // next.config.ts
 export const nextConfig = {
-  trailingSlash: true, // URL 일관성
   compress: true, // 압축 활성화
+  images: {
+    unoptimized: true, // 관리자 입력 이미지 URL 호환성 유지
+  },
 };
 ```
 
