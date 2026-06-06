@@ -1,6 +1,7 @@
 import ClientHome from "./components/ClientHome";
 import { Metadata } from "next";
-import { BlogPost } from "@/types";
+import { serverFetch } from "@/lib/server-fetch";
+import type { ApiResponse, BlogPost } from "@/types";
 
 export const metadata: Metadata = {
   title: "승우의 포트폴리오 | 프론트엔드 개발자",
@@ -112,6 +113,16 @@ function normalizeProjectSkills(skills: unknown): string[] {
   return skills.map(skill => typeof skill === 'string' ? skill : (skill as { name?: string }).name || String(skill));
 }
 
+function getSettledData<T>(
+  result: PromiseSettledResult<ApiResponse<T>>,
+  fallback: T
+): T {
+  if (result.status !== 'fulfilled' || !result.value.success) {
+    return fallback;
+  }
+  return result.value.data ?? fallback;
+}
+
 /**
  * @function getHomeData
  * @description 서버에서 홈 페이지에 필요한 모든 데이터를 가져옵니다.
@@ -119,33 +130,19 @@ function normalizeProjectSkills(skills: unknown): string[] {
  */
 async function getHomeData(): Promise<HomePageData> {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api';
     const [blogResponse, projectResponse, skillsResponse, personalResponse] = await Promise.allSettled([
-      fetch(`${apiBase}/public/posts?limit=2&featured=true`, {
-        cache: 'force-cache',
-        next: { revalidate: 300 }
+      serverFetch<BlogPost[]>('/public/posts', {
+        searchParams: { limit: 2, featured: true }
       }),
-      fetch(`${apiBase}/public/projects?limit=2&featured=true`, {
-        cache: 'force-cache',
-        next: { revalidate: 300 }
+      serverFetch<Array<unknown>>('/public/projects', {
+        searchParams: { limit: 2, featured: true }
       }),
-      fetch(`${apiBase}/public/skills/featured`, {
-        cache: 'force-cache',
-        next: { revalidate: 300 }
-      }),
-      fetch(`${apiBase}/public/profile`, {
-        cache: 'force-cache',
-        next: { revalidate: 300 }
-      })
+      serverFetch<HomePageData['skills']>('/public/skills/featured'),
+      serverFetch<HomePageData['personalInfo']>('/public/profile')
     ]);
 
-    const blogPosts: BlogPost[] = blogResponse.status === 'fulfilled' && blogResponse.value.ok
-      ? ((await blogResponse.value.json()) as { success: boolean; data?: BlogPost[] }).data || []
-      : [];
-
-    const rawProjects = projectResponse.status === 'fulfilled' && projectResponse.value.ok
-      ? ((await projectResponse.value.json()) as { success: boolean; data?: Array<unknown> }).data || []
-      : [];
+    const blogPosts = getSettledData(blogResponse, []);
+    const rawProjects = getSettledData(projectResponse, []);
 
     // 프로젝트 데이터 정규화
     const projects: HomePageData['projects'] = rawProjects.map((project: unknown) => {
@@ -167,13 +164,8 @@ async function getHomeData(): Promise<HomePageData> {
       };
     });
 
-    const skills: HomePageData['skills'] = skillsResponse.status === 'fulfilled' && skillsResponse.value.ok
-      ? ((await skillsResponse.value.json()) as { success: boolean; data?: HomePageData['skills'] }).data || []
-      : [];
-
-    const personalInfo: HomePageData['personalInfo'] = personalResponse.status === 'fulfilled' && personalResponse.value.ok
-      ? ((await personalResponse.value.json()) as { success: boolean; data?: HomePageData['personalInfo'] }).data
-      : undefined;
+    const skills = getSettledData(skillsResponse, []);
+    const personalInfo = getSettledData(personalResponse, undefined);
 
     return {
       blogPosts,

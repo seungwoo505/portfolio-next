@@ -251,8 +251,11 @@ npm run start
 ### **필수 환경 변수**
 
 ```env
-# API 서버 URL
-NEXT_PUBLIC_API_URL=https://your-api-server.com/api
+# 브라우저 API URL. 운영에서는 Nginx 동일 출처 프록시를 권장합니다.
+NEXT_PUBLIC_API_URL=/api
+
+# Next 서버 내부 fetch URL
+INTERNAL_API_URL=http://127.0.0.1:3001/api
 
 # 사이트 설정
 NEXT_PUBLIC_SITE_URL=https://your-portfolio.com
@@ -357,12 +360,16 @@ NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX      # Google Tag Manager
 ### **API 클라이언트 설정**
 
 ```typescript
-// src/lib/api.ts
-const apiClient = new ApiClient(process.env.NEXT_PUBLIC_API_URL);
+// src/lib/api-config.ts
+import { getClientApiBaseUrl, getServerApiBaseUrl } from "@/lib/api-config";
+import { blogApi, projectApi } from "@/lib/api";
+
+const clientApiUrl = getClientApiBaseUrl();
+const serverApiUrl = getServerApiBaseUrl();
 
 // 사용 예시
-const blogPosts = await apiClient.blog.getPosts();
-const projects = await apiClient.projects.getProjects();
+const blogPosts = await blogApi.getPosts();
+const projects = await projectApi.getProjects();
 ```
 
 ### **API 훅 사용**
@@ -541,6 +548,7 @@ vercel
 
 # 환경 변수 설정
 vercel env add NEXT_PUBLIC_API_URL
+vercel env add INTERNAL_API_URL
 ```
 
 ### **Docker 배포**
@@ -673,6 +681,7 @@ images: {
 ```typescript
 // 환경 변수 확인
 console.log(process.env.NEXT_PUBLIC_API_URL);
+console.log(process.env.INTERNAL_API_URL);
 
 // CORS 설정 확인 (백엔드)
 ```

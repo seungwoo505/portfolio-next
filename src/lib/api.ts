@@ -12,7 +12,9 @@ import {
   AdminUser, 
   AdminLoginResponse 
 } from '@/types';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://seungwoo.i234.me:3333/api';
+import { getClientApiBaseUrl } from '@/lib/api-config';
+
+const API_BASE_URL = getClientApiBaseUrl();
 class ApiClient {
   private baseURL: string;
   constructor(baseURL: string = API_BASE_URL) {

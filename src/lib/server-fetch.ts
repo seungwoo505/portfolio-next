@@ -1,7 +1,6 @@
 import type { ApiResponse } from "@/types";
+import { getServerApiBaseUrl } from "@/lib/api-config";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://seungwoo.i234.me:3333/api";
 const DEFAULT_REVALIDATE_SECONDS = 300;
 
 type QueryValue =
@@ -14,9 +13,7 @@ function buildUrl(
   path: string,
   searchParams?: Record<string, QueryValue>
 ): string {
-  const base = API_BASE_URL.endsWith("/")
-    ? API_BASE_URL.slice(0, -1)
-    : API_BASE_URL;
+  const base = getServerApiBaseUrl();
   const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
   const url = new URL(`${base}/${normalizedPath}`);
 
@@ -64,4 +61,3 @@ export async function serverFetch<T>(
 
   return (await response.json()) as ApiResponse<T>;
 }
-
