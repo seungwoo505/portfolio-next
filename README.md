@@ -255,7 +255,7 @@ npm run start
 NEXT_PUBLIC_API_URL=/api
 
 # Next 서버 내부 fetch URL
-INTERNAL_API_URL=http://127.0.0.1:3001/api
+INTERNAL_API_URL=http://127.0.0.1:3333/api
 
 # 사이트 설정
 NEXT_PUBLIC_SITE_URL=https://your-portfolio.com
@@ -551,7 +551,7 @@ location / {
 }
 
 location /api/ {
-    proxy_pass http://127.0.0.1:3001/api/;
+    proxy_pass http://127.0.0.1:3333;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

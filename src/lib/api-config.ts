@@ -1,5 +1,5 @@
 const DEFAULT_CLIENT_API_BASE_URL = "/api";
-const DEFAULT_SERVER_API_BASE_URL = "http://127.0.0.1:3001/api";
+const DEFAULT_SERVER_API_BASE_URL = "http://127.0.0.1:3333/api";
 
 const ABSOLUTE_HTTP_URL_PATTERN = /^https?:\/\//i;
 
