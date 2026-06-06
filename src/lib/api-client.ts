@@ -23,11 +23,9 @@ export class ApiClient {
     }
 
     const publicPrefixes = [
-      "/personal-info",
       "/social-links",
       "/skills",
       "/projects",
-      "/blog/posts",
       "/tags",
       "/experiences",
       "/interests",

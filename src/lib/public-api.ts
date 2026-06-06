@@ -103,16 +103,5 @@ export const personalApi = {
 };
 
 export const generalApi = {
-  search: (query: string, type?: "all" | "blog" | "projects" | "skills") =>
-    api.get<{ results: unknown[]; total: number }>("/search", {
-      q: query,
-      ...(type && { type }),
-    }),
   healthCheck: () => api.get<{ status: string; timestamp: string }>("/health"),
-  getDashboardStats: () =>
-    api.get<{
-      blog: { total: number; published: number };
-      projects: { total: number; published: number };
-      contacts: { total: number; unread: number };
-    }>("/dashboard"),
 };

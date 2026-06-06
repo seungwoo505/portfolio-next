@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Github, Instagram, Linkedin, Twitter } from "lucide-react";
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, personalApi } from "@/lib/api";
 
 interface PersonalInfo {
   full_name?: string;
@@ -55,7 +55,7 @@ export default function Footer() {
 
         let personalTableInfo = {};
         try {
-          const personalResponse = await api.get<PersonalInfo>('/personal-info');
+          const personalResponse = await personalApi.getPersonalInfo();
           if (personalResponse.success && personalResponse.data) {
             personalTableInfo = personalResponse.data;
           }

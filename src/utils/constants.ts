@@ -25,7 +25,6 @@ export const API_ENDPOINTS = {
   DASHBOARD: '/admin/dashboard',
   STATS: '/admin/dashboard',
   LOGS: '/admin/logs',
-  SEARCH: '/search',
   HEALTH: '/health'
 } as const;
 export const USER_ROLES = {

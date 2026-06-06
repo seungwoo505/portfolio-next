@@ -50,7 +50,7 @@ export default function AboutPage() {
         setIsLoading(true);
         const [settingsResponse, personalResponse, skillsResponse, experiencesResponse, interestsResponse] = await Promise.all([
           api.get('/settings'),
-          api.get('/personal-info'),
+          personalApi.getPersonalInfo(),
           api.get('/skills'),
           personalApi.getExperiencesTimeline(),
           api.get('/interests')
