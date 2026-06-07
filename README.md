@@ -251,11 +251,11 @@ npm run start
 ### **필수 환경 변수**
 
 ```env
-# 브라우저 API URL. 운영에서는 Nginx 동일 출처 프록시를 권장합니다.
-NEXT_PUBLIC_API_URL=/api
+# 브라우저 API URL. 운영에서는 API 서브도메인을 사용합니다.
+NEXT_PUBLIC_API_URL=https://api.seungwoo.i234.me
 
 # Next 서버 내부 fetch URL
-INTERNAL_API_URL=http://127.0.0.1:3333/api
+INTERNAL_API_URL=http://127.0.0.1:3333
 
 # 사이트 설정
 NEXT_PUBLIC_SITE_URL=https://your-portfolio.com
@@ -539,28 +539,39 @@ npm run start
 # Nginx 등 리버스 프록시에서 Next 서버와 API 서버로 프록시
 ```
 
-운영 환경에서는 일반적으로 Nginx에서 `/` 요청은 Next 서버로, `/api/` 요청은 백엔드 API 서버로, `/uploads/images/` 요청은 업로드 이미지 경로로 전달합니다.
+운영 환경에서는 일반적으로 Nginx에서 포트폴리오 도메인은 Next 서버로, API 서브도메인은 백엔드 API 서버로 전달합니다.
 
 ```nginx
-location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name seungwoo.i234.me;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
 }
 
-location /api/ {
-    proxy_pass http://127.0.0.1:3333;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name api.seungwoo.i234.me;
 
-location /uploads/images/ {
-    alias /var/www/portfolio-server/uploads/images/;
-    expires 1y;
+    location / {
+        proxy_pass http://127.0.0.1:3333;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
 ```
 

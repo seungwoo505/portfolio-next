@@ -1,5 +1,5 @@
-const DEFAULT_CLIENT_API_BASE_URL = "/api";
-const DEFAULT_SERVER_API_BASE_URL = "http://127.0.0.1:3333/api";
+const DEFAULT_CLIENT_API_BASE_URL = "https://api.seungwoo.i234.me";
+const DEFAULT_SERVER_API_BASE_URL = "http://127.0.0.1:3333";
 
 const ABSOLUTE_HTTP_URL_PATTERN = /^https?:\/\//i;
 
