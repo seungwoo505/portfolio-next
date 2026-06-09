@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 import { blogApi } from "@/lib/api";
 import { BlogPost, BlogTag, RawBlogPost, SiteSettings } from "@/types";
-import ScrollProgress from "../../components/ScrollProgress";
+import ScrollProgress from "@/components/ScrollProgress";
 import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
 const POST_CARD_REVEAL_INTERVAL = 120;

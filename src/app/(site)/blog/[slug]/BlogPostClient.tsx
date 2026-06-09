@@ -8,15 +8,16 @@ import toast from 'react-hot-toast';
 
 interface BlogPostClientProps {
   slug: string;
+  initialPost?: BlogPostType | null;
 }
 /**
  * @component BlogPostContent
  * @description 블로그 상세 데이터를 로딩하고 렌더링하는 클라이언트 컴포넌트.
  * @returns {JSX.Element} 블로그 포스트 상세 콘텐츠.
  */
-function BlogPostContent({ slug }: BlogPostClientProps) {
-  const [post, setPost] = useState<BlogPostType | null>(null);
-  const [loading, setLoading] = useState(true);
+function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
+  const [post, setPost] = useState<BlogPostType | null>(initialPost ?? null);
+  const [loading, setLoading] = useState(!initialPost);
   const [postContentHtml, setPostContentHtml] = useState('');
 
   useEffect(() => {
@@ -25,6 +26,27 @@ function BlogPostContent({ slug }: BlogPostClientProps) {
       setLoading(false);
       return;
     }
+
+    let cancelled = false;
+    const incrementViewCount = async () => {
+      try {
+        await blogApi.incrementViewCount(slug);
+        if (!cancelled) {
+          setPost(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
+        }
+      } catch {
+      }
+    };
+
+    if (initialPost) {
+      setPost(initialPost);
+      setLoading(false);
+      incrementViewCount();
+      return () => {
+        cancelled = true;
+      };
+    }
+
     /**
      * @function fetchPost
      * @description 슬러그에 해당하는 블로그 포스트를 조회하고 조회수를 갱신한다.
@@ -35,28 +57,26 @@ function BlogPostContent({ slug }: BlogPostClientProps) {
         setLoading(true);
         const response = await blogApi.getPostBySlug(slug);
         if (response.success && response.data) {
-          setPost(response.data);
-          try {
-            await blogApi.incrementViewCount(slug);
-            setPost(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
-            await new Promise(resolve => setTimeout(resolve, 100));
-            const updatedResponse = await blogApi.getPostBySlug(slug);
-            if (updatedResponse.success && updatedResponse.data) {
-              setPost(updatedResponse.data);
-            }
-          } catch {
+          if (!cancelled) {
+            setPost(response.data);
           }
+          await incrementViewCount();
         } else {
           toast.error('포스트를 찾을 수 없습니다.');
         }
       } catch {
         toast.error('포스트를 불러오는 중 오류가 발생했습니다.');
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
     fetchPost();
-  }, [slug]);
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, initialPost]);
   useEffect(() => {
     let cancelled = false;
     if (!post?.content) {
@@ -281,6 +301,6 @@ function BlogPostContent({ slug }: BlogPostClientProps) {
  * @description 블로그 상세 콘텐츠를 클라이언트에서 렌더링한다.
  * @returns {JSX.Element} 블로그 포스트 페이지 컨테이너.
  */
-export default function BlogPostClient({ slug }: BlogPostClientProps) {
-  return <BlogPostContent slug={slug} />;
+export default function BlogPostClient({ slug, initialPost }: BlogPostClientProps) {
+  return <BlogPostContent slug={slug} initialPost={initialPost} />;
 }

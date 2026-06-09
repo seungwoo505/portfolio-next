@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
-import ScrollProgress from "../../components/ScrollProgress";
+import ScrollProgress from "@/components/ScrollProgress";
 import { projectApi, api } from "@/lib/api";
 import { Project } from "@/types";
 import Pagination from "@/components/Pagination";

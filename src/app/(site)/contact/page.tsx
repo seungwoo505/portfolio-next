@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { contactApi } from "@/lib/api";
 import { ContactMessage, SiteSettings } from "@/types";
-import ScrollProgress from "../../components/ScrollProgress";
+import ScrollProgress from "@/components/ScrollProgress";
 import { api } from "@/lib/api";
 import toast from 'react-hot-toast';
 

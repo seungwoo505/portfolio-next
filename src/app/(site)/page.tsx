@@ -1,4 +1,4 @@
-import ClientHome from "./components/ClientHome";
+import ClientHome from "../components/ClientHome";
 import { Metadata } from "next";
 import { serverFetch } from "@/lib/server-fetch";
 import type { ApiResponse, BlogPost } from "@/types";

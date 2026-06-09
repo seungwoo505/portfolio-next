@@ -159,7 +159,7 @@ export default async function ProjectDetailPage({
           }}
         />
       ) : null}
-      <ProjectDetailClient slug={slug} />
+      <ProjectDetailClient slug={slug} initialProject={project} />
     </>
   );
 }

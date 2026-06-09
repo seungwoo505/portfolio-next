@@ -8,15 +8,16 @@ import toast from 'react-hot-toast';
 
 interface ProjectDetailClientProps {
   slug: string;
+  initialProject?: Project | null;
 }
 /**
  * @component ProjectDetailContent
  * @description 프로젝트 상세 데이터를 로드하고 렌더링하는 클라이언트 컴포넌트.
  * @returns {JSX.Element} 프로젝트 상세 콘텐츠.
  */
-function ProjectDetailContent({ slug }: ProjectDetailClientProps) {
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
+function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps) {
+  const [project, setProject] = useState<Project | null>(initialProject ?? null);
+  const [loading, setLoading] = useState(!initialProject);
   const [projectContentHtml, setProjectContentHtml] = useState('');
 
   useEffect(() => {
@@ -25,6 +26,28 @@ function ProjectDetailContent({ slug }: ProjectDetailClientProps) {
       setLoading(false);
       return;
     }
+
+    let cancelled = false;
+    const decodedSlug = decodeURIComponent(slug);
+    const incrementViewCount = async () => {
+      try {
+        await projectApi.incrementViewCount(decodedSlug);
+        if (!cancelled) {
+          setProject(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
+        }
+      } catch {
+      }
+    };
+
+    if (initialProject) {
+      setProject(initialProject);
+      setLoading(false);
+      incrementViewCount();
+      return () => {
+        cancelled = true;
+      };
+    }
+
     /**
      * @function fetchProject
      * @description 슬러그에 해당하는 프로젝트 상세 정보를 조회하고 뷰 카운트를 갱신한다.
@@ -33,31 +56,28 @@ function ProjectDetailContent({ slug }: ProjectDetailClientProps) {
     const fetchProject = async () => {
       try {
         setLoading(true);
-        const decodedSlug = decodeURIComponent(slug);
         const response = await projectApi.getProject(decodedSlug);
         if (response.success && response.data) {
-          setProject(response.data);
-          try {
-            await projectApi.incrementViewCount(decodedSlug);
-            setProject(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
-            await new Promise(resolve => setTimeout(resolve, 100));
-            const updatedResponse = await projectApi.getProject(decodedSlug);
-            if (updatedResponse.success && updatedResponse.data) {
-              setProject(updatedResponse.data);
-            }
-          } catch {
+          if (!cancelled) {
+            setProject(response.data);
           }
+          await incrementViewCount();
         } else {
           toast.error('프로젝트를 찾을 수 없습니다.');
         }
       } catch {
         toast.error('프로젝트를 불러오는 중 오류가 발생했습니다.');
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
     fetchProject();
-  }, [slug]);
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, initialProject]);
   useEffect(() => {
     let cancelled = false;
     if (!project?.content) {
@@ -437,6 +457,6 @@ function ProjectDetailContent({ slug }: ProjectDetailClientProps) {
  * @description 프로젝트 상세 콘텐츠를 클라이언트에서 렌더링한다.
  * @returns {JSX.Element} 프로젝트 상세 페이지 컨테이너.
  */
-export default function ProjectDetailClient({ slug }: ProjectDetailClientProps) {
-  return <ProjectDetailContent slug={slug} />;
+export default function ProjectDetailClient({ slug, initialProject }: ProjectDetailClientProps) {
+  return <ProjectDetailContent slug={slug} initialProject={initialProject} />;
 }

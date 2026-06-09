@@ -159,7 +159,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           }}
         />
       ) : null}
-      <BlogPostClient slug={slug} />
+      <BlogPostClient slug={slug} initialPost={post} />
     </>
   );
 }
