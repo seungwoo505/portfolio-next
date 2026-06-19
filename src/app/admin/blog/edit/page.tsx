@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
+import type { BlockEditorValue } from "@/utils/block-content";
 import BlogPostForm from "../components/BlogPostForm";
 import {
   fetchBlogTagOptions,
@@ -20,6 +21,9 @@ import {
 const initialFormData: AdminBlogPostForm = {
   title: "",
   content: "",
+  content_json: undefined,
+  content_html: "",
+  content_text: "",
   excerpt: "",
   slug: "",
   meta_description: "",
@@ -73,6 +77,9 @@ function EditBlogPostContent() {
             id: string;
             title: string;
             content: string;
+            content_json?: unknown;
+            content_html?: string;
+            content_text?: string;
             excerpt: string;
             slug: string;
             meta_description: string;
@@ -91,6 +98,9 @@ function EditBlogPostContent() {
           setFormData({
             title: post.title || "",
             content: post.content || "",
+            content_json: post.content_json,
+            content_html: post.content_html || "",
+            content_text: post.content_text || "",
             excerpt: post.excerpt || "",
             slug: post.slug || "",
             meta_description: post.meta_description || "",
@@ -154,8 +164,14 @@ function EditBlogPostContent() {
     }));
   };
 
-  const handleContentChange = (content: string) => {
-    setFormData((prev) => ({ ...prev, content }));
+  const handleContentChange = (content: string, blockValue?: BlockEditorValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      content,
+      content_json: blockValue?.blocks ?? prev.content_json,
+      content_html: blockValue?.html ?? prev.content_html,
+      content_text: blockValue?.text ?? prev.content_text,
+    }));
   };
 
   const toggleTag = (tag: AdminTagOption) => {
@@ -168,7 +184,8 @@ function EditBlogPostContent() {
   };
 
   const handleSubmit = async (publish: boolean) => {
-    if (!formData.title.trim() || !formData.content.trim()) {
+    const writableContent = formData.content_text || formData.content;
+    if (!formData.title.trim() || !writableContent.trim()) {
       toast.error("제목과 내용을 입력해주세요.");
       return;
     }
@@ -183,6 +200,9 @@ function EditBlogPostContent() {
         title: formData.title || "",
         slug: formData.slug || "",
         content: formData.content || "",
+        content_json: formData.content_json || null,
+        content_html: formData.content_html || "",
+        content_text: formData.content_text || "",
         excerpt: formData.excerpt || "",
         featured_image: formData.featured_image || null,
         meta_title: formData.title || "",

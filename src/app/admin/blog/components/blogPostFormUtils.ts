@@ -90,16 +90,12 @@ export async function uploadBlogImage(file: File): Promise<string> {
       throw new Error("지원되지 않는 이미지 형식입니다.");
     }
 
-    try {
-      const response = await authApi.uploadImage(file);
-      if (response.success && response.data?.url) {
-        return response.data.url;
-      }
-
-      throw new Error(response.message || "서버에서 올바른 응답을 받지 못했습니다.");
-    } catch {
-      return URL.createObjectURL(file);
+    const response = await authApi.uploadImage(file);
+    if (response.success && response.data?.url) {
+      return response.data.url;
     }
+
+    throw new Error(response.message || "서버에서 올바른 응답을 받지 못했습니다.");
   } catch {
     throw new Error("이미지 업로드에 실패했습니다.");
   }

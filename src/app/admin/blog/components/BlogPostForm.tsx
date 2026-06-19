@@ -6,8 +6,9 @@ import toast from "react-hot-toast";
 import { Plus, Save, Search, Tag, X } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
+import type { BlockEditorValue } from "@/utils/block-content";
 
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+const BlogBlockEditor = dynamic(() => import("./BlogBlockEditor"), { ssr: false });
 
 interface BlogPostFormProps {
   formData: AdminBlogPostForm;
@@ -19,7 +20,7 @@ interface BlogPostFormProps {
   tagSearchQuery: string;
   isSubmitting: boolean;
   onTitleChange: (title: string) => void;
-  onContentChange: (content: string) => void;
+  onContentChange: (content: string, blockValue?: BlockEditorValue) => void;
   onImageUpload: (file: File) => Promise<string>;
   onToggleTag: (tag: AdminTagOption) => void;
   onTagDropdownChange: Dispatch<SetStateAction<boolean>>;
@@ -51,62 +52,13 @@ export default function BlogPostForm({
   const filteredTags = availableTags.filter((tag) =>
     tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
   );
-
-  const handleDropImages = async (files: File[]) => {
-    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
-    if (imageFiles.length === 0) return;
-
-    const loadingText = `\n\n업로드 중... (${imageFiles.length}개 파일)\n\n`;
-    const contentWithLoading = formData.content + loadingText;
-    onContentChange(contentWithLoading);
-
-    try {
-      let uploadedImages = "";
-      for (const file of imageFiles) {
-        const url = await onImageUpload(file);
-        const baseName = file.name.replace(/\.[^/.]+$/, "");
-        const altText =
-          baseName.length > 0 && baseName.length <= 30 ? baseName : "image";
-        uploadedImages += `![${altText}](${url})\n\n`;
-      }
-
-      onContentChange(contentWithLoading.replace(loadingText, `\n\n${uploadedImages}`));
-    } catch {
-      onContentChange(contentWithLoading.replace(loadingText, ""));
-      toast.error("이미지 업로드에 실패했습니다.");
-    }
-  };
-
-  const handlePasteImages = async (items: DataTransferItem[]) => {
-    const imageItems = items.filter((item) => item.type.startsWith("image/"));
-    if (imageItems.length === 0) return;
-
-    const loadingText = "\n\n이미지 업로드 중...\n\n";
-    const contentWithLoading = formData.content + loadingText;
-    onContentChange(contentWithLoading);
-
-    try {
-      let uploadedImages = "";
-      for (const item of imageItems) {
-        const file = item.getAsFile();
-        if (file) {
-          const url = await onImageUpload(file);
-          uploadedImages += `![image](${url})\n\n`;
-        }
-      }
-
-      onContentChange(contentWithLoading.replace(loadingText, `\n\n${uploadedImages}`));
-    } catch {
-      onContentChange(contentWithLoading.replace(loadingText, ""));
-      toast.error("이미지 업로드에 실패했습니다.");
-    }
-  };
+  const aiContent = formData.content_text || formData.content;
 
   const handleGenerateAll = async () => {
     try {
       const [summary, keywords] = await Promise.all([
-        onGenerateSummary(formData.content),
-        onGenerateKeywords(formData.content),
+        onGenerateSummary(aiContent),
+        onGenerateKeywords(aiContent),
       ]);
 
       setFormData((prev) => ({
@@ -173,30 +125,16 @@ export default function BlogPostForm({
                   내용 *
                 </label>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  마크다운 문법을 사용하여 포스트를 작성하세요. 이미지는 드래그앤드롭하거나 클립보드에서 붙여넣기(Ctrl+V)로 업로드할 수 있습니다.
+                  블록 단위로 포스트를 작성하세요. 이미지는 드래그앤드롭하거나 슬래시 메뉴에서 업로드할 수 있습니다.
                 </p>
               </div>
-              <div data-color-mode={isDarkMode ? "dark" : "light"}>
-                <MDEditor
-                  value={formData.content}
-                  onChange={(value) => onContentChange(value || "")}
-                  height={500}
-                  preview="edit"
-                  hideToolbar={false}
-                  visibleDragbar={false}
-                  onDrop={async (event) => {
-                    event.preventDefault();
-                    await handleDropImages(Array.from(event.dataTransfer.files));
-                  }}
-                  onPaste={async (event) => {
-                    const items = Array.from(event.clipboardData.items);
-                    if (items.some((item) => item.type.startsWith("image/"))) {
-                      event.preventDefault();
-                      await handlePasteImages(items);
-                    }
-                  }}
-                />
-              </div>
+              <BlogBlockEditor
+                value={formData.content_json}
+                legacyMarkdown={formData.content}
+                isDarkMode={isDarkMode}
+                onImageUpload={onImageUpload}
+                onChange={(value) => onContentChange(value.markdown, value)}
+              />
             </div>
           </div>
           <div className="space-y-6">
@@ -405,7 +343,7 @@ export default function BlogPostForm({
                   type="button"
                   onClick={handleGenerateAll}
                   className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 flex items-center space-x-2 px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                  disabled={formData.content.trim().length === 0}
+                  disabled={aiContent.trim().length === 0}
                 >
                   <span>🚀</span>
                   <span>AI 요약 & 키워드 생성</span>
@@ -420,7 +358,7 @@ export default function BlogPostForm({
                     <button
                       type="button"
                       onClick={async () => {
-                        const summary = await onGenerateSummary(formData.content);
+                        const summary = await onGenerateSummary(aiContent);
                         if (summary) {
                           setFormData((prev) => ({
                             ...prev,
@@ -430,7 +368,7 @@ export default function BlogPostForm({
                         }
                       }}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
-                      disabled={formData.content.trim().length === 0}
+                      disabled={aiContent.trim().length === 0}
                     >
                       <span>🤖</span>
                       <span>AI 요약</span>
@@ -473,7 +411,7 @@ export default function BlogPostForm({
                     <button
                       type="button"
                       onClick={async () => {
-                        const keywords = await onGenerateKeywords(formData.content);
+                        const keywords = await onGenerateKeywords(aiContent);
                         if (keywords) {
                           setFormData((prev) => ({
                             ...prev,
@@ -482,7 +420,7 @@ export default function BlogPostForm({
                         }
                       }}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
-                      disabled={formData.content.trim().length === 0}
+                      disabled={aiContent.trim().length === 0}
                     >
                       <span>🔍</span>
                       <span>AI 키워드</span>

@@ -1,7 +1,7 @@
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
-const sanitizeHtml = (html: string): string => {
+export const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
     ADD_ATTR: ['target'],

@@ -2,6 +2,9 @@ export interface BlogPost {
   id: string;
   title: string;
   content: string;
+  content_json?: unknown;
+  content_html?: string;
+  content_text?: string;
   excerpt?: string;
   slug: string;
   is_published: boolean;

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { authApi } from "@/lib/api";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
+import type { BlockEditorValue } from "@/utils/block-content";
 import BlogPostForm from "../components/BlogPostForm";
 import {
   fetchBlogTagOptions,
@@ -18,6 +19,9 @@ import {
 const initialFormData: AdminBlogPostForm = {
   title: "",
   content: "",
+  content_json: undefined,
+  content_html: "",
+  content_text: "",
   excerpt: "",
   slug: "",
   meta_description: "",
@@ -86,12 +90,16 @@ export default function NewBlogPost() {
     }));
   };
 
-  const handleContentChange = (content: string) => {
+  const handleContentChange = (content: string, blockValue?: BlockEditorValue) => {
     setFormData((prev) => ({
       ...prev,
       content,
+      content_json: blockValue?.blocks ?? prev.content_json,
+      content_html: blockValue?.html ?? prev.content_html,
+      content_text: blockValue?.text ?? prev.content_text,
       meta_description:
-        prev.meta_description || generateMetaDescription(prev.excerpt, content),
+        prev.meta_description ||
+        generateMetaDescription(prev.excerpt, blockValue?.text || content),
     }));
   };
 
@@ -105,7 +113,8 @@ export default function NewBlogPost() {
   };
 
   const handleSubmit = async (publish: boolean = false) => {
-    if (!formData.title.trim() || !formData.content.trim()) {
+    const writableContent = formData.content_text || formData.content;
+    if (!formData.title.trim() || !writableContent.trim()) {
       toast.error("제목과 내용은 필수입니다.");
       return;
     }
@@ -116,6 +125,9 @@ export default function NewBlogPost() {
         title: formData.title || "",
         slug: formData.slug || "",
         content: formData.content || "",
+        content_json: formData.content_json || null,
+        content_html: formData.content_html || "",
+        content_text: formData.content_text || "",
         excerpt: formData.excerpt || "",
         featured_image: formData.featured_image || null,
         meta_title: formData.title || "",

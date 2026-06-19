@@ -4,6 +4,9 @@ import { Skill } from './skill';
 export interface AdminBlogPostForm {
   title: string;
   content: string;
+  content_json?: unknown;
+  content_html?: string;
+  content_text?: string;
   excerpt: string;
   slug: string;
   meta_description: string;
@@ -186,4 +189,3 @@ export interface AdminSkillModalProps {
   categories: Array<{ id: string; name: string }>;
   keepOpenOnSuccess?: boolean;
 }
-

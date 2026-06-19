@@ -34,6 +34,7 @@ function getDescription(post: BlogPost): string {
   return (
     post.meta_description ||
     post.excerpt ||
+    post.content_text?.substring(0, 160) ||
     post.content?.substring(0, 160) ||
     "웹 개발자 승우의 블로그 포스트입니다."
   );
@@ -96,7 +97,9 @@ function createBlogPostStructuredData(post: BlogPost, slug: string) {
       ? post.meta_keywords.split(",").map((keyword) => keyword.trim())
       : tagNames,
     articleSection: "Technology",
-    wordCount: post.content ? post.content.split(" ").length : undefined,
+    wordCount: (post.content_text || post.content)
+      ? (post.content_text || post.content).split(/\s+/).length
+      : undefined,
     timeRequired: post.read_time_minutes
       ? `PT${post.read_time_minutes}M`
       : undefined,

@@ -83,15 +83,19 @@ function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
       setPostContentHtml('');
       return;
     }
-    import('@/utils/markdown').then(({ markdownToHtml }) => {
+    import('@/utils/markdown').then(({ markdownToHtml, sanitizeHtml }) => {
       if (!cancelled) {
-        setPostContentHtml(markdownToHtml(post.content || ''));
+        setPostContentHtml(
+          post.content_html?.trim()
+            ? sanitizeHtml(post.content_html)
+            : markdownToHtml(post.content || '')
+        );
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [post?.content]);
+  }, [post?.content, post?.content_html]);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -243,7 +247,7 @@ function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
               <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
             {post.content ? (
               postContentHtml ? (
-                <div dangerouslySetInnerHTML={{ __html: postContentHtml }} />
+	                <div className="blog-post-block-content" dangerouslySetInnerHTML={{ __html: postContentHtml }} />
               ) : (
                 <p className="text-slate-500 dark:text-slate-400">포스트 내용을 렌더링하는 중입니다.</p>
               )
