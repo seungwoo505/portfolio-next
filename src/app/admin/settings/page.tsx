@@ -488,6 +488,7 @@ export default function SettingsPage() {
    * @returns {Promise<void>}
    */
   const handleSave = async () => {
+    if (saving) return;
     if (Object.keys(changedSettings).length === 0) {
       toast('변경된 설정이 없습니다.');
       return;

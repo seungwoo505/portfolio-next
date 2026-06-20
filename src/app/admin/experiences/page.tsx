@@ -119,6 +119,7 @@ export default function ExperiencesPage() {
    * @returns {Promise<void>}
    */
   const handleSave = async () => {
+    if (saving) return;
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
@@ -305,7 +306,7 @@ export default function ExperiencesPage() {
       {showModal && (
         <div
           className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-          onClick={closeModal}
+          onClick={saving ? undefined : closeModal}
         >
           <div
             className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
@@ -316,8 +317,11 @@ export default function ExperiencesPage() {
                   {editingExperience ? '경험 수정' : '경험 추가'}
                 </h3>
                 <button
+                  type="button"
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  disabled={saving}
+                  aria-label="닫기"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -434,7 +438,8 @@ export default function ExperiencesPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 rounded-lg text-gray-600 dark:text-slate-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    disabled={saving}
+                    className="px-4 py-2 rounded-lg text-gray-600 dark:text-slate-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     취소
                   </button>

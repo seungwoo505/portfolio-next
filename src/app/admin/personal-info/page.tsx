@@ -80,6 +80,7 @@ export default function PersonalInfoPage() {
    * @returns {Promise<void>}
    */
   const handleSave = async () => {
+    if (saving) return;
     if (!hasChanges) {
       toast('변경된 내용이 없습니다.', {
         duration: 2000,

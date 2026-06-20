@@ -190,6 +190,7 @@ function EditUserContent() {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     if (!userId) {
       toast.error('사용자 ID가 필요합니다.');
       return;
@@ -435,7 +436,16 @@ function EditUserContent() {
           <div className="flex justify-end space-x-4">
             <Link
               href="/admin/users"
-              className="px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              aria-disabled={saving}
+              tabIndex={saving ? -1 : undefined}
+              onClick={(event) => {
+                if (saving) {
+                  event.preventDefault();
+                }
+              }}
+              className={`px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
+                saving ? 'pointer-events-none cursor-not-allowed opacity-50' : ''
+              }`}
             >
               취소
             </Link>

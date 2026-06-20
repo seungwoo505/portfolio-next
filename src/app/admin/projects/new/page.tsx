@@ -109,6 +109,7 @@ export default function NewProject() {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!formData.title.trim()) {
       toast.error("제목을 입력해주세요.");
       return;

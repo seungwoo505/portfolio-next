@@ -118,6 +118,7 @@ export default function NewBlogPost() {
   };
 
   const handleSubmit = async (publish: boolean = false) => {
+    if (isSubmitting) return;
     const writableContent = formData.content_text || formData.content;
     if (!formData.title.trim() || !writableContent.trim()) {
       toast.error("제목과 내용은 필수입니다.");

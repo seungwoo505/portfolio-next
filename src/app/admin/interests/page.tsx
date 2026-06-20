@@ -107,6 +107,7 @@ export default function InterestsPage() {
    * @returns {Promise<void>}
    */
   const handleSave = async () => {
+    if (saving) return;
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
@@ -317,7 +318,7 @@ export default function InterestsPage() {
       {showModal && (
         <div
           className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-          onClick={closeModal}
+          onClick={saving ? undefined : closeModal}
         >
           <div
             className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md"
@@ -330,8 +331,9 @@ export default function InterestsPage() {
                 <button
                   type="button"
                   onClick={closeModal}
+                  disabled={saving}
                   aria-label="닫기"
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -400,7 +402,8 @@ export default function InterestsPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 rounded-lg text-gray-600 dark:text-slate-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    disabled={saving}
+                    className="px-4 py-2 rounded-lg text-gray-600 dark:text-slate-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     취소
                   </button>

@@ -450,7 +450,16 @@ export default function BlogPostForm({
         <div className="mt-8 flex justify-end space-x-4">
           <Link
             href="/admin/blog"
-            className="px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            aria-disabled={isSubmitting}
+            tabIndex={isSubmitting ? -1 : undefined}
+            onClick={(event) => {
+              if (isSubmitting) {
+                event.preventDefault();
+              }
+            }}
+            className={`px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
+              isSubmitting ? "pointer-events-none cursor-not-allowed opacity-50" : ""
+            }`}
           >
             취소
           </Link>

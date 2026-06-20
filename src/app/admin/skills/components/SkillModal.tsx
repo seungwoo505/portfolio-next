@@ -84,6 +84,9 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) {
+      return;
+    }
     if (!validateForm()) {
       return;
     }
@@ -146,8 +149,9 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
             <button
               type="button"
               onClick={onClose}
+              disabled={loading}
               aria-label="닫기"
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -284,7 +288,8 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                disabled={loading}
+                className="px-4 py-2 rounded-lg text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               >
                 취소
               </button>

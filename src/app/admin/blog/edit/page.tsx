@@ -191,6 +191,7 @@ function EditBlogPostContent() {
   };
 
   const handleSubmit = async (publish: boolean) => {
+    if (isSubmitting) return;
     const writableContent = formData.content_text || formData.content;
     if (!formData.title.trim() || !writableContent.trim()) {
       toast.error("제목과 내용을 입력해주세요.");
