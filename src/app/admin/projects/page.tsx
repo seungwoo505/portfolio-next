@@ -562,7 +562,7 @@ export default function ProjectsPage() {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => toggleFeaturedStatus(project.slug, project.featured)}
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-medium ${
                             project.featured
                               ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
                               : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
@@ -593,13 +593,15 @@ export default function ProjectsPage() {
                         <div className="flex items-center justify-end space-x-2">
                           <Link
                             href={`/admin/projects/edit?slug=${project.slug}`}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-200"
+                            aria-label={`${project.title} 수정`}
                           >
                             <Edit3 className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => openDeleteModal(project.slug)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-200"
+                            aria-label={`${project.title} 삭제`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

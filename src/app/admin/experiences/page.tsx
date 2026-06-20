@@ -278,13 +278,15 @@ export default function ExperiencesPage() {
                   <div className="flex items-center space-x-2 ml-4">
                     <button
                       onClick={() => openModal(experience)}
-                      className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                      aria-label={`${experience.title} 수정`}
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => openDeleteModal(experience.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                      aria-label={`${experience.title} 삭제`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -321,7 +323,7 @@ export default function ExperiencesPage() {
                   onClick={closeModal}
                   disabled={saving}
                   aria-label="닫기"
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-slate-700 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>

@@ -346,16 +346,18 @@ export default function UsersManagement() {
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => router.push(`/admin/users/edit?id=${user.id}`)}
-                            className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                             title="수정"
+                            aria-label={`${user.username} 수정`}
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
                           {!isCurrentUser && (
                             <button
                               onClick={() => openDeleteModal(user.id)}
-                              className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                               title="삭제"
+                              aria-label={`${user.username} 삭제`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -448,15 +450,16 @@ export default function UsersManagement() {
                             {!isCurrentUser ? (
                               <button
                                 onClick={() => toggleUserStatus(user.id, user.is_active === 1)}
-                                className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                className="relative inline-flex h-9 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                 style={{
                                   backgroundColor: user.is_active === 1 ? '#10b981' : '#ef4444'
                                 }}
                                 title={user.is_active === 1 ? '클릭하여 비활성화' : '클릭하여 활성화'}
+                                aria-label={`${user.username} ${user.is_active === 1 ? '비활성화' : '활성화'}`}
                               >
                                 <span
-                                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                                    user.is_active === 1 ? 'translate-x-5' : 'translate-x-1'
+                                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                                    user.is_active === 1 ? 'translate-x-6' : 'translate-x-1'
                                   }`}
                                 />
                               </button>
@@ -471,16 +474,18 @@ export default function UsersManagement() {
                           <div className="flex items-center justify-center space-x-2">
                             <Link
                               href={`/admin/users/edit?id=${user.id}`}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
                               title="사용자 편집"
+                              aria-label={`${user.username} 편집`}
                             >
                               <Edit3 className="w-4 h-4" />
                             </Link>
                             {!isCurrentUser && (
                               <button
                                 onClick={() => openDeleteModal(user.id)}
-                                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                                 title="사용자 삭제"
+                                aria-label={`${user.username} 삭제`}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

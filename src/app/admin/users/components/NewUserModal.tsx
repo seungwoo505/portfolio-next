@@ -137,7 +137,8 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+            aria-label="새 사용자 추가 닫기"
           >
             <X className="w-5 h-5" />
           </button>
@@ -195,7 +196,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
+                className={`w-full px-3 py-2.5 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                   errors.password ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
                 }`}
                 placeholder="12자 이상, 영문과 숫자 포함"
@@ -204,7 +205,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                className="absolute right-1 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -226,7 +227,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
                 type={showConfirmPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
+                className={`w-full px-3 py-2.5 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                   errors.confirmPassword ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
                 }`}
                 placeholder="비밀번호를 다시 입력"
@@ -235,7 +236,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                className="absolute right-1 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>

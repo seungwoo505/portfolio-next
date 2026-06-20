@@ -96,7 +96,7 @@ export default function Header() {
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4 transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
-              <Link href="/" prefetch={false}>
+              <Link href="/" prefetch={false} className="inline-flex min-h-10 items-center">
                 <h1
                   className="text-xl font-bold"
                   style={{
@@ -112,15 +112,15 @@ export default function Header() {
               </Link>
             </div>
 
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center gap-3">
               {NAV_ITEMS.map((item) => (
                 <div key={item.href} className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
                   <Link
                     href={item.href}
                     prefetch={false}
-                    className={`transition-colors ${
+                    className={`inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors ${
                       isActive(item.href)
-                        ? "text-blue-600 dark:text-blue-400 font-semibold"
+                        ? "text-blue-600 dark:text-blue-400"
                         : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
                     }`}
                   >
@@ -130,8 +130,9 @@ export default function Header() {
               ))}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-200 hover:scale-105 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 title="다크모드 토글"
+                aria-label="다크모드 토글"
                 suppressHydrationWarning
               >
                 {renderThemeIcon()}
@@ -141,16 +142,18 @@ export default function Header() {
             <div className="md:hidden flex items-center space-x-2">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-200 hover:scale-105 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 title="다크모드 토글"
+                aria-label="다크모드 토글"
                 suppressHydrationWarning
               >
                 {renderThemeIcon()}
               </button>
               <button
                 onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
-                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200 hover:scale-105 active:scale-95"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-200 hover:scale-105 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 title={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+                aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-navigation"
               >

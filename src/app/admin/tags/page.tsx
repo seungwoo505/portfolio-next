@@ -280,20 +280,22 @@ export default function TagsManagement() {
                       <span className="text-xs text-slate-400">
                         {new Date(tag.created_at).toLocaleDateString('ko-KR')}
                       </span>
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                         <button
                           onClick={() => setEditingTag(tag)}
-                          className="p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
                           title="편집"
+                          aria-label={`${tag.name} 편집`}
                         >
-                          <Edit3 className="w-3.5 h-3.5" />
+                          <Edit3 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => openDeleteModal(tag.id)}
-                          className="p-1.5 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 transition-colors hover:bg-red-100 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                           title="삭제"
+                          aria-label={`${tag.name} 삭제`}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>

@@ -165,10 +165,10 @@ export default function ContactsManagement() {
                     className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white text-sm"
                   />
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setFilter('all')}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    className={`inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-xs transition-colors ${
                       filter === 'all'
                         ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
@@ -178,7 +178,7 @@ export default function ContactsManagement() {
                   </button>
                   <button
                     onClick={() => setFilter('unread')}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    className={`inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-xs transition-colors ${
                       filter === 'unread'
                         ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
@@ -188,7 +188,7 @@ export default function ContactsManagement() {
                   </button>
                   <button
                     onClick={() => setFilter('read')}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    className={`inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-xs transition-colors ${
                       filter === 'read'
                         ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'

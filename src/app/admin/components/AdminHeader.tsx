@@ -199,7 +199,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={onMenuToggle}
-                  className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
                   aria-label="메뉴 열기"
                 >
                   <Menu className="w-6 h-6" />
@@ -217,15 +217,17 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 {isClient && (
                   <button
                     onClick={toggleTheme}
-                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-500 transition duration-150 hover:scale-110 active:scale-95"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-150 hover:scale-110 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-500"
                     title="다크모드 토글"
+                    aria-label="다크모드 토글"
                   >
                     {renderThemeIcon()}
                   </button>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition duration-150 hover:scale-105 active:scale-95"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition duration-150 hover:scale-105 hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+                  aria-label="로그아웃"
                 >
                   <LogOut className="w-5 h-5" />
                 </button>
@@ -236,7 +238,8 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 {pageInfo.showBackButton && (
                   <button
                     onClick={handleBackNavigation}
-                    className="p-1 rounded text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition duration-150 hover:scale-110 active:scale-90"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition duration-150 hover:scale-110 hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                    aria-label={pageInfo.backText}
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </button>
@@ -264,7 +267,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 {pageInfo.showBackButton && (
                   <button
                     onClick={handleBackNavigation}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition duration-150 hover:-translate-y-0.5"
+                    className="flex min-h-10 items-center space-x-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition duration-150 hover:-translate-y-0.5 hover:bg-blue-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>{pageInfo.backText}</span>
@@ -278,15 +281,16 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 {isClient && (
                   <button
                     onClick={toggleTheme}
-                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-500 transition duration-150 hover:scale-110 active:scale-95"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-150 hover:scale-110 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-500"
                     title="다크모드 토글"
+                    aria-label="다크모드 토글"
                   >
                     {renderThemeIcon()}
                   </button>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition duration-150 hover:-translate-y-0.5"
+                  className="flex min-h-10 items-center space-x-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition duration-150 hover:-translate-y-0.5 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>로그아웃</span>

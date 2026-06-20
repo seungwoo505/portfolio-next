@@ -232,13 +232,15 @@ export default function InterestsPage() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => openModal(interest)}
-                          className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                          aria-label={`${interest.title} 수정`}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => openDeleteModal(interest.id)}
-                          className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                          aria-label={`${interest.title} 삭제`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -288,13 +290,15 @@ export default function InterestsPage() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => openModal(interest)}
-                          className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                          aria-label={`${interest.title} 수정`}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => openDeleteModal(interest.id)}
-                          className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                          aria-label={`${interest.title} 삭제`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -333,7 +337,7 @@ export default function InterestsPage() {
                   onClick={closeModal}
                   disabled={saving}
                   aria-label="닫기"
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-slate-700 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>

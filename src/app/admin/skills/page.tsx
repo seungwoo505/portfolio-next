@@ -365,7 +365,7 @@ export default function AdminSkillsPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
                             onClick={() => toggleFeatured(skill.id, skill.is_featured)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-medium ${
                               skill.is_featured
                                 ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-white'
                                 : 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-white'
@@ -381,13 +381,13 @@ export default function AdminSkillsPage() {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => openEditModal(skill)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                              className="inline-flex min-h-8 items-center rounded-md px-2 text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
                             >
                               수정
                             </button>
                             <button
                               onClick={() => openDeleteModal(skill.id)}
-                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                              className="inline-flex min-h-8 items-center rounded-md px-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                             >
                               삭제
                             </button>
@@ -427,7 +427,8 @@ export default function AdminSkillsPage() {
                   </h2>
                   <button
                     onClick={() => setIsCategoryModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-300"
+                    aria-label="카테고리 관리 닫기"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -464,7 +465,7 @@ export default function AdminSkillsPage() {
                         <span className="text-gray-900 dark:text-white">{category.name}</span>
                         <button 
                           onClick={() => handleDeleteCategory(category.id)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                          className="inline-flex min-h-8 items-center rounded-md px-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-800 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                         >
                           삭제
                         </button>

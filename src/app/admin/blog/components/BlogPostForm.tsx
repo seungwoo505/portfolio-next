@@ -215,7 +215,7 @@ export default function BlogPostForm({
                 </h3>
                 <Link
                   href="/admin/tags?type=blog"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
+                  className="inline-flex min-h-9 items-center gap-1 rounded-md px-2 text-sm text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-200"
                 >
                   <Tag className="w-3 h-3" />
                   <span>태그 관리</span>
@@ -368,7 +368,7 @@ export default function BlogPostForm({
                           }));
                         }
                       }}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
+                      className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-200"
                       disabled={aiContent.trim().length === 0}
                     >
                       <span>🤖</span>
@@ -420,7 +420,7 @@ export default function BlogPostForm({
                           }));
                         }
                       }}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
+                      className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-200"
                       disabled={aiContent.trim().length === 0}
                     >
                       <span>🔍</span>
