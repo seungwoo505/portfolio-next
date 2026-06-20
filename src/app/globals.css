@@ -641,47 +641,6 @@ html {
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
-/* uiw 마크다운 에디터 스타일 */
-.w-md-editor {
-  border-radius: 8px ;
-}
-
-.w-md-editor.w-md-editor-focus {
-  border-color: rgb(59 130 246) ;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) ;
-}
-
-.w-md-editor-text-pre,
-.w-md-editor-text-input, 
-.w-md-editor-text-textarea {
-  font-size: 14px ;
-  line-height: 1.6 ;
-}
-
-/* 다크모드 지원 */
-.dark .w-md-editor {
-  border-color: rgb(51 65 85) ;
-}
-
-.dark .w-md-editor.w-md-editor-focus {
-  border-color: rgb(59 130 246) ;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) ;
-}
-
-/* @uiw/react-md-editor Markdown 컴포넌트 배경색 조정 */
-.wmde-markdown {
-  background-color: transparent !important;
-}
-
-.wmde-markdown code {
-  background-color: var(--color-neutral-muted) !important;
-}
-
-/* 라이트 모드에서 마크다운 콘텐츠 배경색을 흰색으로 설정 */
-:root:not(.dark) .wmde-markdown {
-  background-color: #ffffff !important;
-}
-
 /* BlockNote 기반 블로그 편집기 */
 .blog-block-editor .bn-container {
   background: transparent;
