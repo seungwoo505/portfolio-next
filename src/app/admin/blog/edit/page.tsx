@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
 import type { BlockEditorValue } from "@/utils/block-content";
+import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
 import BlogPostForm from "../components/BlogPostForm";
 import {
   fetchBlogTagOptions,
@@ -221,14 +222,13 @@ function EditBlogPostContent() {
         `/admin/blog/posts/slug/${postSlug}`,
         postData
       );
-      if (response.success) {
-        toast.success(
-          publish ? "포스트가 발행되었습니다!" : "포스트가 저장되었습니다!"
-        );
-        router.push("/admin/blog");
-      }
-    } catch {
-      toast.error("포스트 수정에 실패했습니다.");
+      ensureApiSuccess(response, "포스트 수정에 실패했습니다.");
+      toast.success(
+        publish ? "포스트가 발행되었습니다!" : "포스트가 저장되었습니다!"
+      );
+      router.push("/admin/blog");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "포스트 수정에 실패했습니다."));
     } finally {
       setIsSubmitting(false);
     }

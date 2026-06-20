@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { authApi } from "@/lib/api";
 import type { AdminProjectForm, AdminTagOption } from "@/types";
+import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
 import ProjectAdminForm from "../components/ProjectAdminForm";
 import {
   fetchProjectTagOptions,
@@ -155,12 +156,11 @@ export default function NewProject() {
       };
 
       const response = await authApi.post("/admin/projects", projectData);
-      if (response.success) {
-        toast.success("프로젝트가 성공적으로 생성되었습니다!");
-        router.push("/admin/projects");
-      }
-    } catch {
-      toast.error("프로젝트 생성에 실패했습니다.");
+      ensureApiSuccess(response, "프로젝트 생성에 실패했습니다.");
+      toast.success("프로젝트가 성공적으로 생성되었습니다!");
+      router.push("/admin/projects");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "프로젝트 생성에 실패했습니다."));
     } finally {
       setIsSubmitting(false);
     }

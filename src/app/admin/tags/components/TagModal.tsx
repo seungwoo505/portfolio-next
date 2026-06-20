@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import { X, AlertCircle, Palette, Save } from 'lucide-react';
 interface BlogTag {
   id: string;
@@ -116,13 +117,15 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
       } else {
         response = await authApi.post('/admin/tags', tagData);
       }
-      if (response.success && response.data) {
-        const tagData = response.data as BlogTag;
-        onTagSaved(tagData);
-        onClose();
+      ensureApiSuccess(response, '태그 저장에 실패했습니다.');
+      if (!response.data) {
+        throw new Error('저장된 태그 정보를 받지 못했습니다.');
       }
+      const savedTag = response.data as BlogTag;
+      onTagSaved(savedTag);
+      onClose();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error, '태그 저장에 실패했습니다.');
       if (message.includes('slug') || message.includes('슬러그')) {
         setErrors({ slug: '이미 사용 중인 슬러그입니다' });
       } else if (message.includes('name') || message.includes('태그명')) {

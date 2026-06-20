@@ -21,6 +21,7 @@ import {
 import { authApi } from '@/lib/api';
 import { AdminEditUserForm, AdminUser } from '@/types';
 import { getAdminPasswordPolicyError } from '@/utils/admin-password';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @component EditUserContent
  * @description 관리자 사용자 정보를 로드하고 수정할 수 있는 폼을 제공한다.
@@ -197,18 +198,15 @@ function EditUserContent() {
         updateData.password = formData.newPassword;
       }
       const response = await authApi.put(`/admin/users/${userId}`, updateData);
-      if (response.success) {
-        toast.success(
-          formData.newPassword
-            ? '사용자 정보와 비밀번호가 성공적으로 업데이트되었습니다.'
-            : '사용자 정보가 성공적으로 업데이트되었습니다.'
-        );
-        router.push('/admin/users');
-      } else {
-        toast.error(response.message || '사용자 정보 업데이트에 실패했습니다.');
-      }
-    } catch {
-      toast.error('사용자 정보 업데이트에 실패했습니다.');
+      ensureApiSuccess(response, '사용자 정보 업데이트에 실패했습니다.');
+      toast.success(
+        formData.newPassword
+          ? '사용자 정보와 비밀번호가 성공적으로 업데이트되었습니다.'
+          : '사용자 정보가 성공적으로 업데이트되었습니다.'
+      );
+      router.push('/admin/users');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '사용자 정보 업데이트에 실패했습니다.'));
     } finally {
       setSaving(false);
     }

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { BlogPost } from '@/types';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 블로그 포스트를 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 블로그 관리 페이지 컴포넌트.
@@ -103,11 +104,7 @@ export default function BlogManagement() {
           setPosts(postsWithTags);
         }
       } catch (error) {
-        if (error instanceof Error && error.message.includes('요청이 너무 많습니다')) {
-          toast.error('API 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.');
-        } else {
-          toast.error('포스트를 가져오는데 실패했습니다.');
-        }
+        toast.error(getErrorMessage(error, '포스트를 가져오는데 실패했습니다.'));
         setPosts([]);
       } finally {
         setLoading(false);
@@ -133,11 +130,12 @@ export default function BlogManagement() {
   const deletePost = async () => {
     if (!deleteModal.postSlug) return;
     try {
-      await authApi.delete(`/admin/blog/posts/slug/${deleteModal.postSlug}`);
+      const response = await authApi.delete(`/admin/blog/posts/slug/${deleteModal.postSlug}`);
+      ensureApiSuccess(response, '포스트 삭제에 실패했습니다.');
       setPosts(prev => prev.filter(post => post.slug !== deleteModal.postSlug));
       toast.success('포스트가 삭제되었습니다.');
-    } catch {
-      toast.error('포스트 삭제에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '포스트 삭제에 실패했습니다.'));
     }
   };
   /**
@@ -148,15 +146,16 @@ export default function BlogManagement() {
    */
   const togglePublishStatus = async (postSlug: string, currentStatus: boolean) => {
     try {
-      await authApi.put(`/admin/blog/posts/slug/${postSlug}/publish`, {
+      const response = await authApi.put(`/admin/blog/posts/slug/${postSlug}/publish`, {
         is_published: !currentStatus
       });
+      ensureApiSuccess(response, '포스트 상태 변경에 실패했습니다.');
       setPosts(prev => prev.map(post => 
         post.slug === postSlug ? { ...post, is_published: !currentStatus } : post
       ));
       toast.success(!currentStatus ? '포스트가 발행되었습니다!' : '포스트가 비발행 상태로 변경되었습니다!');
-    } catch {
-      toast.error('포스트 상태 변경에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '포스트 상태 변경에 실패했습니다.'));
     }
   };
   /**
@@ -167,15 +166,16 @@ export default function BlogManagement() {
    */
   const toggleFeaturedStatus = async (postSlug: string, currentStatus: boolean) => {
     try {
-      await authApi.put(`/admin/blog/posts/slug/${postSlug}/featured`, {
+      const response = await authApi.put(`/admin/blog/posts/slug/${postSlug}/featured`, {
         is_featured: !currentStatus
       });
+      ensureApiSuccess(response, '추천 상태 변경에 실패했습니다.');
       setPosts(prev => prev.map(post => 
         post.slug === postSlug ? { ...post, featured: !currentStatus } : post
       ));
       toast.success(!currentStatus ? '포스트가 추천되었습니다!' : '포스트 추천이 해제되었습니다!');
-    } catch {
-      toast.error('추천 상태 변경에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '추천 상태 변경에 실패했습니다.'));
     }
   };
   const filteredPosts = posts.filter(post => {

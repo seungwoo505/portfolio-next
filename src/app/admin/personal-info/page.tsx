@@ -4,6 +4,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { PersonalInfo } from '@/types';
+import { getApiMessage, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 포트폴리오에 표시될 개인정보를 관리하는 페이지입니다.
  * @returns {JSX.Element} 개인정보 관리 페이지 컴포넌트.
@@ -47,10 +48,10 @@ export default function PersonalInfoPage() {
       if (response.success && response.data) {
         setPersonalInfo(response.data);
       } else {
-        toast.error('개인정보를 불러올 수 없습니다.');
+        toast.error(getApiMessage(response, '개인정보를 불러올 수 없습니다.'));
       }
-    } catch {
-      toast.error('개인정보를 불러오는데 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '개인정보를 불러오는데 실패했습니다.'));
     } finally {
       setLoading(false);
     }
@@ -94,13 +95,13 @@ export default function PersonalInfoPage() {
           setPersonalInfo(response.data);
         }
       } else {
-        toast.error('개인정보 저장에 실패했습니다.', {
+        toast.error(getApiMessage(response, '개인정보 저장에 실패했습니다.'), {
           duration: 4000,
           icon: '❌',
         });
       }
-    } catch {
-      toast.error('개인정보 저장 중 오류가 발생했습니다.', {
+    } catch (error) {
+      toast.error(getErrorMessage(error, '개인정보 저장 중 오류가 발생했습니다.'), {
         duration: 4000,
         icon: '⚠️',
       });

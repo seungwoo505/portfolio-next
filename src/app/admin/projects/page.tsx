@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { Project } from '@/types';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 프로젝트를 검색·필터링·관리할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 프로젝트 관리 페이지 컴포넌트.
@@ -46,8 +47,8 @@ export default function ProjectsPage() {
         const projectsData = response.data as Project[];
         setProjects(projectsData);
       }
-    } catch {
-      toast.error('프로젝트를 가져오는데 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '프로젝트를 가져오는데 실패했습니다.'));
       setProjects([]);
     } finally {
       setLoading(false);
@@ -85,11 +86,12 @@ export default function ProjectsPage() {
   const deleteProject = async () => {
     if (!deleteModal.projectSlug) return;
     try {
-      await authApi.delete(`/admin/projects/slug/${deleteModal.projectSlug}`);
+      const response = await authApi.delete(`/admin/projects/slug/${deleteModal.projectSlug}`);
+      ensureApiSuccess(response, '프로젝트 삭제에 실패했습니다.');
       setProjects(prev => prev.filter(project => project.slug !== deleteModal.projectSlug));
       toast.success('프로젝트가 삭제되었습니다.');
-    } catch {
-      toast.error('프로젝트 삭제에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '프로젝트 삭제에 실패했습니다.'));
     }
   };
   /**
@@ -105,14 +107,11 @@ export default function ProjectsPage() {
       const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, {
         is_published: newStatus
       });
-      if (response.success) {
-        await fetchProjects();
-        toast.success('프로젝트 상태가 변경되었습니다.');
-      } else {
-        toast.error('프로젝트 상태 변경에 실패했습니다: ' + response.message);
-      }
-    } catch {
-      toast.error('프로젝트 상태 변경에 실패했습니다.');
+      ensureApiSuccess(response, '프로젝트 상태 변경에 실패했습니다.');
+      await fetchProjects();
+      toast.success('프로젝트 상태가 변경되었습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '프로젝트 상태 변경에 실패했습니다.'));
     }
   };
   /**
@@ -128,14 +127,11 @@ export default function ProjectsPage() {
       const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, {
         is_featured: newStatus
       });
-      if (response.success) {
-        await fetchProjects();
-        toast.success('프로젝트 대표 상태가 변경되었습니다.');
-      } else {
-        toast.error('프로젝트 대표 상태 변경에 실패했습니다: ' + response.message);
-      }
-    } catch {
-      toast.error('프로젝트 대표 상태 변경에 실패했습니다.');
+      ensureApiSuccess(response, '프로젝트 대표 상태 변경에 실패했습니다.');
+      await fetchProjects();
+      toast.success('프로젝트 대표 상태가 변경되었습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '프로젝트 대표 상태 변경에 실패했습니다.'));
     }
   };
   const filteredProjects = projects.filter(project => {

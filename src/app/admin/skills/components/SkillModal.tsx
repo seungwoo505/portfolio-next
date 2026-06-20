@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Skill } from '@/types';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/api-response';
 interface SkillModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -115,8 +116,8 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
       } else {
         toast.error(result.message || '저장에 실패했습니다.');
       }
-    } catch {
-      toast.error('기술 스택 저장 중 오류가 발생했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '기술 스택 저장 중 오류가 발생했습니다.'));
     } finally {
       setLoading(false);
     }

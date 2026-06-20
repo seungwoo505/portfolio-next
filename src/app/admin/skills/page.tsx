@@ -5,6 +5,7 @@ import { Skill } from '@/types';
 import SkillModal from './components/SkillModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
+import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 기술 스택을 조회·관리할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 기술 관리 페이지 컴포넌트.
@@ -39,9 +40,8 @@ export default function AdminSkillsPage() {
       } else {
         toast.error('기술 스택을 불러올 수 없습니다.');
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '기술 스택을 불러오는 중 오류가 발생했습니다.';
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessage(error, '기술 스택을 불러오는 중 오류가 발생했습니다.'));
     } finally {
       setLoading(false);
     }
@@ -49,17 +49,21 @@ export default function AdminSkillsPage() {
   const handleSaveSkill = async (skillData: Partial<Skill>): Promise<{ success: boolean; message?: string }> => {
     try {
       if (editingSkill) {
-        await skillApi.updateSkill(editingSkill.id, skillData);
+        const response = await skillApi.updateSkill(editingSkill.id, skillData);
+        ensureApiSuccess(response, '기술 스택 저장 중 오류가 발생했습니다.');
         await loadSkills();
         return { success: true, message: '기술 스택이 수정되었습니다.' };
       } else {
-        await skillApi.createSkill(skillData);
+        const response = await skillApi.createSkill(skillData);
+        ensureApiSuccess(response, '기술 스택 저장 중 오류가 발생했습니다.');
         await loadSkills();
         return { success: true, message: '기술 스택이 추가되었습니다.' };
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '기술 스택 저장 중 오류가 발생했습니다.';
-      return { success: false, message: errorMessage };
+    } catch (error) {
+      return {
+        success: false,
+        message: getErrorMessage(error, '기술 스택 저장 중 오류가 발생했습니다.')
+      };
     }
   };
   /**
@@ -70,12 +74,12 @@ export default function AdminSkillsPage() {
    */
   const toggleFeatured = async (skillId: string, currentStatus: boolean) => {
     try {
-      await skillApi.toggleFeatured(skillId, !currentStatus);
+      const response = await skillApi.toggleFeatured(skillId, !currentStatus);
+      ensureApiSuccess(response, '추천 상태 변경 중 오류가 발생했습니다.');
       await loadSkills();
       toast.success(!currentStatus ? '기술 스택이 추천 목록에 추가되었습니다!' : '기술 스택이 추천 목록에서 제거되었습니다!');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '추천 상태 변경 중 오류가 발생했습니다.';
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessage(error, '추천 상태 변경 중 오류가 발생했습니다.'));
     }
   };
   /**
@@ -96,12 +100,12 @@ export default function AdminSkillsPage() {
   const deleteSkill = async () => {
     if (!deleteModal.skillId) return;
     try {
-      await skillApi.deleteSkill(deleteModal.skillId);
+      const response = await skillApi.deleteSkill(deleteModal.skillId);
+      ensureApiSuccess(response, '기술 스택 삭제 중 오류가 발생했습니다.');
       await loadSkills();
       toast.success('기술 스택이 삭제되었습니다.');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '기술 스택 삭제 중 오류가 발생했습니다.';
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessage(error, '기술 스택 삭제 중 오류가 발생했습니다.'));
     }
   };
   /**
@@ -143,11 +147,10 @@ export default function AdminSkillsPage() {
         }
         toast.success('카테고리가 추가되었습니다.');
       } else {
-        toast.error(response.message || '카테고리 추가에 실패했습니다.');
+        toast.error(getApiMessage(response, '카테고리 추가에 실패했습니다.'));
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '카테고리 추가에 실패했습니다.';
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessage(error, '카테고리 추가에 실패했습니다.'));
     }
   };
   /**
@@ -165,11 +168,10 @@ export default function AdminSkillsPage() {
         }
         toast.success('카테고리가 삭제되었습니다.');
       } else {
-        toast.error(response.message || '카테고리 삭제에 실패했습니다.');
+        toast.error(getApiMessage(response, '카테고리 삭제에 실패했습니다.'));
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '카테고리 삭제에 실패했습니다.';
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessage(error, '카테고리 삭제에 실패했습니다.'));
     }
   };
   useEffect(() => {

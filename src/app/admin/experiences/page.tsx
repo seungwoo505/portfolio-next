@@ -5,6 +5,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { Briefcase, Plus, Calendar, Edit, Trash2, X, Save } from 'lucide-react';
 import { AdminExperience } from '@/types';
+import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 경력 및 활동 정보를 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 경력 관리 페이지 컴포넌트.
@@ -38,11 +39,12 @@ export default function ExperiencesPage() {
   const fetchExperiences = async () => {
     try {
       const response = await authApi.get<AdminExperience[]>('/admin/experiences/timeline');
+      ensureApiSuccess(response, '경험을 불러오는데 실패했습니다.');
       if (response.data) {
         setExperiences(response.data);
       }
-    } catch {
-      toast.error('경험을 불러오는데 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '경험을 불러오는데 실패했습니다.'));
     } finally {
       setLoading(false);
     }
@@ -138,10 +140,10 @@ export default function ExperiencesPage() {
         await fetchExperiences();
         closeModal();
       } else {
-        toast.error(response.message || '저장에 실패했습니다.');
+        toast.error(getApiMessage(response, '저장에 실패했습니다.'));
       }
-    } catch {
-      toast.error('경험 저장에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '경험 저장에 실패했습니다.'));
     } finally {
       setSaving(false);
     }
@@ -169,10 +171,10 @@ export default function ExperiencesPage() {
         toast.success('경험이 삭제되었습니다.');
         await fetchExperiences();
       } else {
-        toast.error(response.message || '삭제에 실패했습니다.');
+        toast.error(getApiMessage(response, '삭제에 실패했습니다.'));
       }
-    } catch {
-      toast.error('경험 삭제에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '경험 삭제에 실패했습니다.'));
     }
   };
   /**

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { AdminNewUserModalProps, AdminUserForm, AdminUser } from '@/types';
 import { getAdminPasswordPolicyError } from '@/utils/admin-password';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import { X, AlertCircle, EyeOff, Eye, Save } from 'lucide-react';
 /**
  * @component NewUserModal
@@ -68,22 +69,24 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
         is_active: formData.status === 'active'
       };
       const response = await authApi.post('/admin/users', userData);
-      if (response.success && response.data) {
-        const userData = response.data as AdminUser;
-        onUserCreated(userData);
-        onClose();
-        setFormData({
-          username: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          role: 'editor',
-          status: 'active'
-        });
-        setErrors({});
+      ensureApiSuccess(response, '사용자 생성에 실패했습니다.');
+      if (!response.data) {
+        throw new Error('생성된 사용자 정보를 받지 못했습니다.');
       }
+      const createdUser = response.data as AdminUser;
+      onUserCreated(createdUser);
+      onClose();
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'editor',
+        status: 'active'
+      });
+      setErrors({});
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error, '사용자 생성에 실패했습니다.');
       if (message.includes('username') || message.includes('사용자명')) {
         setErrors({ username: '이미 사용 중인 사용자명입니다' });
       } else if (message.includes('email') || message.includes('이메일')) {

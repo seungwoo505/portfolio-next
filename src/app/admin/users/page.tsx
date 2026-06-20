@@ -19,6 +19,7 @@ import {
 import { authApi } from '@/lib/api';
 import { AdminUser } from '@/types';
 import NewUserModal from './components/NewUserModal';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @component UsersManagement
  * @description 관리자 권한을 가진 사용자를 생성, 검색, 필터링, 삭제할 수 있는 관리 페이지.
@@ -94,19 +95,15 @@ export default function UsersManagement() {
         is_active: newIsActive ? 1 : 0
       };
       const response = await authApi.put(`/admin/users/${userId}`, updateData);
-      if (response.success) {
-        setUsers(prev => prev.map(user => 
-          user.id === userId 
-            ? { ...user, is_active: newIsActive ? 1 : 0 }
-            : user
-        ));
-        toast.success('사용자 상태가 변경되었습니다.');
-      } else {
-        toast.error('사용자 상태 변경에 실패했습니다: ' + response.message);
-      }
-    } catch {
-      const errorMessage = '사용자 상태 변경에 실패했습니다.';
-      toast.error(errorMessage);
+      ensureApiSuccess(response, '사용자 상태 변경에 실패했습니다.');
+      setUsers(prev => prev.map(user =>
+        user.id === userId
+          ? { ...user, is_active: newIsActive ? 1 : 0 }
+          : user
+      ));
+      toast.success('사용자 상태가 변경되었습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '사용자 상태 변경에 실패했습니다.'));
     }
   };
   /**
@@ -131,12 +128,12 @@ export default function UsersManagement() {
   const deleteUser = async () => {
     if (!deleteModal.userId) return;
     try {
-      await authApi.delete(`/admin/users/${deleteModal.userId}`);
+      const response = await authApi.delete(`/admin/users/${deleteModal.userId}`);
+      ensureApiSuccess(response, '사용자 삭제에 실패했습니다.');
       setUsers(prev => prev.filter(user => user.id !== deleteModal.userId));
       toast.success('사용자가 삭제되었습니다.');
-    } catch {
-      const errorMessage = '사용자 삭제에 실패했습니다.';
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessage(error, '사용자 삭제에 실패했습니다.'));
     }
   };
   /**

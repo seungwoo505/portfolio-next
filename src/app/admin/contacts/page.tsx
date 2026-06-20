@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { AdminContactMessage } from '@/types';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 문의 메시지를 조회하고 상태를 관리하는 페이지입니다.
  * @returns {JSX.Element} 연락처 관리 페이지 컴포넌트.
@@ -64,13 +65,14 @@ export default function ContactsManagement() {
    */
   const markAsRead = async (messageId: string) => {
     try {
-      await authApi.put(`/admin/contacts/${messageId}/read`);
+      const response = await authApi.put(`/admin/contacts/${messageId}/read`);
+      ensureApiSuccess(response, '메시지 상태 변경에 실패했습니다.');
       setMessages(prev => prev.map(msg => 
         msg.id === messageId ? { ...msg, status: 'read' } : msg
       ));
       toast.success('메시지가 읽음 상태로 변경되었습니다.');
-    } catch {
-      toast.error('메시지 상태 변경에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '메시지 상태 변경에 실패했습니다.'));
     }
   };
   /**
@@ -91,14 +93,15 @@ export default function ContactsManagement() {
   const deleteMessage = async () => {
     if (!deleteModal.messageId) return;
     try {
-      await authApi.delete(`/admin/contacts/${deleteModal.messageId}`);
+      const response = await authApi.delete(`/admin/contacts/${deleteModal.messageId}`);
+      ensureApiSuccess(response, '메시지 삭제에 실패했습니다.');
       setMessages(prev => prev.filter(msg => msg.id !== deleteModal.messageId));
       if (selectedMessage?.id === deleteModal.messageId) {
         setSelectedMessage(null);
       }
       toast.success('메시지가 삭제되었습니다.');
-    } catch {
-      toast.error('메시지 삭제에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '메시지 삭제에 실패했습니다.'));
     }
   };
   /**

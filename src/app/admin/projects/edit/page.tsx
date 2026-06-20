@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 import type { AdminProjectForm, AdminTagOption, Project } from "@/types";
+import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
 import ProjectAdminForm from "../components/ProjectAdminForm";
 import {
   fetchProjectTagOptions,
@@ -231,12 +232,11 @@ function EditProjectContent() {
         `/admin/projects/slug/${projectSlug}`,
         projectData
       );
-      if (response.success) {
-        toast.success("프로젝트가 성공적으로 수정되었습니다!");
-        router.push("/admin/projects");
-      }
-    } catch {
-      toast.error("프로젝트 수정에 실패했습니다.");
+      ensureApiSuccess(response, "프로젝트 수정에 실패했습니다.");
+      toast.success("프로젝트가 성공적으로 수정되었습니다!");
+      router.push("/admin/projects");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "프로젝트 수정에 실패했습니다."));
     } finally {
       setIsSubmitting(false);
     }

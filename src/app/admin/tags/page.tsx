@@ -16,6 +16,7 @@ import {
 import { authApi } from '@/lib/api';
 import TagModal from './components/TagModal';
 import { AdminBlogTag } from '@/types';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 태그를 조회·검색·편집·삭제할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 태그 관리 페이지 컴포넌트.
@@ -87,11 +88,12 @@ export default function TagsManagement() {
   const deleteTag = async () => {
     if (!deleteModal.tagId) return;
     try {
-      await authApi.delete(`/admin/tags/${deleteModal.tagId}`);
+      const response = await authApi.delete(`/admin/tags/${deleteModal.tagId}`);
+      ensureApiSuccess(response, '태그 삭제에 실패했습니다.');
       setTags(prev => prev.filter(tag => tag.id !== deleteModal.tagId));
       toast.success('태그가 삭제되었습니다.');
-    } catch {
-      toast.error('태그 삭제에 실패했습니다.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '태그 삭제에 실패했습니다.'));
     }
   };
   /**

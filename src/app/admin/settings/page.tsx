@@ -4,6 +4,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { AdminSettingEntry, AdminSettingsMap } from '@/types';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 /**
  * @description 사이트 전역 설정을 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 설정 관리 페이지 컴포넌트.
@@ -497,14 +498,15 @@ export default function SettingsPage() {
           };
         }
       });
-      await authApi.put('/admin/settings', { settings: settingsToUpdate });
+      const response = await authApi.put('/admin/settings', { settings: settingsToUpdate });
+      ensureApiSuccess(response, '설정 저장에 실패했습니다.');
       toast.success(`${Object.keys(changedSettings).length}개 설정이 성공적으로 저장되었습니다!`, {
         duration: 3000,
         icon: '⚙️',
       });
       setChangedSettings({}); 
-    } catch {
-      toast.error('설정 저장에 실패했습니다.', {
+    } catch (error) {
+      toast.error(getErrorMessage(error, '설정 저장에 실패했습니다.'), {
         duration: 4000,
         icon: '❌',
       });
