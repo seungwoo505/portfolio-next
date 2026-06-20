@@ -49,7 +49,7 @@ export default function BlockContentEditor({
   };
 
   return (
-    <div className="blog-block-editor rounded-lg border border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800">
+    <div className="blog-block-editor overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800">
       <BlockNoteView
         editor={editor}
         theme={isDarkMode ? "dark" : "light"}
