@@ -14,6 +14,11 @@ type ApiResponseErrorBody = ApiResponse<unknown> & {
   retryAfter?: number;
 };
 
+type AuthTokenSnapshot = {
+  token: string | null;
+  refreshToken: string | null;
+};
+
 export class AuthenticatedApiClient {
   private baseURL: string;
   private token: string | null = null;
@@ -60,6 +65,81 @@ export class AuthenticatedApiClient {
     return null;
   }
 
+  private getTokenSnapshot(): AuthTokenSnapshot {
+    return {
+      token: this.getToken(),
+      refreshToken: this.getRefreshToken(),
+    };
+  }
+
+  private haveTokensChanged(snapshot: AuthTokenSnapshot): boolean {
+    const current = this.getTokenSnapshot();
+    return (
+      current.token !== snapshot.token ||
+      current.refreshToken !== snapshot.refreshToken
+    );
+  }
+
+  private async waitForConcurrentTokenRefresh(
+    snapshot: AuthTokenSnapshot
+  ): Promise<boolean> {
+    if (this.haveTokensChanged(snapshot)) {
+      return true;
+    }
+
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    const timeoutMs = 250;
+    const pollMs = 25;
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt < timeoutMs) {
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+      if (this.haveTokensChanged(snapshot)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private applyResponseTokens(response: Response) {
+    const newToken = response.headers.get("X-New-Token");
+    const newRefreshToken = response.headers.get("X-New-Refresh-Token");
+
+    if (newToken) {
+      this.setToken(newToken);
+    }
+
+    if (newRefreshToken) {
+      this.setRefreshToken(newRefreshToken);
+    }
+  }
+
+  private buildRequestConfig(
+    options: RequestInit,
+    tokens: AuthTokenSnapshot
+  ): RequestInit {
+    return {
+      ...options,
+      headers: buildHeaders(
+        {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+          "Last-Modified": new Date().toUTCString(),
+          ...(tokens.token && { Authorization: `Bearer ${tokens.token}` }),
+          ...(tokens.refreshToken && { "X-Refresh-Token": tokens.refreshToken }),
+        },
+        options.headers
+      ),
+      cache: options.cache ?? "no-store",
+    };
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -71,28 +151,23 @@ export class AuthenticatedApiClient {
       url += `${separator}_t=${Date.now()}`;
     }
 
-    const token = this.getToken();
-    const refreshToken = this.getRefreshToken();
-    const config: RequestInit = {
-      ...options,
-      headers: buildHeaders(
-        {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
-          Pragma: "no-cache",
-          Expires: "0",
-          "Last-Modified": new Date().toUTCString(),
-          ...(token && { Authorization: `Bearer ${token}` }),
-          ...(refreshToken && { "X-Refresh-Token": refreshToken }),
-        },
-        options.headers
-      ),
-      cache: options.cache ?? "no-store",
-    };
+    const tokenSnapshot = this.getTokenSnapshot();
+    const config = this.buildRequestConfig(options, tokenSnapshot);
 
     try {
-      const response = await fetch(url, config);
-      const data = await readApiResponse<T>(response);
+      let response = await fetch(url, config);
+      this.applyResponseTokens(response);
+      let data = await readApiResponse<T>(response);
+
+      if (
+        response.status === 401 &&
+        (await this.waitForConcurrentTokenRefresh(tokenSnapshot))
+      ) {
+        const retrySnapshot = this.getTokenSnapshot();
+        response = await fetch(url, this.buildRequestConfig(options, retrySnapshot));
+        this.applyResponseTokens(response);
+        data = await readApiResponse<T>(response);
+      }
 
       if (shouldThrowApiResponse(response)) {
         throw createApiRequestError(
@@ -106,11 +181,6 @@ export class AuthenticatedApiClient {
 
       if (response.status === 401) {
         await this.handleTokenExpiration();
-      }
-
-      const newToken = response.headers.get("X-New-Token");
-      if (newToken) {
-        this.setToken(newToken);
       }
 
       return data;
@@ -150,10 +220,16 @@ export class AuthenticatedApiClient {
         return false;
       }
 
-      const data = await readApiResponse<{ token: string }>(response);
+      const data = await readApiResponse<{
+        token: string;
+        refreshToken?: string;
+      }>(response);
 
       if (data.success && data.data?.token) {
         this.setToken(data.data.token);
+        if (data.data.refreshToken) {
+          this.setRefreshToken(data.data.refreshToken);
+        }
         return true;
       }
 
