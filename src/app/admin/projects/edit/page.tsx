@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 import type { AdminProjectForm, AdminTagOption, Project } from "@/types";
 import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
+import { AdminErrorState } from "../../components/AdminState";
 import ProjectAdminForm from "../components/ProjectAdminForm";
 import {
   fetchProjectTagOptions,
@@ -51,6 +52,7 @@ function EditProjectContent() {
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -67,70 +69,73 @@ function EditProjectContent() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const loadProject = async () => {
-      if (!projectSlug) {
-        toast.error("프로젝트 슬러그가 필요합니다.");
-        setIsLoading(false);
-        return;
-      }
+  const loadProject = useCallback(async () => {
+    if (!projectSlug) {
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        const response = await authApi.get(`/admin/projects/slug/${projectSlug}`);
-        if (response.success && response.data) {
-          const project = response.data as Project;
+    try {
+      setIsLoading(true);
+      setLoadError(null);
+      const response = await authApi.get(`/admin/projects/slug/${projectSlug}`);
+      ensureApiSuccess(response, "프로젝트를 불러오는데 실패했습니다.");
+      const project = response.data as Project;
 
-          setFormData({
-            title: project.title || "",
-            slug: project.slug || "",
-            description: project.description || "",
-            content: project.content || "",
-            content_json: project.content_json ?? null,
-            content_html: project.content_html || "",
-            content_text: project.content_text || "",
-            excerpt: project.excerpt || "",
-            meta_description: project.meta_description || "",
-            featured_image: project.featured_image || project.image_url || "",
-            project_url: project.project_url || project.demo_url || "",
-            github_url: project.github_url || "",
-            tags: [],
-            start_date: project.start_date ? project.start_date.split("T")[0] : "",
-            end_date: project.end_date ? project.end_date.split("T")[0] : "",
-            is_featured: Boolean(project.featured),
-            is_published: project.status === "completed" || false,
-            is_ongoing: project.status === "in_progress" || false,
-            meta_keywords: project.meta_keywords || "",
-          });
+      setFormData({
+        title: project.title || "",
+        slug: project.slug || "",
+        description: project.description || "",
+        content: project.content || "",
+        content_json: project.content_json ?? null,
+        content_html: project.content_html || "",
+        content_text: project.content_text || "",
+        excerpt: project.excerpt || "",
+        meta_description: project.meta_description || "",
+        featured_image: project.featured_image || project.image_url || "",
+        project_url: project.project_url || project.demo_url || "",
+        github_url: project.github_url || "",
+        tags: [],
+        start_date: project.start_date ? project.start_date.split("T")[0] : "",
+        end_date: project.end_date ? project.end_date.split("T")[0] : "",
+        is_featured: Boolean(project.featured),
+        is_published: project.status === "completed" || false,
+        is_ongoing: project.status === "in_progress" || false,
+        meta_keywords: project.meta_keywords || "",
+      });
 
-          const projectTags = Array.isArray(project.tags) ? project.tags : [];
-          const formattedTags = projectTags.map((tag, index) => {
-            if (typeof tag === "string") {
-              return {
-                id: `${project.id}-tag-${index}`,
-                name: tag,
-                color: "#6B7280",
-                type: "project" as const,
-              };
-            }
-
-            return normalizeProjectTagOption(tag);
-          });
-          setSelectedTags(formattedTags);
+      const projectTags = Array.isArray(project.tags) ? project.tags : [];
+      const formattedTags = projectTags.map((tag, index) => {
+        if (typeof tag === "string") {
+          return {
+            id: `${project.id}-tag-${index}`,
+            name: tag,
+            color: "#6B7280",
+            type: "project" as const,
+          };
         }
-      } catch {
-        toast.error("프로젝트를 불러오는데 실패했습니다.");
-        router.push("/admin/projects");
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
+        return normalizeProjectTagOption(tag);
+      });
+      setSelectedTags(formattedTags);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, "프로젝트를 불러오는데 실패했습니다.");
+      setLoadError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [projectSlug]);
+  useEffect(() => {
     loadProject();
-  }, [projectSlug, router]);
+  }, [loadProject]);
 
   useEffect(() => {
-    fetchProjectTagOptions().then(setAvailableTags);
+    fetchProjectTagOptions()
+      .then(setAvailableTags)
+      .catch((error) => {
+        toast.error(getErrorMessage(error, "태그 목록을 불러오는데 실패했습니다."));
+      });
   }, []);
 
   useEffect(() => {
@@ -278,6 +283,29 @@ function EditProjectContent() {
               <span>프로젝트 목록으로 돌아가기</span>
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <Link
+              href="/admin/projects"
+              prefetch={false}
+              className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>프로젝트 목록으로 돌아가기</span>
+            </Link>
+          </div>
+          <AdminErrorState
+            title="프로젝트를 불러오지 못했습니다"
+            description={loadError}
+            onRetry={loadProject}
+          />
         </div>
       </div>
     );

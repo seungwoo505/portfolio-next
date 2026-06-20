@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import { 
@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { AdminActivityLog } from '@/types';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
   AdminPageLoading,
@@ -34,6 +36,7 @@ export default function ActivityLogs() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [logs, setLogs] = useState<AdminActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [userFilter, setUserFilter] = useState<string>('all');
   const [actionFilter, setActionFilter] = useState<string>('all');
@@ -45,29 +48,28 @@ export default function ActivityLogs() {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-  useEffect(() => {
-    /**
-     * @description 활동 로그를 불러옵니다.
-     * @returns {Promise<void>}
-     */
-    const fetchLogs = async () => {
-      if (!isAuthenticated) return;
-      try {
-        setLoading(true);
-        const response = await authApi.get<AdminActivityLog[]>('/admin/logs');
-        if (response.success && response.data) {
-          setLogs(response.data);
-        } else {
-          setLogs([]);
-        }
-      } catch {
-        setLogs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchLogs();
+  /**
+   * @description 활동 로그를 불러옵니다.
+   * @returns {Promise<void>}
+   */
+  const fetchLogs = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await authApi.get<AdminActivityLog[]>('/admin/logs');
+      ensureApiSuccess(response, '활동 로그를 가져오는데 실패했습니다.');
+      setLogs(response.data || []);
+    } catch (error) {
+      setLoadError(getErrorMessage(error, '활동 로그를 가져오는데 실패했습니다.'));
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated]);
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
   /**
    * @description 액션 유형에 따른 라벨과 아이콘 정보를 반환합니다.
    * @param {string} action 액션 이름.
@@ -369,6 +371,12 @@ export default function ActivityLogs() {
             <div className="p-8">
               <AdminListSkeleton rows={5} variant="table" />
             </div>
+          ) : loadError ? (
+            <AdminErrorState
+              embedded
+              description={loadError}
+              onRetry={fetchLogs}
+            />
           ) : filteredLogs.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">

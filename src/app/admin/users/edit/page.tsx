@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Suspense } from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdmin, useRole } from '@/contexts/AdminContext';
@@ -22,6 +22,7 @@ import { authApi } from '@/lib/api';
 import { AdminEditUserForm, AdminUser } from '@/types';
 import { getAdminPasswordPolicyError } from '@/utils/admin-password';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import { AdminErrorState } from '../../components/AdminState';
 /**
  * @component EditUserContent
  * @description 관리자 사용자 정보를 로드하고 수정할 수 있는 폼을 제공한다.
@@ -46,54 +47,53 @@ function EditUserContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
+  /**
+   * @function loadUser
+   * @description 쿼리 파라미터의 사용자 ID를 사용해 사용자 정보를 로드한다.
+   * @returns {Promise<void>} 사용자 로딩 작업.
+   */
+  const loadUser = useCallback(async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await authApi.get(`/admin/users/${userId}`);
+      ensureApiSuccess(response, '사용자 정보를 불러오는데 실패했습니다.');
+      const userData = response.data as AdminUser;
+      setUser(userData);
+      setFormData({
+        username: userData.username || '',
+        email: userData.email || '',
+        role: userData.role || 'editor',
+        status: userData.is_active ? 'active' : 'inactive',
+        is_active: userData.is_active,
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      setUser(null);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
   useEffect(() => {
-    /**
-     * @function loadUser
-     * @description 쿼리 파라미터의 사용자 ID를 사용해 사용자 정보를 로드한다.
-     * @returns {Promise<void>} 사용자 로딩 작업.
-     */
-    const loadUser = async () => {
-      if (!userId) {
-        toast.error('사용자 ID가 필요합니다.');
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        const response = await authApi.get(`/admin/users/${userId}`);
-        if (response.success && response.data) {
-          const userData = response.data as AdminUser;
-          setUser(userData);
-          setFormData({
-            username: userData.username || '',
-            email: userData.email || '',
-            role: userData.role || 'editor',
-            status: userData.is_active ? 'active' : 'inactive',
-            is_active: userData.is_active,
-            newPassword: '',
-            confirmPassword: ''
-          });
-        } else {
-          toast.error('사용자 정보를 불러오는데 실패했습니다.');
-          router.push('/admin/users');
-        }
-      } catch {
-        toast.error('사용자 정보를 불러오는데 실패했습니다.');
-        router.push('/admin/users');
-      } finally {
-        setLoading(false);
-      }
-    };
     if (isAuthenticated) {
       loadUser();
     }
-  }, [userId, isAuthenticated, router]);
+  }, [isAuthenticated, loadUser]);
   if (!isLoading && isAuthenticated && !isSuperAdmin) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
@@ -138,6 +138,25 @@ function EditUserContent() {
               <span>사용자 목록으로 돌아가기</span>
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <Link href="/admin/users" className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium">
+              <ArrowLeft className="w-4 h-4" />
+              <span>사용자 목록으로 돌아가기</span>
+            </Link>
+          </div>
+          <AdminErrorState
+            title="사용자 정보를 불러오지 못했습니다"
+            description={loadError}
+            onRetry={loadUser}
+          />
         </div>
       </div>
     );

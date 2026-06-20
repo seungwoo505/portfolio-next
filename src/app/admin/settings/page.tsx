@@ -5,6 +5,7 @@ import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { AdminSettingEntry, AdminSettingsMap } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import { AdminErrorState } from '../components/AdminState';
 /**
  * @description 사이트 전역 설정을 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 설정 관리 페이지 컴포넌트.
@@ -13,6 +14,7 @@ export default function SettingsPage() {
   const { isAuthenticated } = useAdmin();
   const [settings, setSettings] = useState<AdminSettingsMap>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [changedSettings, setChangedSettings] = useState<{ [key: string]: string | number | boolean | Record<string, unknown> }>({});
@@ -435,7 +437,10 @@ export default function SettingsPage() {
   };
   const fetchSettings = useCallback(async () => {
     try {
+      setLoading(true);
+      setLoadError(null);
       const response = await authApi.get<AdminSettingsMap>('/admin/settings');
+      ensureApiSuccess(response, '설정을 불러오는데 실패했습니다.');
       if (response.data && Object.keys(response.data).length > 0) {
         const defaultSettings = getDefaultSettings();
         const mergedSettings = { ...defaultSettings, ...response.data };
@@ -443,17 +448,20 @@ export default function SettingsPage() {
       } else {
         setSettings(getDefaultSettings());
       }
-    } catch {
-      setSettings(getDefaultSettings());
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, '설정을 불러오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      setSettings({});
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, []);
   useEffect(() => {
     if (isAuthenticated) {
-      setSettings(getDefaultSettings());
-      setLoading(false);
       fetchSettings();
+    } else {
+      setLoading(false);
     }
   }, [isAuthenticated, fetchSettings]);
   /**
@@ -628,6 +636,19 @@ export default function SettingsPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">설정을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AdminErrorState
+            title="설정을 불러오지 못했습니다"
+            description={loadError}
+            onRetry={fetchSettings}
+          />
         </div>
       </div>
     );

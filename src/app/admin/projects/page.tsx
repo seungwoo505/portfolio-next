@@ -18,6 +18,7 @@ import { authApi } from '@/lib/api';
 import { Project } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
   AdminPageLoading,
@@ -30,6 +31,7 @@ export default function ProjectsPage() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [featuredFilter, setFeaturedFilter] = useState<'all' | 'featured' | 'not-featured'>('all');
@@ -47,13 +49,14 @@ export default function ProjectsPage() {
     if (!isAuthenticated) return;
     try {
       setLoading(true);
+      setLoadError(null);
       const response = await authApi.get('/admin/projects');
-      if (response.success && response.data) {
-        const projectsData = response.data as Project[];
-        setProjects(projectsData);
-      }
+      ensureApiSuccess(response, '프로젝트를 가져오는데 실패했습니다.');
+      setProjects((response.data || []) as Project[]);
     } catch (error) {
-      toast.error(getErrorMessage(error, '프로젝트를 가져오는데 실패했습니다.'));
+      const errorMessage = getErrorMessage(error, '프로젝트를 가져오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      toast.error(errorMessage);
       setProjects([]);
     } finally {
       setLoading(false);
@@ -261,6 +264,12 @@ export default function ProjectsPage() {
             <div className="p-6">
               <AdminListSkeleton rows={5} variant="table" />
             </div>
+          ) : loadError ? (
+            <AdminErrorState
+              embedded
+              description={loadError}
+              onRetry={fetchProjects}
+            />
           ) : filteredProjects.length === 0 ? (
             <AdminEmptyState
               embedded

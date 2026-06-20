@@ -1,10 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { PersonalInfo } from '@/types';
-import { getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { AdminErrorState } from '../components/AdminState';
 /**
  * @description 포트폴리오에 표시될 개인정보를 관리하는 페이지입니다.
  * @returns {JSX.Element} 개인정보 관리 페이지 컴포넌트.
@@ -30,32 +31,37 @@ export default function PersonalInfoPage() {
     updated_at: ''
   });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchPersonalInfo();
-    }
-  }, [isAuthenticated]);
   /**
    * @description 개인정보를 서버에서 불러옵니다.
    * @returns {Promise<void>}
    */
-  const fetchPersonalInfo = async () => {
+  const fetchPersonalInfo = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const response = await authApi.get<PersonalInfo>('/admin/personal-info');
-      if (response.success && response.data) {
+      ensureApiSuccess(response, '개인정보를 불러올 수 없습니다.');
+      if (response.data) {
         setPersonalInfo(response.data);
-      } else {
-        toast.error(getApiMessage(response, '개인정보를 불러올 수 없습니다.'));
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, '개인정보를 불러오는데 실패했습니다.'));
+      const errorMessage = getErrorMessage(error, '개인정보를 불러오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPersonalInfo();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, fetchPersonalInfo]);
   /**
    * @description 입력값 변경 시 상태를 업데이트합니다.
    * @param {keyof PersonalInfo} field 변경할 필드.
@@ -120,6 +126,17 @@ export default function PersonalInfoPage() {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <AdminErrorState
+          title="개인정보를 불러오지 못했습니다"
+          description={loadError}
+          onRetry={fetchPersonalInfo}
+        />
       </div>
     );
   }

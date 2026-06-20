@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { Heart, Plus, Code, Edit, Trash2, X, Save } from 'lucide-react';
 import { AdminInterest } from '@/types';
 import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
-import { AdminEmptyState, AdminListSkeleton } from '../components/AdminState';
+import { AdminEmptyState, AdminErrorState, AdminListSkeleton } from '../components/AdminState';
 /**
  * @description 관심사를 추가·수정·삭제할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 관심사 관리 페이지 컴포넌트.
@@ -14,6 +14,7 @@ import { AdminEmptyState, AdminListSkeleton } from '../components/AdminState';
 export default function InterestsPage() {
   const [interests, setInterests] = useState<AdminInterest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingInterest, setEditingInterest] = useState<AdminInterest | null>(null);
@@ -27,26 +28,29 @@ export default function InterestsPage() {
     category: 'technical' as 'technical' | 'personal',
     display_order: 0
   });
-  useEffect(() => {
-    fetchInterests();
-  }, []);
   /**
    * @description 관심사 목록을 불러옵니다.
    * @returns {Promise<void>}
    */
-  const fetchInterests = async () => {
+  const fetchInterests = useCallback(async () => {
     try {
+      setLoading(true);
+      setLoadError(null);
       const response = await authApi.get<AdminInterest[]>('/admin/interests');
       ensureApiSuccess(response, '관심사를 불러오는데 실패했습니다.');
-      if (response.data) {
-        setInterests(response.data);
-      }
+      setInterests(response.data || []);
     } catch (error) {
-      toast.error(getErrorMessage(error, '관심사를 불러오는데 실패했습니다.'));
+      const errorMessage = getErrorMessage(error, '관심사를 불러오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      setInterests([]);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+  useEffect(() => {
+    fetchInterests();
+  }, [fetchInterests]);
   /**
    * @description 입력값 변경 시 폼 상태를 업데이트합니다.
    * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e 입력 이벤트.
@@ -164,6 +168,19 @@ export default function InterestsPage() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
         <div className="max-w-6xl mx-auto">
           <AdminListSkeleton rows={4} />
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
+        <div className="max-w-6xl mx-auto">
+          <AdminErrorState
+            title="관심사를 불러오지 못했습니다"
+            description={loadError}
+            onRetry={fetchInterests}
+          />
         </div>
       </div>
     );

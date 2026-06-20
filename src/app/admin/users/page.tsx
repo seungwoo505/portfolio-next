@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin, useRole } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -21,6 +21,7 @@ import { AdminUser } from '@/types';
 import NewUserModal from './components/NewUserModal';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
   AdminPageLoading,
@@ -35,6 +36,7 @@ export default function UsersManagement() {
   const isSuperAdmin = useRole('super_admin');
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'super_admin' | 'admin' | 'editor'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -51,31 +53,31 @@ export default function UsersManagement() {
       router.push('/admin');
     }
   }, [isAuthenticated, isLoading, isSuperAdmin, router]);
-  useEffect(() => {
-    /**
-     * @function fetchUsers
-     * @description 관리자 사용자 목록을 조회하여 상태를 갱신한다.
-     * @returns {Promise<void>} 사용자 로딩 작업.
-     */
-    const fetchUsers = async () => {
-      if (!isAuthenticated || !isSuperAdmin) return;
-      try {
-        setLoading(true);
-        const response = await authApi.get('/admin/users');
-        if (response.success && response.data) {
-          const usersData = response.data as AdminUser[];
-          setUsers(usersData);
-        }
-      } catch {
-        const errorMessage = '사용자를 가져오는데 실패했습니다.';
-        toast.error(errorMessage);
-        setUsers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
+  /**
+   * @function fetchUsers
+   * @description 관리자 사용자 목록을 조회하여 상태를 갱신한다.
+   * @returns {Promise<void>} 사용자 로딩 작업.
+   */
+  const fetchUsers = useCallback(async () => {
+    if (!isAuthenticated || !isSuperAdmin) return;
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await authApi.get('/admin/users');
+      ensureApiSuccess(response, '사용자를 가져오는데 실패했습니다.');
+      setUsers((response.data || []) as AdminUser[]);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, '사용자를 가져오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      toast.error(errorMessage);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated, isSuperAdmin]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
   /**
    * @description 사용자 활성화 상태를 전환합니다.
    * @param {string} userId 대상 사용자 ID.
@@ -273,6 +275,12 @@ export default function UsersManagement() {
             <div className="p-8">
               <AdminListSkeleton rows={5} variant="table" />
             </div>
+          ) : loadError ? (
+            <AdminErrorState
+              embedded
+              description={loadError}
+              onRetry={fetchUsers}
+            />
           ) : filteredUsers.length > 0 ? (
             <>
               <div className="block lg:hidden space-y-4">

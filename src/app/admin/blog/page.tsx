@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
@@ -20,6 +20,7 @@ import { authApi } from '@/lib/api';
 import { BlogPost } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
   AdminPageLoading,
@@ -32,6 +33,7 @@ export default function BlogManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; postSlug: string | null }>({
@@ -44,79 +46,81 @@ export default function BlogManagement() {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-  useEffect(() => {
-    /**
-     * @description 블로그 포스트 목록을 불러옵니다.
-     * @returns {Promise<void>}
-     */
-    const fetchPosts = async () => {
-      if (!isAuthenticated) return;
-      try {
-        setLoading(true);
-        const response = await authApi.get('/admin/blog/posts');
-        if (response.success && response.data) {
-          const postsData = response.data as Array<{
-            id: string;
-            title: string;
-            content: string;
-            excerpt: string;
-            slug: string;
-            meta_description: string;
-            meta_keywords: string;
-            featured_image: string;
-            is_published: boolean;
-            tags: { id: string; name: string; color?: string; type?: string }[] | string[];
-            created_at: string;
-            updated_at: string;
-            view_count?: number;
-          }>;
-          const postsWithTags = postsData.map(post => {
-            let processedTags: Array<{ id: string; name: string; color: string; slug: string }> = [];
-            if (post.tags) {
-              if (typeof post.tags === 'string') {
-                processedTags = (post.tags as string).split(',').map((tagName, index) => ({
+  /**
+   * @description 블로그 포스트 목록을 불러옵니다.
+   * @returns {Promise<void>}
+   */
+  const fetchPosts = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await authApi.get('/admin/blog/posts');
+      ensureApiSuccess(response, '포스트를 가져오는데 실패했습니다.');
+      const postsData = (response.data || []) as Array<{
+        id: string;
+        title: string;
+        content: string;
+        excerpt: string;
+        slug: string;
+        meta_description: string;
+        meta_keywords: string;
+        featured_image: string;
+        is_published: boolean;
+        tags: { id: string; name: string; color?: string; type?: string }[] | string[];
+        created_at: string;
+        updated_at: string;
+        view_count?: number;
+      }>;
+      const postsWithTags = postsData.map(post => {
+        let processedTags: Array<{ id: string; name: string; color: string; slug: string }> = [];
+        if (post.tags) {
+          if (typeof post.tags === 'string') {
+            processedTags = (post.tags as string).split(',').map((tagName, index) => ({
+              id: `${post.id}-tag-${index}`,
+              name: tagName.trim(),
+              color: '#3b82f6',
+              slug: tagName.trim().toLowerCase().replace(/\s+/g, '-')
+            }));
+          } else if (Array.isArray(post.tags)) {
+            processedTags = post.tags.map((tag, index) => {
+              if (typeof tag === 'string') {
+                return {
                   id: `${post.id}-tag-${index}`,
-                  name: tagName.trim(),
+                  name: tag,
                   color: '#3b82f6',
-                  slug: tagName.trim().toLowerCase().replace(/\s+/g, '-')
-                }));
-              } else if (Array.isArray(post.tags)) {
-                processedTags = post.tags.map((tag, index) => {
-                  if (typeof tag === 'string') {
-                    return {
-                      id: `${post.id}-tag-${index}`,
-                      name: tag,
-                      color: '#3b82f6',
-                      slug: tag.toLowerCase().replace(/\s+/g, '-')
-                    };
-                  } else {
-                    return {
-                      id: tag.id || `${post.id}-tag-${index}`,
-                      name: tag.name || '',
-                      color: tag.color || '#3b82f6',
-                      slug: (tag.name || '').toLowerCase().replace(/\s+/g, '-')
-                    };
-                  }
-                });
+                  slug: tag.toLowerCase().replace(/\s+/g, '-')
+                };
+              } else {
+                return {
+                  id: tag.id || `${post.id}-tag-${index}`,
+                  name: tag.name || '',
+                  color: tag.color || '#3b82f6',
+                  slug: (tag.name || '').toLowerCase().replace(/\s+/g, '-')
+                };
               }
-            }
-            return {
-              ...post,
-              tags: processedTags,
-              view_count: post.view_count || 0
-            };
-          });
-          setPosts(postsWithTags);
+            });
+          }
         }
-      } catch (error) {
-        toast.error(getErrorMessage(error, '포스트를 가져오는데 실패했습니다.'));
-        setPosts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPosts();
+        return {
+          ...post,
+          tags: processedTags,
+          view_count: post.view_count || 0
+        };
+      });
+      setPosts(postsWithTags);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, '포스트를 가져오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      toast.error(errorMessage);
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated]);
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
   /**
    * @description 삭제 확인 모달을 엽니다.
    * @param {string} postSlug 삭제할 포스트 슬러그.
@@ -276,6 +280,12 @@ export default function BlogManagement() {
             <div className="p-6">
               <AdminListSkeleton rows={5} />
             </div>
+          ) : loadError ? (
+            <AdminErrorState
+              embedded
+              description={loadError}
+              onRetry={fetchPosts}
+            />
           ) : filteredPosts.length === 0 ? (
             <AdminEmptyState
               embedded

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -16,6 +16,7 @@ import { authApi } from '@/lib/api';
 import { AdminContactMessage } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
   AdminPageLoading,
@@ -28,6 +29,7 @@ export default function ContactsManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [messages, setMessages] = useState<AdminContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<AdminContactMessage | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,28 +43,31 @@ export default function ContactsManagement() {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-  useEffect(() => {
-    /**
-     * @description 문의 메시지 목록을 불러옵니다.
-     * @returns {Promise<void>}
-     */
-    const fetchMessages = async () => {
-      if (!isAuthenticated) return;
-      try {
-        setLoading(true);
-        const response = await authApi.get('/admin/contacts');
-        if (response.success && response.data) {
-          const messagesData = response.data as AdminContactMessage[];
-          setMessages(messagesData);
-        }
-      } catch {
-        setMessages([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMessages();
+  /**
+   * @description 문의 메시지 목록을 불러옵니다.
+   * @returns {Promise<void>}
+   */
+  const fetchMessages = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await authApi.get('/admin/contacts');
+      ensureApiSuccess(response, '문의 메시지를 가져오는데 실패했습니다.');
+      setMessages((response.data || []) as AdminContactMessage[]);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, '문의 메시지를 가져오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      setMessages([]);
+      setSelectedMessage(null);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated]);
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
   /**
    * @description 메시지를 읽음 상태로 변경합니다.
    * @param {string} messageId 메시지 ID.
@@ -197,6 +202,15 @@ export default function ContactsManagement() {
                 {loading ? (
                   <div className="p-4">
                     <AdminListSkeleton rows={5} />
+                  </div>
+                ) : loadError ? (
+                  <div className="p-4">
+                    <AdminErrorState
+                      embedded
+                      compact
+                      description={loadError}
+                      onRetry={fetchMessages}
+                    />
                   </div>
                 ) : filteredMessages.length > 0 ? (
                   filteredMessages.map((message) => (

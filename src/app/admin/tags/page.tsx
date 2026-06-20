@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
@@ -18,6 +18,7 @@ import TagModal from './components/TagModal';
 import { AdminBlogTag } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
   AdminPageLoading,
@@ -30,6 +31,7 @@ export default function TagsManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [tags, setTags] = useState<AdminBlogTag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'blog' | 'project' | 'general'>('all');
   const [showNewTagModal, setShowNewTagModal] = useState(false);
@@ -53,28 +55,30 @@ export default function TagsManagement() {
       router.push('/admin-login');
     }
   }, [isAuthenticated, isLoading, router]);
-  useEffect(() => {
-    /**
-     * @description 태그 목록을 불러옵니다.
-     * @returns {Promise<void>}
-     */
-    const fetchTags = async () => {
-      if (!isAuthenticated) return;
-      try {
-        setLoading(true);
-        const response = await authApi.get('/admin/tags');
-        if (response.success && response.data) {
-          const tagsData = response.data as AdminBlogTag[];
-          setTags(tagsData);
-        }
-      } catch {
-        setTags([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTags();
+  /**
+   * @description 태그 목록을 불러옵니다.
+   * @returns {Promise<void>}
+   */
+  const fetchTags = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await authApi.get('/admin/tags');
+      ensureApiSuccess(response, '태그를 가져오는데 실패했습니다.');
+      setTags((response.data || []) as AdminBlogTag[]);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, '태그를 가져오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      setTags([]);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated]);
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
   /**
    * @description 삭제 모달을 엽니다.
    * @param {string} tagId 삭제할 태그 ID.
@@ -231,6 +235,12 @@ export default function TagsManagement() {
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
           {loading ? (
             <AdminListSkeleton rows={8} />
+          ) : loadError ? (
+            <AdminErrorState
+              embedded
+              description={loadError}
+              onRetry={fetchTags}
+            />
           ) : filteredTags.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredTags.map((tag) => {

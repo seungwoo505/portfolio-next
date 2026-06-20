@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { personalApi, skillApi, authApi, api } from '@/lib/api';
 import { Skill } from '@/types';
 import SkillModal from './components/SkillModal';
@@ -7,6 +7,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
 import {
+  AdminErrorState,
   AdminEmptyState,
   AdminListSkeleton,
 } from '../components/AdminState';
@@ -18,6 +19,7 @@ export default function AdminSkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
@@ -26,30 +28,32 @@ export default function AdminSkillsPage() {
     skillId: null
   });
   const categoryInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    loadSkills();
-  }, []);
+  const hasCategoryModalMountedRef = useRef(false);
   /**
    * @description 모든 기술과 카테고리 정보를 불러옵니다.
    * @returns {Promise<void>}
    */
-  const loadSkills = async () => {
+  const loadSkills = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const response = await personalApi.getSkills();
-      if (response.success && response.data) {
-        setSkills(response.data.skills || []);
-        const categoriesData = response.data.categories || [];
-        setCategories(categoriesData);
-      } else {
-        toast.error('기술 스택을 불러올 수 없습니다.');
-      }
+      ensureApiSuccess(response, '기술 스택을 불러올 수 없습니다.');
+      setSkills(response.data?.skills || []);
+      setCategories(response.data?.categories || []);
     } catch (error) {
-      toast.error(getErrorMessage(error, '기술 스택을 불러오는 중 오류가 발생했습니다.'));
+      const errorMessage = getErrorMessage(error, '기술 스택을 불러오는 중 오류가 발생했습니다.');
+      setLoadError(errorMessage);
+      setSkills([]);
+      setCategories([]);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+  useEffect(() => {
+    loadSkills();
+  }, [loadSkills]);
   const handleSaveSkill = async (skillData: Partial<Skill>): Promise<{ success: boolean; message?: string }> => {
     try {
       if (editingSkill) {
@@ -199,15 +203,32 @@ export default function AdminSkillsPage() {
     };
   }, [isModalOpen, isCategoryModalOpen]);
   useEffect(() => {
+    if (!hasCategoryModalMountedRef.current) {
+      hasCategoryModalMountedRef.current = true;
+      return;
+    }
     if (!isCategoryModalOpen) {
       loadSkills();
     }
-  }, [isCategoryModalOpen]);
+  }, [isCategoryModalOpen, loadSkills]);
   if (loading) {
     return (
       <div className="flex-1 p-8">
         <div className="max-w-6xl mx-auto">
           <AdminListSkeleton rows={5} variant="table" />
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="flex-1 p-8">
+        <div className="max-w-6xl mx-auto">
+          <AdminErrorState
+            title="기술 스택을 불러오지 못했습니다"
+            description={loadError}
+            onRetry={loadSkills}
+          />
         </div>
       </div>
     );

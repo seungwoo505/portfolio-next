@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { Briefcase, Plus, Calendar, Edit, Trash2, X, Save } from 'lucide-react';
 import { AdminExperience } from '@/types';
 import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
-import { AdminEmptyState, AdminListSkeleton } from '../components/AdminState';
+import { AdminEmptyState, AdminErrorState, AdminListSkeleton } from '../components/AdminState';
 /**
  * @description 경력 및 활동 정보를 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 경력 관리 페이지 컴포넌트.
@@ -14,6 +14,7 @@ import { AdminEmptyState, AdminListSkeleton } from '../components/AdminState';
 export default function ExperiencesPage() {
   const [experiences, setExperiences] = useState<AdminExperience[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingExperience, setEditingExperience] = useState<AdminExperience | null>(null);
@@ -30,26 +31,29 @@ export default function ExperiencesPage() {
     description: '',
     achievements: ''
   });
-  useEffect(() => {
-    fetchExperiences();
-  }, []);
   /**
    * @description 경험 목록을 불러옵니다.
    * @returns {Promise<void>}
    */
-  const fetchExperiences = async () => {
+  const fetchExperiences = useCallback(async () => {
     try {
+      setLoading(true);
+      setLoadError(null);
       const response = await authApi.get<AdminExperience[]>('/admin/experiences/timeline');
       ensureApiSuccess(response, '경험을 불러오는데 실패했습니다.');
-      if (response.data) {
-        setExperiences(response.data);
-      }
+      setExperiences(response.data || []);
     } catch (error) {
-      toast.error(getErrorMessage(error, '경험을 불러오는데 실패했습니다.'));
+      const errorMessage = getErrorMessage(error, '경험을 불러오는데 실패했습니다.');
+      setLoadError(errorMessage);
+      setExperiences([]);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+  useEffect(() => {
+    fetchExperiences();
+  }, [fetchExperiences]);
   /**
    * @description 입력값 변경 시 폼 상태를 업데이트합니다.
    * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e 입력 이벤트.
@@ -193,6 +197,19 @@ export default function ExperiencesPage() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
         <div className="max-w-4xl mx-auto">
           <AdminListSkeleton rows={3} />
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
+        <div className="max-w-4xl mx-auto">
+          <AdminErrorState
+            title="경험을 불러오지 못했습니다"
+            description={loadError}
+            onRetry={fetchExperiences}
+          />
         </div>
       </div>
     );

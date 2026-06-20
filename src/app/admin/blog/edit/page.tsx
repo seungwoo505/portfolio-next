@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
@@ -9,6 +9,7 @@ import { authApi } from "@/lib/api";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
 import type { BlockEditorValue } from "@/utils/block-content";
 import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
+import { AdminErrorState } from "../../components/AdminState";
 import BlogPostForm from "../components/BlogPostForm";
 import {
   fetchBlogTagOptions,
@@ -47,6 +48,7 @@ function EditBlogPostContent() {
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkDarkMode = () => {
@@ -62,77 +64,81 @@ function EditBlogPostContent() {
     return () => observer.disconnect();
   }, []);
 
+  const loadPost = useCallback(async () => {
+    if (!postSlug) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setLoadError(null);
+      const response = await authApi.get(`/admin/blog/posts/slug/${postSlug}`);
+      ensureApiSuccess(response, "포스트를 불러오는데 실패했습니다.");
+      const post = response.data as {
+        id: string;
+        title: string;
+        content: string;
+        content_json?: unknown;
+        content_html?: string;
+        content_text?: string;
+        excerpt: string;
+        slug: string;
+        meta_description: string;
+        meta_keywords: string;
+        featured_image: string;
+        is_published: boolean;
+        featured: boolean;
+        tags: {
+          id: string | number;
+          name: string;
+          color?: string;
+          type?: string;
+        }[];
+      };
+
+      setFormData({
+        title: post.title || "",
+        content: post.content || "",
+        content_json: post.content_json,
+        content_html: post.content_html || "",
+        content_text: post.content_text || "",
+        excerpt: post.excerpt || "",
+        slug: post.slug || "",
+        meta_description: post.meta_description || "",
+        meta_keywords: post.meta_keywords || "",
+        featured_image: post.featured_image || "",
+        is_published: post.is_published || false,
+        is_featured: Boolean(post.featured),
+        tags: [],
+      });
+
+      const postTags = Array.isArray(post.tags) ? post.tags : [];
+      const formattedTags = postTags.map(normalizeBlogTagOption);
+      const uniqueTags = formattedTags.filter(
+        (tag, index, self) =>
+          index === self.findIndex((item) => item.id === tag.id)
+      );
+      setSelectedTags(uniqueTags);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, "포스트를 불러오는데 실패했습니다.");
+      setLoadError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [postSlug]);
+
   useEffect(() => {
-    const loadPost = async () => {
-      if (!postSlug) {
-        toast.error("포스트 슬러그가 필요합니다.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        const response = await authApi.get(`/admin/blog/posts/slug/${postSlug}`);
-        if (response.success && response.data) {
-          const post = response.data as {
-            id: string;
-            title: string;
-            content: string;
-            content_json?: unknown;
-            content_html?: string;
-            content_text?: string;
-            excerpt: string;
-            slug: string;
-            meta_description: string;
-            meta_keywords: string;
-            featured_image: string;
-            is_published: boolean;
-            featured: boolean;
-            tags: {
-              id: string | number;
-              name: string;
-              color?: string;
-              type?: string;
-            }[];
-          };
-
-          setFormData({
-            title: post.title || "",
-            content: post.content || "",
-            content_json: post.content_json,
-            content_html: post.content_html || "",
-            content_text: post.content_text || "",
-            excerpt: post.excerpt || "",
-            slug: post.slug || "",
-            meta_description: post.meta_description || "",
-            meta_keywords: post.meta_keywords || "",
-            featured_image: post.featured_image || "",
-            is_published: post.is_published || false,
-            is_featured: Boolean(post.featured),
-            tags: [],
-          });
-
-          const postTags = Array.isArray(post.tags) ? post.tags : [];
-          const formattedTags = postTags.map(normalizeBlogTagOption);
-          const uniqueTags = formattedTags.filter(
-            (tag, index, self) =>
-              index === self.findIndex((item) => item.id === tag.id)
-          );
-          setSelectedTags(uniqueTags);
-        }
-      } catch {
-        toast.error("포스트를 불러오는데 실패했습니다.");
-        router.push("/admin/blog");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadPost();
-  }, [postSlug, router]);
+  }, [loadPost]);
 
   useEffect(() => {
-    fetchBlogTagOptions().then(setAvailableTags);
+    fetchBlogTagOptions()
+      .then(setAvailableTags)
+      .catch((error) => {
+        toast.error(getErrorMessage(error, "태그 목록을 불러오는데 실패했습니다."));
+      });
   }, []);
 
   useEffect(() => {
@@ -270,6 +276,29 @@ function EditBlogPostContent() {
               <span>블로그 목록으로 돌아가기</span>
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <Link
+              href="/admin/blog"
+              prefetch={false}
+              className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>블로그 목록으로 돌아가기</span>
+            </Link>
+          </div>
+          <AdminErrorState
+            title="포스트를 불러오지 못했습니다"
+            description={loadError}
+            onRetry={loadPost}
+          />
         </div>
       </div>
     );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { Inbox, Loader2 } from "lucide-react";
+import { AlertTriangle, Inbox, Loader2, RefreshCw } from "lucide-react";
 
 type AdminStateAction = {
   label: string;
@@ -98,6 +98,31 @@ export function AdminPageLoading({ label = "로딩 중..." }: { label?: string }
   );
 }
 
+export function AdminErrorState({
+  title = "데이터를 불러오지 못했습니다",
+  description,
+  onRetry,
+  compact = false,
+  embedded = false,
+}: {
+  title?: string;
+  description?: string;
+  onRetry?: () => void;
+  compact?: boolean;
+  embedded?: boolean;
+}) {
+  return (
+    <AdminEmptyState
+      title={title}
+      description={description || "잠시 후 다시 시도해주세요."}
+      icon={AlertTriangle}
+      compact={compact}
+      embedded={embedded}
+      action={onRetry ? { label: "다시 시도", onClick: onRetry, icon: RefreshCw } : undefined}
+    />
+  );
+}
+
 export function AdminListSkeleton({
   rows = 5,
   variant = "card",
@@ -127,8 +152,8 @@ export function AdminListSkeleton({
           key={index}
           className="rounded-lg bg-slate-50 p-4 dark:bg-slate-700"
         >
-          <div className="mb-3 h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-          <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+          <div className="mb-3 h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-slate-600" />
+          <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-slate-600" />
         </div>
       ))}
     </div>

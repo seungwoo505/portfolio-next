@@ -62,7 +62,11 @@ export default function NewProject() {
   }, []);
 
   useEffect(() => {
-    fetchProjectTagOptions().then(setAvailableTags);
+    fetchProjectTagOptions()
+      .then(setAvailableTags)
+      .catch((error) => {
+        toast.error(getErrorMessage(error, "태그 목록을 불러오는데 실패했습니다."));
+      });
   }, []);
 
   useEffect(() => {
