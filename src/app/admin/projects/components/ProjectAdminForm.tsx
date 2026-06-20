@@ -8,6 +8,7 @@ import { ImagePlus, Plus, Save, Search, Sparkles, Tag, X } from "lucide-react";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { AdminProjectForm, AdminTagOption } from "@/types";
 import type { BlockEditorValue } from "@/utils/block-content";
+import { getErrorMessage } from "@/utils/api-response";
 
 const BlockContentEditor = dynamic(
   () => import("../../components/BlockContentEditor"),
@@ -79,8 +80,8 @@ export default function ProjectAdminForm({
           meta_keywords: keywords,
         }));
       }
-    } catch {
-      toast.error("AI 요약 & 키워드 생성에 실패했습니다.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "AI 요약 & 키워드 생성에 실패했습니다."));
     }
   };
 
@@ -100,8 +101,8 @@ export default function ProjectAdminForm({
         featured_image: url,
       }));
       toast.success("대표 이미지가 업로드되었습니다.");
-    } catch {
-      toast.error("대표 이미지 업로드에 실패했습니다.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "대표 이미지 업로드에 실패했습니다."));
     }
   };
 

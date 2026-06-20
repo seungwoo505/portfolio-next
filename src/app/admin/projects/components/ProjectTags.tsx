@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { ProjectForm, AvailableTag } from '@/types/project';
 import { Search, Tag } from 'lucide-react';
 import { authApi } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 interface ProjectTagsProps {
   formData: ProjectForm;
   setFormData: (data: ProjectForm) => void;
@@ -28,10 +30,11 @@ function ProjectTags({ formData, setFormData, errors }: ProjectTagsProps) {
       try {
         setLoading(true);
         const response = await authApi.get<AvailableTag[]>('/admin/tags');
-        if (response.success && response.data) {
-          setAvailableTags(response.data);
-        }
-      } catch {
+        ensureApiSuccess(response, '태그 목록을 불러오는데 실패했습니다.');
+        setAvailableTags(response.data || []);
+      } catch (error) {
+        toast.error(getErrorMessage(error, '태그 목록을 불러오는데 실패했습니다.'));
+        setAvailableTags([]);
       } finally {
         setLoading(false);
       }

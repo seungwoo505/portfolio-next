@@ -5,7 +5,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { Heart, Plus, Code, Edit, Trash2, X, Save } from 'lucide-react';
 import { AdminInterest } from '@/types';
-import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import { AdminEmptyState, AdminErrorState, AdminListSkeleton } from '../components/AdminState';
 /**
  * @description 관심사를 추가·수정·삭제할 수 있는 관리자 페이지입니다.
@@ -119,13 +119,10 @@ export default function InterestsPage() {
       } else {
         response = await authApi.post('/admin/interests', formData);
       }
-      if (response.success) {
-        toast.success(editingInterest ? '관심사가 수정되었습니다.' : '관심사가 추가되었습니다.');
-        await fetchInterests();
-        closeModal();
-      } else {
-        toast.error(getApiMessage(response, '저장에 실패했습니다.'));
-      }
+      ensureApiSuccess(response, '관심사 저장에 실패했습니다.');
+      toast.success(editingInterest ? '관심사가 수정되었습니다.' : '관심사가 추가되었습니다.');
+      await fetchInterests();
+      closeModal();
     } catch (error) {
       toast.error(getErrorMessage(error, '관심사 저장에 실패했습니다.'));
     } finally {
@@ -151,12 +148,9 @@ export default function InterestsPage() {
     if (!deleteModal.interestId) return;
     try {
       const response = await authApi.delete(`/admin/interests/${deleteModal.interestId}`);
-      if (response.success) {
-        toast.success('관심사가 삭제되었습니다.');
-        await fetchInterests();
-      } else {
-        toast.error(getApiMessage(response, '삭제에 실패했습니다.'));
-      }
+      ensureApiSuccess(response, '관심사 삭제에 실패했습니다.');
+      toast.success('관심사가 삭제되었습니다.');
+      await fetchInterests();
     } catch (error) {
       toast.error(getErrorMessage(error, '관심사 삭제에 실패했습니다.'));
     }

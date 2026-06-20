@@ -5,7 +5,7 @@ import { Skill } from '@/types';
 import SkillModal from './components/SkillModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
-import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
   AdminErrorState,
   AdminEmptyState,
@@ -145,18 +145,14 @@ export default function AdminSkillsPage() {
   const handleAddCategory = async (name: string) => {
     try {
       const response = await authApi.createCategory(name);
-      if (response.success) {
-        const skillsResponse = await api.get<{ skills: Skill[]; categories: Array<{ id: string; name: string }>; skillsByCategory: unknown[] }>('/skills');
-        if (skillsResponse.success && skillsResponse.data?.categories) {
-          setCategories(skillsResponse.data.categories);
-        }
-        if (categoryInputRef.current) {
-          categoryInputRef.current.value = '';
-        }
-        toast.success('카테고리가 추가되었습니다.');
-      } else {
-        toast.error(getApiMessage(response, '카테고리 추가에 실패했습니다.'));
+      ensureApiSuccess(response, '카테고리 추가에 실패했습니다.');
+      const skillsResponse = await api.get<{ skills: Skill[]; categories: Array<{ id: string; name: string }>; skillsByCategory: unknown[] }>('/skills');
+      ensureApiSuccess(skillsResponse, '카테고리 목록을 새로고침하지 못했습니다.');
+      setCategories(skillsResponse.data?.categories || []);
+      if (categoryInputRef.current) {
+        categoryInputRef.current.value = '';
       }
+      toast.success('카테고리가 추가되었습니다.');
     } catch (error) {
       toast.error(getErrorMessage(error, '카테고리 추가에 실패했습니다.'));
     }
@@ -169,15 +165,11 @@ export default function AdminSkillsPage() {
   const handleDeleteCategory = async (categoryId: string) => {
     try {
       const response = await authApi.deleteCategory(categoryId);
-      if (response.success) {
-        const skillsResponse = await api.get<{ skills: Skill[]; categories: Array<{ id: string; name: string }>; skillsByCategory: unknown[] }>('/skills');
-        if (skillsResponse.success && skillsResponse.data?.categories) {
-          setCategories(skillsResponse.data.categories);
-        }
-        toast.success('카테고리가 삭제되었습니다.');
-      } else {
-        toast.error(getApiMessage(response, '카테고리 삭제에 실패했습니다.'));
-      }
+      ensureApiSuccess(response, '카테고리 삭제에 실패했습니다.');
+      const skillsResponse = await api.get<{ skills: Skill[]; categories: Array<{ id: string; name: string }>; skillsByCategory: unknown[] }>('/skills');
+      ensureApiSuccess(skillsResponse, '카테고리 목록을 새로고침하지 못했습니다.');
+      setCategories(skillsResponse.data?.categories || []);
+      toast.success('카테고리가 삭제되었습니다.');
     } catch (error) {
       toast.error(getErrorMessage(error, '카테고리 삭제에 실패했습니다.'));
     }

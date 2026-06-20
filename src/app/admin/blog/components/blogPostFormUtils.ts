@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { authApi } from "@/lib/api";
 import type { AdminTagOption } from "@/types";
+import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
 
 export function generateBlogSlug(title: string): string {
   return title
@@ -53,11 +54,9 @@ export function normalizeBlogTagOption(tag: {
 export async function fetchBlogTagOptions(): Promise<AdminTagOption[]> {
   try {
     const response = await authApi.get("/admin/tags");
-    if (!response.success || !response.data) {
-      return [];
-    }
+    ensureApiSuccess(response, "태그 목록을 불러오는데 실패했습니다.");
 
-    const tagsData = response.data as Array<{
+    const tagsData = (response.data || []) as Array<{
       type?: string;
       id: string | number;
       name: string;
@@ -67,8 +66,8 @@ export async function fetchBlogTagOptions(): Promise<AdminTagOption[]> {
     return tagsData
       .filter((tag) => tag.type === "blog" || tag.type === "general")
       .map(normalizeBlogTagOption);
-  } catch {
-    return [];
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "태그 목록을 불러오는데 실패했습니다."));
   }
 }
 
@@ -91,13 +90,14 @@ export async function uploadBlogImage(file: File): Promise<string> {
     }
 
     const response = await authApi.uploadImage(file);
-    if (response.success && response.data?.url) {
-      return response.data.url;
+    const successResponse = ensureApiSuccess(response, "이미지 업로드에 실패했습니다.");
+    if (successResponse.data?.url) {
+      return successResponse.data.url;
     }
 
-    throw new Error(response.message || "서버에서 올바른 응답을 받지 못했습니다.");
-  } catch {
-    throw new Error("이미지 업로드에 실패했습니다.");
+    throw new Error("서버에서 올바른 응답을 받지 못했습니다.");
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "이미지 업로드에 실패했습니다."));
   }
 }
 
@@ -110,14 +110,15 @@ export async function generateBlogAISummary(content: string): Promise<string> {
   try {
     const preprocessedContent = preprocessContentForAI(content);
     const response = await authApi.generateSummary(preprocessedContent, false);
+    const successResponse = ensureApiSuccess(response, "요약 생성에 실패했습니다.");
 
-    if (response.success && response.data) {
-      return response.data.summary;
+    if (successResponse.data) {
+      return successResponse.data.summary;
     }
 
-    throw new Error(response.message || "요약 생성에 실패했습니다.");
-  } catch {
-    toast.error("AI 요약 생성에 실패했습니다. 수동으로 입력해주세요.");
+    throw new Error("요약 생성 결과를 받지 못했습니다.");
+  } catch (error) {
+    toast.error(getErrorMessage(error, "AI 요약 생성에 실패했습니다. 수동으로 입력해주세요."));
     return "";
   }
 }
@@ -131,14 +132,15 @@ export async function generateBlogAIKeywords(content: string): Promise<string> {
   try {
     const preprocessedContent = preprocessContentForAI(content);
     const response = await authApi.generateSummary(preprocessedContent, true);
+    const successResponse = ensureApiSuccess(response, "키워드 생성에 실패했습니다.");
 
-    if (response.success && response.data) {
-      return response.data.keywordsString || "";
+    if (successResponse.data) {
+      return successResponse.data.keywordsString || "";
     }
 
-    throw new Error(response.message || "키워드 생성에 실패했습니다.");
-  } catch {
-    toast.error("AI 키워드 생성에 실패했습니다. 수동으로 입력해주세요.");
+    throw new Error("키워드 생성 결과를 받지 못했습니다.");
+  } catch (error) {
+    toast.error(getErrorMessage(error, "AI 키워드 생성에 실패했습니다. 수동으로 입력해주세요."));
     return "";
   }
 }

@@ -4,7 +4,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { PersonalInfo } from '@/types';
-import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import { AdminErrorState } from '../components/AdminState';
 /**
  * @description 포트폴리오에 표시될 개인정보를 관리하는 페이지입니다.
@@ -91,20 +91,14 @@ export default function PersonalInfoPage() {
     try {
       const payload: Record<string, unknown> = { ...personalInfo };
       const response = await authApi.put<PersonalInfo>('/admin/personal-info', payload);
-      if (response.success) {
-        toast.success('개인정보가 성공적으로 저장되었습니다!', {
-          duration: 3000,
-          icon: '✅',
-        });
-        setHasChanges(false);
-        if (response.data) {
-          setPersonalInfo(response.data);
-        }
-      } else {
-        toast.error(getApiMessage(response, '개인정보 저장에 실패했습니다.'), {
-          duration: 4000,
-          icon: '❌',
-        });
+      ensureApiSuccess(response, '개인정보 저장에 실패했습니다.');
+      toast.success('개인정보가 성공적으로 저장되었습니다!', {
+        duration: 3000,
+        icon: '✅',
+      });
+      setHasChanges(false);
+      if (response.data) {
+        setPersonalInfo(response.data);
       }
     } catch (error) {
       toast.error(getErrorMessage(error, '개인정보 저장 중 오류가 발생했습니다.'), {

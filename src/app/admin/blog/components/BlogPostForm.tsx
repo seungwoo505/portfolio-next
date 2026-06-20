@@ -7,6 +7,7 @@ import { Plus, Save, Search, Tag, X } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
 import type { BlockEditorValue } from "@/utils/block-content";
+import { getErrorMessage } from "@/utils/api-response";
 
 const BlogBlockEditor = dynamic(() => import("./BlogBlockEditor"), { ssr: false });
 
@@ -67,8 +68,8 @@ export default function BlogPostForm({
         meta_description: summary || prev.meta_description,
         meta_keywords: keywords || prev.meta_keywords,
       }));
-    } catch {
-      toast.error("AI 요약 & 키워드 생성에 실패했습니다.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "AI 요약 & 키워드 생성에 실패했습니다."));
     }
   };
 
