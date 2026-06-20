@@ -41,7 +41,7 @@ export default function AdminLayout({
           </div>
           <div className="flex pt-20 lg:pt-16">
             <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
-            <main className="flex-1 p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 lg:ml-0 safari-admin-main">
+            <main className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 lg:ml-0 safari-admin-main">
               {children}
             </main>
           </div>

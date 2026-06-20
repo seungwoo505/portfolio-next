@@ -657,18 +657,18 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+        <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-slate-900">
+          <div className="border-b border-gray-200 px-4 py-4 dark:border-slate-700 sm:px-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">사이트 설정</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">사이트의 다양한 설정을 관리할 수 있습니다.</p>
           </div>
-          <div className="border-b border-gray-200 dark:border-slate-700">
-            <nav className="-mb-px flex space-x-8 px-6">
+          <div className="overflow-x-auto border-b border-gray-200 dark:border-slate-700">
+            <nav className="-mb-px flex min-w-max gap-6 px-4 sm:px-6">
               {['general', 'seo', 'contact', 'social', 'features', 'design', 'security', 'other'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium ${
                     activeTab === tab
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                       : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
@@ -679,7 +679,7 @@ export default function SettingsPage() {
               ))}
             </nav>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {(() => {
               const currentSettings = getTabSettings(activeTab);
               if (Object.keys(currentSettings).length === 0) {
@@ -692,9 +692,9 @@ export default function SettingsPage() {
               return (
                 <div className="space-y-4">
                   {Object.entries(currentSettings).map(([key, setting]) => (
-                    <div key={key} className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                    <div key={key} className="flex flex-col gap-3 rounded-lg bg-gray-50 p-4 dark:bg-slate-800 sm:flex-row sm:items-start sm:gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
                           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             {setting.description || key}
                           </label>
@@ -718,7 +718,7 @@ export default function SettingsPage() {
                 </div>
               );
             })()}
-            <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-slate-700">
+            <div className="flex flex-col gap-3 border-t border-gray-200 pt-6 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 {Object.keys(changedSettings).length > 0 && (
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300">
@@ -729,7 +729,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSave}
                 disabled={saving || Object.keys(changedSettings).length === 0}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full rounded-md bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 sm:w-auto"
               >
                 {saving ? '저장 중...' : '설정 저장'}
               </button>

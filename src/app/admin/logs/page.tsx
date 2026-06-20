@@ -246,14 +246,14 @@ export default function ActivityLogs() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">활동 로그</h1>
               <p className="text-slate-600 dark:text-slate-400 mt-2">
                 관리자들의 모든 활동을 추적하고 모니터링합니다
               </p>
             </div>
-            <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="flex items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:justify-start">
               <Download className="w-4 h-4" />
               <span>로그 내보내기</span>
             </button>
@@ -378,7 +378,76 @@ export default function ActivityLogs() {
               onRetry={fetchLogs}
             />
           ) : filteredLogs.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+              <div className="divide-y divide-slate-200 dark:divide-slate-700 lg:hidden">
+                {filteredLogs.map((log, index) => {
+                  const actionInfo = getActionInfo(log.action);
+                  const resourceInfo = getResourceInfo(log.resource_type);
+                  const ActionIcon = actionInfo.icon;
+                  const ResourceIcon = resourceInfo.icon;
+                  return (
+                    <article key={log.id || `log-card-${index}`} className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700">
+                              <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                                {log.username || '알 수 없음'}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {new Date(log.created_at).toLocaleString('ko-KR')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={`inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${actionInfo.bgColor} ${actionInfo.color}`}>
+                          <ActionIcon className="h-3 w-3" />
+                          <span>{actionInfo.label}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex min-h-8 items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                          <ResourceIcon className={`h-3.5 w-3.5 ${resourceInfo.color}`} />
+                          {resourceInfo.label}
+                        </span>
+                        {log.resource_name && (
+                          <span className="inline-flex min-h-8 max-w-full items-center truncate rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                            {log.resource_name}
+                          </span>
+                        )}
+                      </div>
+
+                      <dl className="mt-4 space-y-3 text-sm">
+                        <div>
+                          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">상세 정보</dt>
+                          <dd className="mt-1 break-words text-slate-900 dark:text-white">
+                            {formatDetails(log.details || '')}
+                          </dd>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div>
+                            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">IP 주소</dt>
+                            <dd className="mt-1 break-words text-slate-600 dark:text-slate-300">
+                              {formatIpAddress(log.ip_address || '')}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">OS + 브라우저</dt>
+                            <dd className="mt-1 break-words text-slate-600 dark:text-slate-300">
+                              {formatUserAgent(log.user_agent || '')}
+                            </dd>
+                          </div>
+                        </div>
+                      </dl>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                 <thead className="bg-slate-50 dark:bg-slate-700">
                   <tr>
@@ -467,7 +536,8 @@ export default function ActivityLogs() {
                   })}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           ) : (
             <AdminEmptyState
               embedded

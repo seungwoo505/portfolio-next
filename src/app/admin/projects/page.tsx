@@ -287,7 +287,147 @@ export default function ProjectsPage() {
               }
             />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              <div className="divide-y divide-slate-200 dark:divide-slate-700 lg:hidden">
+                {filteredProjects.map((project) => {
+                  const tagNames = Array.isArray(project.tags)
+                    ? project.tags.map(tag => typeof tag === 'string' ? tag : tag.name)
+                    : [];
+                  const startDateLabel = formatDate(project.start_date);
+                  const endDateLabel = project.end_date ? formatDate(project.end_date) : null;
+                  const isPublished = Boolean(project.is_published);
+                  const description = project.excerpt || project.description || project.content_text?.slice(0, 160) || '설명이 없습니다.';
+                  return (
+                    <article key={project.id} className="p-4">
+                      <div className="flex items-start gap-3">
+                        {project.featured_image && (
+                          <Image
+                            src={project.featured_image}
+                            alt={project.title}
+                            width={56}
+                            height={56}
+                            className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h2 className="truncate text-base font-semibold text-slate-900 dark:text-white">
+                                {project.title}
+                              </h2>
+                              <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
+                                {description}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <Link
+                                href={`/admin/projects/edit?slug=${project.slug}`}
+                                aria-label={`${project.title} 수정`}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-200"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => openDeleteModal(project.slug)}
+                                aria-label={`${project.title} 삭제`}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-200"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => togglePublishStatus(project.slug, isPublished)}
+                              className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-medium ${
+                                isPublished
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+                              }`}
+                            >
+                              {isPublished ? <Eye className="mr-1 h-3 w-3" /> : <EyeOff className="mr-1 h-3 w-3" />}
+                              {isPublished ? '공개' : '비공개'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleFeaturedStatus(project.slug, project.featured)}
+                              className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-medium ${
+                                project.featured
+                                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                                  : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+                              }`}
+                            >
+                              <Star className="mr-1 h-3 w-3" />
+                              {project.featured ? '대표' : '일반'}
+                            </button>
+                            <span className="inline-flex min-h-8 items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                              조회 {project.view_count || 0}
+                            </span>
+                          </div>
+
+                          {tagNames.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {tagNames.slice(0, 4).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {tagNames.length > 4 && (
+                                <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                                  +{tagNames.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400">
+                            <div>
+                              <dt className="font-medium text-slate-700 dark:text-slate-300">기간</dt>
+                              <dd>{startDateLabel}{endDateLabel ? ` - ${endDateLabel}` : ''}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium text-slate-700 dark:text-slate-300">수정일</dt>
+                              <dd>{formatDate(project.updated_at)}</dd>
+                            </div>
+                          </dl>
+
+                          {(project.project_url || project.github_url) && (
+                            <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                              {project.project_url && (
+                                <a
+                                  href={project.project_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                                >
+                                  프로젝트 링크
+                                </a>
+                              )}
+                              {project.github_url && (
+                                <a
+                                  href={project.github_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                                >
+                                  GitHub
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                 <thead className="bg-slate-50 dark:bg-slate-700">
                   <tr>
@@ -470,7 +610,8 @@ export default function ProjectsPage() {
                   })}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>
