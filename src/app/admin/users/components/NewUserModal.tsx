@@ -3,6 +3,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { AdminNewUserModalProps, AdminUserForm, AdminUser } from '@/types';
+import { getAdminPasswordPolicyError } from '@/utils/admin-password';
 import { X, AlertCircle, EyeOff, Eye, Save } from 'lucide-react';
 /**
  * @component NewUserModal
@@ -35,10 +36,9 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '유효한 이메일 주소를 입력하세요';
     }
-    if (!formData.password) {
-      newErrors.password = '비밀번호를 입력하세요';
-    } else if (formData.password.length < 6) {
-      newErrors.password = '비밀번호는 6자 이상이어야 합니다';
+    const passwordPolicyError = getAdminPasswordPolicyError(formData.password);
+    if (passwordPolicyError) {
+      newErrors.password = passwordPolicyError;
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = '비밀번호가 일치하지 않습니다';
@@ -194,7 +194,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
                 className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors ${
                   errors.password ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-600'
                 }`}
-                placeholder="6자 이상"
+                placeholder="12자 이상, 영문과 숫자 포함"
               />
               <button
                 type="button"

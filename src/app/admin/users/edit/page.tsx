@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { AdminEditUserForm, AdminUser } from '@/types';
+import { getAdminPasswordPolicyError } from '@/utils/admin-password';
 /**
  * @component EditUserContent
  * @description 관리자 사용자 정보를 로드하고 수정할 수 있는 폼을 제공한다.
@@ -177,6 +178,13 @@ function EditUserContent() {
       toast.error('비밀번호가 일치하지 않습니다.');
       return;
     }
+    if (formData.newPassword) {
+      const passwordPolicyError = getAdminPasswordPolicyError(formData.newPassword);
+      if (passwordPolicyError) {
+        toast.error(passwordPolicyError);
+        return;
+      }
+    }
     setSaving(true);
     try {
     const updateData: { username: string; email: string; role: string; is_active: boolean; password?: string } = {
@@ -190,7 +198,11 @@ function EditUserContent() {
       }
       const response = await authApi.put(`/admin/users/${userId}`, updateData);
       if (response.success) {
-        toast.success('사용자 정보가 성공적으로 업데이트되었습니다.');
+        toast.success(
+          formData.newPassword
+            ? '사용자 정보와 비밀번호가 성공적으로 업데이트되었습니다.'
+            : '사용자 정보가 성공적으로 업데이트되었습니다.'
+        );
         router.push('/admin/users');
       } else {
         toast.error(response.message || '사용자 정보 업데이트에 실패했습니다.');
@@ -354,6 +366,7 @@ function EditUserContent() {
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">비밀번호 변경</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               비밀번호를 변경하려면 아래 필드를 입력하세요. 변경하지 않으려면 비워두세요.
+              새 비밀번호는 12자 이상이며 영문과 숫자를 포함해야 합니다.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -367,7 +380,7 @@ function EditUserContent() {
                     value={formData.newPassword}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 pr-12 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
-                    placeholder="새 비밀번호를 입력하세요"
+                    placeholder="12자 이상, 영문과 숫자 포함"
                   />
                   <button
                     type="button"

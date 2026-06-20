@@ -35,7 +35,7 @@ export const adminApi = {
     api.post<{ token: string }>("/admin/refresh", { refreshToken }),
   getMe: () => api.get<{ user: AdminUser; permissions: string[] }>("/admin/me"),
   changePassword: (oldPassword: string, newPassword: string) =>
-    api.put<{ message: string }>("/admin/password", {
+    authApi.put<{ message: string }>("/admin/password", {
       oldPassword,
       newPassword,
     }),
