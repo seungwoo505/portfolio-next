@@ -1,7 +1,18 @@
 import type { ApiResponse } from "@/types";
-import { API_BASE_URL } from "@/lib/api-client";
+import {
+  API_BASE_URL,
+  buildHeaders,
+  createApiRequestError,
+  getApiResponseMessage,
+  readApiResponse,
+  shouldThrowApiResponse,
+  throwNormalizedRequestError,
+  type QueryParamValue,
+} from "@/lib/api-client";
 
-type QueryParamValue = string | number | boolean;
+type ApiResponseErrorBody = ApiResponse<unknown> & {
+  retryAfter?: number;
+};
 
 export class AuthenticatedApiClient {
   private baseURL: string;
@@ -63,33 +74,33 @@ export class AuthenticatedApiClient {
     const token = this.getToken();
     const refreshToken = this.getRefreshToken();
     const config: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
-        Pragma: "no-cache",
-        Expires: "0",
-        "Last-Modified": new Date().toUTCString(),
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...(refreshToken && { "X-Refresh-Token": refreshToken }),
-        ...options.headers,
-      },
-      cache: "no-store",
       ...options,
+      headers: buildHeaders(
+        {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+          "Last-Modified": new Date().toUTCString(),
+          ...(token && { Authorization: `Bearer ${token}` }),
+          ...(refreshToken && { "X-Refresh-Token": refreshToken }),
+        },
+        options.headers
+      ),
+      cache: options.cache ?? "no-store",
     };
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      const data = await readApiResponse<T>(response);
 
-      if (!response.ok && response.status >= 500) {
-        throw new Error(data.message || data.error || `HTTP ${response.status}`);
-      }
-
-      if (response.status === 429) {
-        throw new Error(
-          data.error ||
-            data.message ||
-            "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+      if (shouldThrowApiResponse(response)) {
+        throw createApiRequestError(
+          response,
+          data as ApiResponseErrorBody,
+          response.status === 429
+            ? "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+            : `HTTP ${response.status}`
         );
       }
 
@@ -103,8 +114,8 @@ export class AuthenticatedApiClient {
       }
 
       return data;
-    } catch {
-      throw new Error("API 요청 실패");
+    } catch (error) {
+      return throwNormalizedRequestError(error);
     }
   }
 
@@ -139,9 +150,9 @@ export class AuthenticatedApiClient {
         return false;
       }
 
-      const data = await response.json();
+      const data = await readApiResponse<{ token: string }>(response);
 
-      if (data.success) {
+      if (data.success && data.data?.token) {
         this.setToken(data.data.token);
         return true;
       }
@@ -250,30 +261,27 @@ export class AuthenticatedApiClient {
     const url = `${this.baseURL}/admin/upload/image`;
     const config: RequestInit = {
       method: "POST",
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
+      headers: buildHeaders(token ? { Authorization: `Bearer ${token}` } : {}),
       body: formData,
     };
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      const data = await readApiResponse<{ url: string }>(response);
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        return {
+          success: false,
+          message: getApiResponseMessage(data, `HTTP error! status: ${response.status}`),
+        };
       }
 
-      return {
-        success: true,
-        data: { url: data.data.url },
-        message: data.message,
-      };
-    } catch {
+      return data;
+    } catch (error) {
       return {
         success: false,
         data: undefined,
-        message: "Upload failed",
+        message: error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.",
       };
     }
   }
