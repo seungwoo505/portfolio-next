@@ -17,6 +17,11 @@ import {
 import { authApi } from '@/lib/api';
 import { Project } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+  AdminPageLoading,
+} from '../components/AdminState';
 /**
  * @description 프로젝트를 검색·필터링·관리할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 프로젝트 관리 페이지 컴포넌트.
@@ -24,7 +29,7 @@ import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 export default function ProjectsPage() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [featuredFilter, setFeaturedFilter] = useState<'all' | 'featured' | 'not-featured'>('all');
@@ -172,20 +177,7 @@ export default function ProjectsPage() {
     });
   };
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdminPageLoading />;
   }
   if (!isAuthenticated) {
     return null;
@@ -264,30 +256,27 @@ export default function ProjectsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          {filteredProjects.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-slate-400 dark:text-slate-500 mb-4">
-                <Star className="mx-auto h-12 w-12" />
-              </div>
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                프로젝트가 없습니다
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">
-                {searchQuery || statusFilter !== 'all' || featuredFilter !== 'all'
-                  ? '검색 조건에 맞는 프로젝트가 없습니다.'
-                  : '첫 번째 프로젝트를 추가해보세요!'}
-              </p>
-              {!searchQuery && statusFilter === 'all' && featuredFilter === 'all' && (
-                <Link
-                  href="/admin/projects/new"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  새 프로젝트 추가
-                </Link>
-              )}
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          {loading ? (
+            <div className="p-6">
+              <AdminListSkeleton rows={5} variant="table" />
             </div>
+          ) : filteredProjects.length === 0 ? (
+            <AdminEmptyState
+              embedded
+              icon={Star}
+              title={searchQuery || statusFilter !== 'all' || featuredFilter !== 'all' ? '검색 결과가 없습니다' : '프로젝트가 없습니다'}
+              description={
+                searchQuery || statusFilter !== 'all' || featuredFilter !== 'all'
+                  ? '다른 검색어나 필터로 다시 확인해보세요.'
+                  : '첫 번째 프로젝트를 작성하면 목록에 표시됩니다.'
+              }
+              action={
+                !searchQuery && statusFilter === 'all' && featuredFilter === 'all'
+                  ? { label: '새 프로젝트', href: '/admin/projects/new', icon: Plus }
+                  : undefined
+              }
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">

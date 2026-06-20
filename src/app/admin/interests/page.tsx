@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Heart, Plus, Code, Edit, Trash2, X, Save } from 'lucide-react';
 import { AdminInterest } from '@/types';
 import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { AdminEmptyState, AdminListSkeleton } from '../components/AdminState';
 /**
  * @description 관심사를 추가·수정·삭제할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 관심사 관리 페이지 컴포넌트.
@@ -162,19 +163,7 @@ export default function InterestsPage() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-6">
-                  <div className="space-y-4">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdminListSkeleton rows={4} />
         </div>
       </div>
     );
@@ -245,9 +234,12 @@ export default function InterestsPage() {
                     </div>
                   ))}
                   {technicalInterests.length === 0 && (
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      기술적 관심사가 없습니다.
-                    </div>
+                    <AdminEmptyState
+                      embedded
+                      compact
+                      icon={Code}
+                      title="기술적 관심사가 없습니다"
+                    />
                   )}
                 </div>
               </div>
@@ -298,9 +290,12 @@ export default function InterestsPage() {
                     </div>
                   ))}
                   {personalInterests.length === 0 && (
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      개인적 관심사가 없습니다.
-                    </div>
+                    <AdminEmptyState
+                      embedded
+                      compact
+                      icon={Heart}
+                      title="개인적 관심사가 없습니다"
+                    />
                   )}
                 </div>
               </div>

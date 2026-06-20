@@ -21,6 +21,11 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { AdminActivityLog } from '@/types';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+  AdminPageLoading,
+} from '../components/AdminState';
 /**
  * @description 관리자 활동 로그를 조회하는 페이지입니다.
  * @returns {JSX.Element} 활동 로그 페이지 컴포넌트.
@@ -230,14 +235,7 @@ export default function ActivityLogs() {
   const uniqueActions = Array.from(new Set(logs.map(log => log.action)));
   const uniqueResources = Array.from(new Set(logs.map(log => log.resource_type)));
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-slate-600 dark:text-slate-400">로딩 중...</span>
-        </div>
-      </div>
-    );
+    return <AdminPageLoading />;
   }
   if (!isAuthenticated) {
     return null;
@@ -369,19 +367,7 @@ export default function ActivityLogs() {
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
           {loading ? (
             <div className="p-8">
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="flex items-center space-x-4 p-4">
-                      <div className="w-10 h-10 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-1/4"></div>
-                        <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <AdminListSkeleton rows={5} variant="table" />
             </div>
           ) : filteredLogs.length > 0 ? (
             <div className="overflow-x-auto">
@@ -475,19 +461,20 @@ export default function ActivityLogs() {
               </table>
             </div>
           ) : (
-            <div className="p-8 text-center">
-              <Activity className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                {searchQuery || userFilter !== 'all' || actionFilter !== 'all' || resourceFilter !== 'all' || dateFilter !== 'all' 
-                  ? '조건에 맞는 활동 로그가 없습니다' 
-                  : '활동 로그가 없습니다'}
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400">
-                {searchQuery || userFilter !== 'all' || actionFilter !== 'all' || resourceFilter !== 'all' || dateFilter !== 'all'
-                  ? '다른 검색어나 필터를 시도해보세요.'
-                  : '아직 기록된 활동이 없습니다.'}
-              </p>
-            </div>
+            <AdminEmptyState
+              embedded
+              icon={Activity}
+              title={
+                searchQuery || userFilter !== 'all' || actionFilter !== 'all' || resourceFilter !== 'all' || dateFilter !== 'all'
+                  ? '검색 결과가 없습니다'
+                  : '활동 로그가 없습니다'
+              }
+              description={
+                searchQuery || userFilter !== 'all' || actionFilter !== 'all' || resourceFilter !== 'all' || dateFilter !== 'all'
+                  ? '다른 검색어나 필터로 다시 확인해보세요.'
+                  : '관리자 활동이 기록되면 이 목록에 표시됩니다.'
+              }
+            />
           )}
         </div>
       </div>

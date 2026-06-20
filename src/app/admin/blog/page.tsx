@@ -19,6 +19,11 @@ import {
 import { authApi } from '@/lib/api';
 import { BlogPost } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+  AdminPageLoading,
+} from '../components/AdminState';
 /**
  * @description 블로그 포스트를 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 블로그 관리 페이지 컴포넌트.
@@ -26,7 +31,7 @@ import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 export default function BlogManagement() {
   const { isAuthenticated, isLoading } = useAdmin();
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; postSlug: string | null }>({
@@ -201,20 +206,7 @@ export default function BlogManagement() {
     });
   };
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdminPageLoading />;
   }
   if (!isAuthenticated) {
     return null;
@@ -279,30 +271,27 @@ export default function BlogManagement() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          {filteredPosts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-slate-400 dark:text-slate-500 mb-4">
-                <Tag className="mx-auto h-12 w-12" />
-              </div>
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                포스트가 없습니다
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">
-                {searchQuery || statusFilter !== 'all'
-                  ? '검색 조건에 맞는 포스트가 없습니다.'
-                  : '첫 번째 포스트를 추가해보세요!'}
-              </p>
-              {!searchQuery && statusFilter === 'all' && (
-                <Link
-                  href="/admin/blog/new"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  새 포스트 추가
-                </Link>
-              )}
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          {loading ? (
+            <div className="p-6">
+              <AdminListSkeleton rows={5} />
             </div>
+          ) : filteredPosts.length === 0 ? (
+            <AdminEmptyState
+              embedded
+              icon={Tag}
+              title={searchQuery || statusFilter !== 'all' ? '검색 결과가 없습니다' : '포스트가 없습니다'}
+              description={
+                searchQuery || statusFilter !== 'all'
+                  ? '다른 검색어나 상태 필터로 다시 확인해보세요.'
+                  : '첫 번째 포스트를 작성하면 목록에 표시됩니다.'
+              }
+              action={
+                !searchQuery && statusFilter === 'all'
+                  ? { label: '새 포스트', href: '/admin/blog/new', icon: Plus }
+                  : undefined
+              }
+            />
           ) : (
             <>
               <div className="block lg:hidden space-y-4">

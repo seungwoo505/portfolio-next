@@ -20,6 +20,11 @@ import { authApi } from '@/lib/api';
 import { AdminUser } from '@/types';
 import NewUserModal from './components/NewUserModal';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+  AdminPageLoading,
+} from '../components/AdminState';
 /**
  * @component UsersManagement
  * @description 관리자 권한을 가진 사용자를 생성, 검색, 필터링, 삭제할 수 있는 관리 페이지.
@@ -185,14 +190,7 @@ export default function UsersManagement() {
     return matchesSearch && matchesRole && matchesStatus;
   });
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-slate-600 dark:text-slate-400">로딩 중...</span>
-        </div>
-      </div>
-    );
+    return <AdminPageLoading />;
   }
   if (!isAuthenticated || !isSuperAdmin) {
     return null;
@@ -273,19 +271,7 @@ export default function UsersManagement() {
         <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
           {loading ? (
             <div className="p-8">
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="flex items-center space-x-4 p-4">
-                      <div className="w-10 h-10 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                      <div className="flex-1 space-y-2">
-                        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-1/4"></div>
-                        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-1/3"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <AdminListSkeleton rows={5} variant="table" />
             </div>
           ) : filteredUsers.length > 0 ? (
             <>
@@ -501,28 +487,21 @@ export default function UsersManagement() {
               </div>
             </>
           ) : (
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="w-8 h-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                {searchQuery || roleFilter !== 'all' || statusFilter !== 'all' ? '검색 결과가 없습니다' : '사용자가 없습니다'}
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-4">
-                {searchQuery || roleFilter !== 'all' || statusFilter !== 'all' 
-                  ? '다른 검색어나 필터를 시도해보세요.' 
-                  : '새 사용자를 추가해보세요.'}
-              </p>
-              {(!searchQuery && roleFilter === 'all' && statusFilter === 'all') && (
-                <button 
-                  onClick={() => setShowNewUserModal(true)}
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>새 사용자 추가</span>
-                </button>
-              )}
-            </div>
+            <AdminEmptyState
+              embedded
+              icon={User}
+              title={searchQuery || roleFilter !== 'all' || statusFilter !== 'all' ? '검색 결과가 없습니다' : '사용자가 없습니다'}
+              description={
+                searchQuery || roleFilter !== 'all' || statusFilter !== 'all'
+                  ? '다른 검색어나 필터로 다시 확인해보세요.'
+                  : '새 사용자를 추가하면 관리자 권한을 부여할 수 있습니다.'
+              }
+              action={
+                !searchQuery && roleFilter === 'all' && statusFilter === 'all'
+                  ? { label: '새 사용자', onClick: () => setShowNewUserModal(true), icon: Plus }
+                  : undefined
+              }
+            />
           )}
         </div>
         <NewUserModal 

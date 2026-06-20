@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Briefcase, Plus, Calendar, Edit, Trash2, X, Save } from 'lucide-react';
 import { AdminExperience } from '@/types';
 import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import { AdminEmptyState, AdminListSkeleton } from '../components/AdminState';
 /**
  * @description 경력 및 활동 정보를 관리하는 관리자 페이지입니다.
  * @returns {JSX.Element} 경력 관리 페이지 컴포넌트.
@@ -191,19 +192,7 @@ export default function ExperiencesPage() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-6">
-                  <div className="space-y-4">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdminListSkeleton rows={3} />
         </div>
       </div>
     );
@@ -292,22 +281,12 @@ export default function ExperiencesPage() {
               </div>
             ))}
             {experiences.length === 0 && (
-              <div className="text-center py-12">
-                <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  경험이 없습니다
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  첫 번째 경험을 추가해보세요.
-                </p>
-                <button
-                  onClick={() => openModal()}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98] mx-auto"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>경험 추가</span>
-                </button>
-              </div>
+              <AdminEmptyState
+                icon={Briefcase}
+                title="경험이 없습니다"
+                description="첫 번째 경험을 추가하면 이 목록에 표시됩니다."
+                action={{ label: '경험 추가', onClick: () => openModal(), icon: Plus }}
+              />
             )}
           </div>
         </div>

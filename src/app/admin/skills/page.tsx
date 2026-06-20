@@ -6,6 +6,10 @@ import SkillModal from './components/SkillModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 import { ensureApiSuccess, getApiMessage, getErrorMessage } from '@/utils/api-response';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+} from '../components/AdminState';
 /**
  * @description 기술 스택을 조회·관리할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 기술 관리 페이지 컴포넌트.
@@ -202,13 +206,8 @@ export default function AdminSkillsPage() {
   if (loading) {
     return (
       <div className="flex-1 p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-300 dark:bg-slate-700 rounded w-1/4 mb-6"></div>
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-300 dark:bg-slate-700 rounded"></div>
-            ))}
-          </div>
+        <div className="max-w-6xl mx-auto">
+          <AdminListSkeleton rows={5} variant="table" />
         </div>
       </div>
     );
@@ -237,100 +236,102 @@ export default function AdminSkillsPage() {
             </div>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                <thead className="bg-gray-50 dark:bg-slate-900">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
-                      기술명
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
-                      카테고리
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
-                      숙련도
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
-                      추천
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
-                      순서
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
-                      작업
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-                  {skills.map((skill) => (
-                    <tr key={skill.id} className="hover:bg-gray-50 dark:hover:bg-slate-600">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {skill.name}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
-                        {skill.category_name || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-20 bg-gray-200 dark:bg-slate-600 rounded-full h-2 mr-2 overflow-hidden relative">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300 absolute left-0 top-0"
-                              style={{ 
-                                width: `${Math.max(0, Math.min(100, skill.proficiency_level || 0))}%`,
-                                opacity: (skill.proficiency_level || 0) > 0 ? 1 : 0,
-                                transform: (skill.proficiency_level || 0) > 0 ? 'none' : 'translateX(-100%)'
-                              }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-500 dark:text-slate-300 min-w-[3rem] text-right">
-                            {skill.proficiency_level || 0}%
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => toggleFeatured(skill.id, skill.is_featured)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            skill.is_featured
-                              ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-white'
-                              : 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-white'
-                          }`}
-                        >
-                          {skill.is_featured ? '추천' : '일반'}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
-                        {skill.display_order}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => openEditModal(skill)}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                          >
-                            수정
-                          </button>
-                          <button
-                            onClick={() => openDeleteModal(skill.id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          >
-                            삭제
-                          </button>
-                        </div>
-                      </td>
+            {skills.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                  <thead className="bg-gray-50 dark:bg-slate-900">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
+                        기술명
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
+                        카테고리
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
+                        숙련도
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
+                        추천
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
+                        순서
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">
+                        작업
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {skills.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-slate-400">
-                  등록된 기술 스택이 없습니다.
-                </p>
+                  </thead>
+                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                    {skills.map((skill) => (
+                      <tr key={skill.id} className="hover:bg-gray-50 dark:hover:bg-slate-600">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {skill.name}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
+                          {skill.category_name || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-20 bg-gray-200 dark:bg-slate-600 rounded-full h-2 mr-2 overflow-hidden relative">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-300 absolute left-0 top-0"
+                                style={{
+                                  width: `${Math.max(0, Math.min(100, skill.proficiency_level || 0))}%`,
+                                  opacity: (skill.proficiency_level || 0) > 0 ? 1 : 0,
+                                  transform: (skill.proficiency_level || 0) > 0 ? 'none' : 'translateX(-100%)'
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-gray-500 dark:text-slate-300 min-w-[3rem] text-right">
+                              {skill.proficiency_level || 0}%
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => toggleFeatured(skill.id, skill.is_featured)}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              skill.is_featured
+                                ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-white'
+                                : 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-white'
+                            }`}
+                          >
+                            {skill.is_featured ? '추천' : '일반'}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
+                          {skill.display_order}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => openEditModal(skill)}
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(skill.id)}
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            ) : (
+              <AdminEmptyState
+                embedded
+                title="기술 스택이 없습니다"
+                description="새 기술 스택을 추가하면 포트폴리오의 기술 영역에 사용할 수 있습니다."
+                action={{ label: '새 기술 스택', onClick: openAddModal }}
+              />
             )}
           </div>
         </div>

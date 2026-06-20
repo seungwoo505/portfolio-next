@@ -17,6 +17,11 @@ import { authApi } from '@/lib/api';
 import TagModal from './components/TagModal';
 import { AdminBlogTag } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+  AdminPageLoading,
+} from '../components/AdminState';
 /**
  * @description 태그를 조회·검색·편집·삭제할 수 있는 관리자 페이지입니다.
  * @returns {JSX.Element} 태그 관리 페이지 컴포넌트.
@@ -164,14 +169,7 @@ export default function TagsManagement() {
     return matchesSearch && matchesType;
   });
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-slate-600 dark:text-slate-400">로딩 중...</span>
-        </div>
-      </div>
-    );
+    return <AdminPageLoading />;
   }
   if (!isAuthenticated) {
     return null;
@@ -232,18 +230,7 @@ export default function TagsManagement() {
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="animate-pulse p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-4 h-4 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                    <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20"></div>
-                  </div>
-                  <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-16 mb-2"></div>
-                  <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-12"></div>
-                </div>
-              ))}
-            </div>
+            <AdminListSkeleton rows={8} />
           ) : filteredTags.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredTags.map((tag) => {
@@ -305,19 +292,21 @@ export default function TagsManagement() {
               })}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Tag className="w-8 h-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                {searchQuery || typeFilter !== 'all' ? '검색 결과가 없습니다' : '태그가 없습니다'}
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400">
-                {searchQuery || typeFilter !== 'all' 
-                  ? '다른 검색어나 필터를 시도해보세요.' 
-                  : '상단의 "새 태그" 버튼으로 첫 번째 태그를 추가해보세요.'}
-              </p>
-            </div>
+            <AdminEmptyState
+              embedded
+              icon={Tag}
+              title={searchQuery || typeFilter !== 'all' ? '검색 결과가 없습니다' : '태그가 없습니다'}
+              description={
+                searchQuery || typeFilter !== 'all'
+                  ? '다른 검색어나 유형 필터로 다시 확인해보세요.'
+                  : '새 태그를 만들면 블로그와 프로젝트 분류에 사용할 수 있습니다.'
+              }
+              action={
+                !searchQuery && typeFilter === 'all'
+                  ? { label: '새 태그', onClick: () => setShowNewTagModal(true), icon: Plus }
+                  : undefined
+              }
+            />
           )}
         </div>
         <ConfirmModal

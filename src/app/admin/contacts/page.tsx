@@ -15,6 +15,11 @@ import {
 import { authApi } from '@/lib/api';
 import { AdminContactMessage } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
+import {
+  AdminEmptyState,
+  AdminListSkeleton,
+  AdminPageLoading,
+} from '../components/AdminState';
 /**
  * @description 문의 메시지를 조회하고 상태를 관리하는 페이지입니다.
  * @returns {JSX.Element} 연락처 관리 페이지 컴포넌트.
@@ -125,14 +130,7 @@ export default function ContactsManagement() {
     return matchesFilter && matchesSearch;
   });
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-slate-600 dark:text-slate-400">로딩 중...</span>
-        </div>
-      </div>
-    );
+    return <AdminPageLoading />;
   }
   if (!isAuthenticated) {
     return null;
@@ -197,18 +195,8 @@ export default function ContactsManagement() {
               </div>
               <div className="max-h-96 overflow-y-auto">
                 {loading ? (
-                  <div className="p-4 space-y-3">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="flex items-start space-x-3 p-3">
-                          <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-3/4"></div>
-                            <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded w-1/2"></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="p-4">
+                    <AdminListSkeleton rows={5} />
                   </div>
                 ) : filteredMessages.length > 0 ? (
                   filteredMessages.map((message) => (
@@ -255,11 +243,18 @@ export default function ContactsManagement() {
                     </div>
                   ))
                 ) : (
-                  <div className="p-8 text-center">
-                    <Mail className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-500 dark:text-slate-400">
-                      {searchQuery || filter !== 'all' ? '조건에 맞는 메시지가 없습니다.' : '메시지가 없습니다.'}
-                    </p>
+                  <div className="p-4">
+                    <AdminEmptyState
+                      embedded
+                      compact
+                      icon={Mail}
+                      title={searchQuery || filter !== 'all' ? '검색 결과가 없습니다' : '메시지가 없습니다'}
+                      description={
+                        searchQuery || filter !== 'all'
+                          ? '다른 검색어나 상태 필터로 다시 확인해보세요.'
+                          : '접수된 문의가 생기면 이 목록에 표시됩니다.'
+                      }
+                    />
                   </div>
                 )}
               </div>
@@ -326,17 +321,11 @@ export default function ContactsManagement() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center h-96">
-                <div className="text-center">
-                  <Mail className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                    메시지를 선택하세요
-                  </h3>
-                  <p className="text-slate-500 dark:text-slate-400">
-                    왼쪽 목록에서 메시지를 클릭하여 내용을 확인하세요.
-                  </p>
-                </div>
-              </div>
+              <AdminEmptyState
+                icon={Mail}
+                title="메시지를 선택하세요"
+                description="왼쪽 목록에서 메시지를 선택하면 상세 내용을 확인할 수 있습니다."
+              />
             )}
           </div>
         </div>
