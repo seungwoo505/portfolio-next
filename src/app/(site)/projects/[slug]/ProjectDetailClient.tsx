@@ -80,19 +80,23 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
   }, [slug, initialProject]);
   useEffect(() => {
     let cancelled = false;
-    if (!project?.content) {
+    if (!project?.content_html && !project?.content) {
       setProjectContentHtml('');
       return;
     }
-    import('@/utils/markdown').then(({ markdownToHtml }) => {
+    import('@/utils/markdown').then(({ markdownToHtml, sanitizeHtml }) => {
       if (!cancelled) {
-        setProjectContentHtml(markdownToHtml(project.content || ''));
+        setProjectContentHtml(
+          project.content_html
+            ? sanitizeHtml(project.content_html)
+            : markdownToHtml(project.content || '')
+        );
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [project?.content]);
+  }, [project?.content, project?.content_html]);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -187,12 +191,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
 
   return (
     <>
-      <div className="project-detail-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div className="pointer-events-none absolute inset-0 opacity-70">
-          <div className="absolute -top-24 -right-28 h-96 w-96 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-blue-500/15 dark:via-indigo-500/10" />
-          <div className="absolute bottom-[-10rem] left-[-8rem] h-[28rem] w-[28rem] rounded-full bg-gradient-to-tr from-transparent via-transparent to-transparent blur-3xl dark:from-purple-500/12 dark:via-cyan-400/10" />
-        </div>
-
+      <div className="project-detail-bg relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
         <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-12">
           <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-transparent">
             <Link href="/" prefetch={false} className="inline-flex items-center gap-1 rounded-full px-3 py-1 hover:bg-slate-100/70 dark:hover:bg-slate-800/70">
@@ -208,10 +207,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
             </span>
         </nav>
 
-          <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl shadow-blue-500/10 backdrop-blur dark:border-slate-700/70 dark:bg-slate-800">
-            <div className="absolute -top-28 left-12 h-56 w-56 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-blue-500/15 dark:via-purple-500/15" />
-            <div className="absolute -bottom-20 right-10 h-64 w-64 rounded-full bg-gradient-to-br from-transparent via-transparent to-transparent blur-3xl dark:from-cyan-400/12 dark:via-indigo-500/10" />
-
+          <header className="relative overflow-hidden rounded-lg border border-slate-200/80 bg-white shadow-sm dark:border-slate-700/70 dark:bg-slate-900">
             <div className="relative grid gap-12 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)] lg:px-14 lg:py-16">
               <div className="space-y-6">
                 <span className={`inline-flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${statusBadge.className}`}>
@@ -223,7 +219,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
           </h1>
 
                 <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-                  {project.excerpt || project.meta_description || project.description}
+                  {project.excerpt || project.meta_description || project.description || project.content_text?.slice(0, 180)}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
@@ -263,8 +259,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
               </div>
 
               <div className="relative">
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500/10 via-transparent to-transparent blur-2xl" />
-                <div className="relative overflow-hidden rounded-3xl border border-slate-200/70 shadow-xl shadow-slate-900/10 backdrop-blur dark:border-slate-700/60">
+                <div className="relative overflow-hidden rounded-lg border border-slate-200/70 shadow-sm dark:border-slate-700/60">
                   {coverImage ? (
                     <div className="relative h-full min-h-[260px] w-full">
                       <Image
@@ -299,8 +294,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
 
           <div className="space-y-10">
               {project.description && (
-                <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-gradient-to-br from-blue-50 via-white to-purple-50 p-10 shadow-lg shadow-blue-500/10 backdrop-blur dark:border-slate-700/70 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-900">
-                  <div className="absolute -left-12 top-12 h-44 w-44 rounded-full bg-gradient-to-br from-blue-400/20 via-transparent to-transparent blur-3xl dark:from-blue-500/15" />
+                <section className="relative overflow-hidden rounded-lg border border-slate-200/70 bg-white p-10 shadow-sm dark:border-slate-700/70 dark:bg-slate-900">
                   <div className="relative z-10 space-y-5">
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-300">
                       프로젝트 소개
@@ -316,7 +310,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
               )}
 
               {uniqueTech.length > 0 && (
-                <section className="rounded-3xl border border-slate-200/70 p-8 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
+                <section className="rounded-lg border border-slate-200/70 p-8 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h3 className="text-xl font-semibold text-slate-900 dark:text-white">사용 기술</h3>
                     <span className="rounded-full bg-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
@@ -340,11 +334,11 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
                 </section>
         )}
 
-        {project.content && (
-                <article className="relative overflow-hidden rounded-3xl border border-slate-200/70 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
+        {(project.content_html || project.content) && (
+                <article className="relative overflow-hidden rounded-lg border border-slate-200/70 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
                   <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent dark:via-blue-500/30" />
                   <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
-                    <div className="prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
+                    <div className="project-block-content prose prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 prose-strong:text-slate-900 prose-code:text-slate-900 prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-2xl prose-pre:shadow-lg dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-a:text-blue-400 dark:prose-strong:text-white dark:prose-code:text-slate-200 dark:prose-code:bg-slate-800 dark:text-slate-200">
               {projectContentHtml ? (
                 <div dangerouslySetInnerHTML={{ __html: projectContentHtml }} />
               ) : (
@@ -362,7 +356,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
                       href={project.demo_url || project.project_url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                      className="relative overflow-hidden rounded-3xl border border-blue-200/70 bg-blue-600/90 p-8 text-white shadow-xl shadow-blue-500/20 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30"
+                      className="relative overflow-hidden rounded-lg border border-blue-200/70 bg-blue-600/90 p-8 text-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-white/10" />
                       <div className="relative z-10 space-y-4">
@@ -388,7 +382,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
                   href={project.github_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                      className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-900/90 p-8 text-white shadow-xl shadow-slate-900/20 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-900/30"
+                      className="relative overflow-hidden rounded-lg border border-slate-200/70 bg-slate-900/90 p-8 text-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-slate-700/40 via-transparent to-slate-900/40" />
                       <div className="relative z-10 space-y-4">
@@ -412,7 +406,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
               )}
           </div>
 
-          <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 p-8 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
+          <section className="relative overflow-hidden rounded-lg border border-slate-200/70 p-8 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-800">
             <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-300">

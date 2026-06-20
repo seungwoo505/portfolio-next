@@ -3,6 +3,9 @@ export interface ProjectForm {
   slug: string;
   description: string;
   content: string;
+  content_json?: unknown;
+  content_html?: string;
+  content_text?: string;
   featured_image: string;
   project_url: string;
   github_url: string;
@@ -26,6 +29,9 @@ export interface Project {
   description: string;
   long_description?: string;
   content?: string; 
+  content_json?: unknown;
+  content_html?: string;
+  content_text?: string;
   excerpt?: string; 
   meta_description?: string; 
   meta_keywords?: string; 

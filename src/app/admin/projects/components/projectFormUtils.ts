@@ -69,6 +69,35 @@ export async function fetchProjectTagOptions(): Promise<AdminTagOption[]> {
   }
 }
 
+export async function uploadProjectImage(file: File): Promise<string> {
+  try {
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("파일 크기는 5MB 이하여야 합니다.");
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error("지원되지 않는 이미지 형식입니다.");
+    }
+
+    const response = await authApi.uploadImage(file);
+    if (response.success && response.data?.url) {
+      return response.data.url;
+    }
+
+    throw new Error(response.message || "서버에서 올바른 응답을 받지 못했습니다.");
+  } catch {
+    throw new Error("이미지 업로드에 실패했습니다.");
+  }
+}
+
 export async function generateProjectAISummary(
   title: string,
   content: string

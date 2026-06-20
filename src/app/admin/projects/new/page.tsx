@@ -11,6 +11,7 @@ import {
   generateProjectAIKeywords,
   generateProjectAISummary,
   generateProjectSlug,
+  uploadProjectImage,
 } from "../components/projectFormUtils";
 
 const initialFormData: AdminProjectForm = {
@@ -18,6 +19,9 @@ const initialFormData: AdminProjectForm = {
   slug: "",
   description: "",
   content: "",
+  content_json: null,
+  content_html: "",
+  content_text: "",
   excerpt: "",
   meta_description: "",
   featured_image: "",
@@ -105,6 +109,16 @@ export default function NewProject() {
       return;
     }
 
+    const projectDescription =
+      formData.description.trim() ||
+      formData.excerpt.trim() ||
+      (formData.content_text || formData.content).trim().slice(0, 220);
+
+    if (!projectDescription) {
+      toast.error("한 줄 소개를 입력해주세요.");
+      return;
+    }
+
     if (!formData.start_date) {
       toast.error("시작일을 입력해주세요.");
       return;
@@ -120,10 +134,14 @@ export default function NewProject() {
       const projectData = {
         title: formData.title,
         slug: formData.slug,
-        description: formData.description,
+        description: projectDescription,
         content: formData.content,
-        excerpt: formData.excerpt || null,
-        meta_description: formData.meta_description || null,
+        content_json: formData.content_json ?? null,
+        content_html: formData.content_html || null,
+        content_text: formData.content_text || null,
+        excerpt: formData.excerpt || projectDescription,
+        meta_description:
+          formData.meta_description || formData.excerpt || projectDescription,
         featured_image: formData.featured_image || null,
         project_url: formData.project_url || null,
         github_url: formData.github_url || null,
@@ -159,6 +177,16 @@ export default function NewProject() {
       tagSearchQuery={tagSearchQuery}
       isSubmitting={isSubmitting}
       onTitleChange={handleTitleChange}
+      onContentChange={(content, blockValue) =>
+        setFormData((prev) => ({
+          ...prev,
+          content,
+          content_json: blockValue?.blocks ?? null,
+          content_html: blockValue?.html ?? "",
+          content_text: blockValue?.text ?? "",
+        }))
+      }
+      onImageUpload={uploadProjectImage}
       onToggleTag={toggleTag}
       onTagDropdownChange={setShowTagDropdown}
       onTagSearchQueryChange={setTagSearchQuery}

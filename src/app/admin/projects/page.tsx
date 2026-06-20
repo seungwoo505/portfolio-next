@@ -349,7 +349,7 @@ export default function ProjectsPage() {
                               {project.title}
                             </div>
                             <div className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-                              {project.excerpt || project.description}
+                              {project.excerpt || project.description || project.content_text?.slice(0, 160)}
                             </div>
                             <div className="flex items-center space-x-2 mt-1">
                               {project.project_url && (

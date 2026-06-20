@@ -35,6 +35,7 @@ function getDescription(project: Project): string {
     project.excerpt ||
     project.meta_description ||
     project.description ||
+    project.content_text?.slice(0, 160) ||
     "웹 개발자 승우의 프로젝트입니다."
   );
 }

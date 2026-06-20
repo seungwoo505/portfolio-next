@@ -323,7 +323,7 @@ export default function Projects() {
   return (
     <>
       <ScrollProgress />
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <section className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
@@ -360,13 +360,13 @@ export default function Projects() {
                   data-all-projects="true"
                   className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                     selectedTechs.length === 0
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-purple-700 ring-4 ring-purple-200 dark:ring-purple-800/50'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300 dark:hover:border-purple-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-purple-200 dark:hover:ring-purple-800/50'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-blue-700 ring-4 ring-blue-200 dark:ring-blue-800/50'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
                   }`}
                 >
                   전체
                   {selectedTechs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
                       ↺
                     </span>
                   )}
@@ -377,13 +377,13 @@ export default function Projects() {
                     onClick={() => handleTechFilter(tech)}
                     className={`project-filter-btn px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
                       selectedTechs.includes(tech)
-                        ? 'project-filter-btn-selected bg-purple-600 text-white border-purple-600 shadow-lg ring-2 ring-purple-200 dark:ring-purple-800/50'
-                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-300 dark:hover:border-purple-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-purple-200 dark:hover:ring-purple-800/50'
+                        ? 'project-filter-btn-selected bg-blue-600 text-white border-blue-600 shadow-lg ring-2 ring-blue-200 dark:ring-blue-800/50'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
                     }`}
                   >
                     {tech}
                     {!selectedTechs.includes(tech) && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
                         +
                       </span>
                     )}
@@ -467,7 +467,7 @@ export default function Projects() {
                    * @description 프로젝트에 연결된 기술 스택 목록을 계산합니다.
                    * @returns {string[]} 표시할 기술 스택 배열.
                    */
-                  const techList = (() => {
+	                  const techList = (() => {
                     if (project.technologies) {
                       return project.technologies.split(',').map((tech) => tech.trim());
                     }
@@ -477,26 +477,35 @@ export default function Projects() {
                     if (project.tags && project.tags.length > 0) {
                       return project.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name));
                     }
-                    return [] as string[];
-                  })();
-                  return (
+	                    return [] as string[];
+	                  })();
+	                  const coverImage = project.featured_image || project.image_url;
+	                  return (
                     <article
                       key={project.id}
                       className={`${baseClass} ${stateClass}`}
                       onClick={isRevealed ? () => (window.location.href = `/projects/${encodeURIComponent(project.slug)}`) : undefined}
                     >
-                      {isRevealed ? (
-                        <div className="p-6">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                              {project.image_url ? (
-                                <Image src={project.image_url} alt={project.title} width={24} height={24} className="rounded" style={{ width: "auto", height: "auto" }} />
-                              ) : (
-                                <span className="text-white font-bold text-sm">
-                                  {project.title.charAt(0).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
+	                      {isRevealed ? (
+	                        <div className="p-6">
+	                          {coverImage ? (
+	                            <div className="relative -mx-6 -mt-6 mb-5 h-44 overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-900">
+	                              <Image
+	                                src={coverImage}
+	                                alt={project.title}
+	                                fill
+	                                sizes="(min-width: 1024px) 560px, 100vw"
+	                                className="object-cover"
+	                                unoptimized
+	                              />
+	                            </div>
+	                          ) : null}
+	                          <div className="flex items-center justify-between mb-4">
+	                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
+	                              <span className="text-white font-bold text-sm">
+	                                {project.title.charAt(0).toUpperCase()}
+	                              </span>
+	                            </div>
                             <div className="flex space-x-3">
                               {project.demo_url && (
                                 <a
@@ -534,7 +543,7 @@ export default function Projects() {
                             {project.title}
                           </h3>
                           <p className="text-slate-600 dark:text-slate-300 mb-4 line-clamp-3">
-                            {project.excerpt || project.description}
+	                            {project.excerpt || project.description || project.content_text?.slice(0, 160)}
                           </p>
                           <div className="flex flex-wrap gap-2 mb-4">
                             {techList.length > 0 ? (

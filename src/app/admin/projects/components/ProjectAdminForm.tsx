@@ -1,13 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import toast from "react-hot-toast";
-import { Plus, Save, Search, Tag, X } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import { ImagePlus, Plus, Save, Search, Sparkles, Tag, X } from "lucide-react";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { AdminProjectForm, AdminTagOption } from "@/types";
+import type { BlockEditorValue } from "@/utils/block-content";
 
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+const BlockContentEditor = dynamic(
+  () => import("../../components/BlockContentEditor"),
+  { ssr: false }
+);
 
 interface ProjectAdminFormProps {
   formData: AdminProjectForm;
@@ -19,6 +24,8 @@ interface ProjectAdminFormProps {
   tagSearchQuery: string;
   isSubmitting: boolean;
   onTitleChange: (title: string) => void;
+  onContentChange: (content: string, blockValue?: BlockEditorValue) => void;
+  onImageUpload: (file: File) => Promise<string>;
   onToggleTag: (tag: AdminTagOption) => void;
   onTagDropdownChange: Dispatch<SetStateAction<boolean>>;
   onTagSearchQueryChange: Dispatch<SetStateAction<string>>;
@@ -37,6 +44,8 @@ export default function ProjectAdminForm({
   tagSearchQuery,
   isSubmitting,
   onTitleChange,
+  onContentChange,
+  onImageUpload,
   onToggleTag,
   onTagDropdownChange,
   onTagSearchQueryChange,
@@ -47,12 +56,13 @@ export default function ProjectAdminForm({
   const filteredTags = availableTags.filter((tag) =>
     tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
   );
+  const aiContent = formData.content_text || formData.content;
 
   const handleGenerateAll = async () => {
     try {
       const [summary, keywords] = await Promise.all([
-        onGenerateSummary(formData.content),
-        onGenerateKeywords(formData.content),
+        onGenerateSummary(aiContent),
+        onGenerateKeywords(aiContent),
       ]);
 
       if (summary) {
@@ -71,6 +81,27 @@ export default function ProjectAdminForm({
       }
     } catch {
       toast.error("AI 요약 & 키워드 생성에 실패했습니다.");
+    }
+  };
+
+  const handleFeaturedImageUpload = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+
+    try {
+      const url = await onImageUpload(file);
+      setFormData((prev) => ({
+        ...prev,
+        featured_image: url,
+      }));
+      toast.success("대표 이미지가 업로드되었습니다.");
+    } catch {
+      toast.error("대표 이미지 업로드에 실패했습니다.");
     }
   };
 
@@ -117,25 +148,41 @@ export default function ProjectAdminForm({
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  한 줄 소개 *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: event.target.value,
+                    }))
+                  }
+                  rows={3}
+                  className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
+                  placeholder="프로젝트의 목적과 핵심 결과를 짧게 적어주세요."
+                />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  프로젝트 목록 카드와 상세 화면 상단에 표시됩니다.
+                </p>
+              </div>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 상세 내용
               </h2>
-              <div data-color-mode={isDarkMode ? "dark" : "light"}>
-                <MDEditor
-                  value={formData.content}
-                  onChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      content: value || "",
-                    }))
-                  }
-                  height={400}
-                  preview="edit"
-                  hideToolbar={false}
-                />
-              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                문제, 해결 과정, 결과를 블록 단위로 정리하세요. 이미지는 드래그앤드롭하거나 슬래시 메뉴에서 업로드할 수 있습니다.
+              </p>
+              <BlockContentEditor
+                value={formData.content_json}
+                legacyMarkdown={formData.content}
+                isDarkMode={isDarkMode}
+                onImageUpload={onImageUpload}
+                onChange={(value) => onContentChange(value.markdown, value)}
+              />
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
@@ -192,9 +239,33 @@ export default function ProjectAdminForm({
                     className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
                     placeholder="https://example.com/image.jpg"
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    프로젝트 상세 페이지에 표시될 대표 이미지 URL을 입력하세요.
-                  </p>
+                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">
+                      <ImagePlus className="h-4 w-4" />
+                      이미지 업로드
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        onChange={handleFeaturedImageUpload}
+                        className="sr-only"
+                      />
+                    </label>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      직접 URL을 입력하거나 이미지를 업로드할 수 있습니다.
+                    </p>
+                  </div>
+                  {formData.featured_image ? (
+                    <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+                      <Image
+                        src={formData.featured_image}
+                        alt="대표 이미지 미리보기"
+                        width={640}
+                        height={360}
+                        unoptimized
+                        className="h-40 w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -268,9 +339,9 @@ export default function ProjectAdminForm({
                   type="button"
                   onClick={handleGenerateAll}
                   className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 flex items-center space-x-2 px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                  disabled={formData.content.trim().length === 0}
+                  disabled={aiContent.trim().length === 0}
                 >
-                  <span>🚀</span>
+                  <Sparkles className="h-4 w-4" />
                   <span>AI 요약 & 키워드 생성</span>
                 </button>
               </div>
@@ -279,11 +350,11 @@ export default function ProjectAdminForm({
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                       프로젝트 요약
-                    </label>
+                      </label>
                     <button
                       type="button"
                       onClick={async () => {
-                        const summary = await onGenerateSummary(formData.content);
+                        const summary = await onGenerateSummary(aiContent);
                         if (summary) {
                           setFormData((prev) => ({
                             ...prev,
@@ -293,9 +364,9 @@ export default function ProjectAdminForm({
                         }
                       }}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
-                      disabled={formData.content.trim().length === 0}
+                      disabled={aiContent.trim().length === 0}
                     >
-                      <span>🤖</span>
+                      <Sparkles className="h-3.5 w-3.5" />
                       <span>AI 요약</span>
                     </button>
                   </div>
@@ -336,7 +407,7 @@ export default function ProjectAdminForm({
                     <button
                       type="button"
                       onClick={async () => {
-                        const keywords = await onGenerateKeywords(formData.content);
+                        const keywords = await onGenerateKeywords(aiContent);
                         if (keywords) {
                           setFormData((prev) => ({
                             ...prev,
@@ -345,9 +416,9 @@ export default function ProjectAdminForm({
                         }
                       }}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center space-x-1"
-                      disabled={formData.content.trim().length === 0}
+                      disabled={aiContent.trim().length === 0}
                     >
-                      <span>🔍</span>
+                      <Search className="h-3.5 w-3.5" />
                       <span>AI 키워드</span>
                     </button>
                   </div>
