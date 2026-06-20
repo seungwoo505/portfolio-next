@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import ProjectCoverImage from '@/components/ProjectCoverImage';
 import { useAdmin } from '@/contexts/AdminContext';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -301,12 +301,12 @@ export default function ProjectsPage() {
                     <article key={project.id} className="p-4">
                       <div className="flex items-start gap-3">
                         {project.featured_image && (
-                          <Image
+                          <ProjectCoverImage
                             src={project.featured_image}
                             alt={project.title}
-                            width={56}
-                            height={56}
-                            className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                            sizes="56px"
+                            fallbackLabel={project.title.charAt(0).toUpperCase()}
+                            className="h-14 w-14 shrink-0 rounded-lg"
                           />
                         )}
                         <div className="min-w-0 flex-1">
@@ -470,12 +470,12 @@ export default function ProjectsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {project.featured_image && (
-                            <Image
+                            <ProjectCoverImage
                               src={project.featured_image}
                               alt={project.title}
-                              width={48}
-                              height={48}
-                              className="w-12 h-12 rounded-lg object-cover mr-4"
+                              sizes="48px"
+                              fallbackLabel={project.title.charAt(0).toUpperCase()}
+                              className="mr-4 h-12 w-12 shrink-0 rounded-lg"
                             />
                           )}
                           <div>

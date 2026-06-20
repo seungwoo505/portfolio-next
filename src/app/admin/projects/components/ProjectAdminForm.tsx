@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import toast from "react-hot-toast";
 import { ImagePlus, Plus, Save, Search, Sparkles, Tag, X } from "lucide-react";
+import ProjectCoverImage from "@/components/ProjectCoverImage";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { AdminProjectForm, AdminTagOption } from "@/types";
 import type { BlockEditorValue } from "@/utils/block-content";
@@ -257,13 +257,12 @@ export default function ProjectAdminForm({
                   </div>
                   {formData.featured_image ? (
                     <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
-                      <Image
+                      <ProjectCoverImage
                         src={formData.featured_image}
                         alt="대표 이미지 미리보기"
-                        width={640}
-                        height={360}
-                        unoptimized
-                        className="h-40 w-full object-cover"
+                        sizes="(min-width: 1024px) 640px, 100vw"
+                        fallbackLabel="대표 이미지를 불러올 수 없습니다."
+                        className="h-40 w-full"
                       />
                     </div>
                   ) : null}

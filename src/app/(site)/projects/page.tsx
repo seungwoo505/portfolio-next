@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 import ScrollProgress from "@/components/ScrollProgress";
+import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { projectApi, api } from "@/lib/api";
 import { Project } from "@/types";
 import Pagination from "@/components/Pagination";
@@ -488,18 +488,15 @@ export default function Projects() {
                     >
 	                      {isRevealed ? (
 	                        <div className="p-6">
-	                          {coverImage ? (
-	                            <div className="relative -mx-6 -mt-6 mb-5 h-44 overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-900">
-	                              <Image
-	                                src={coverImage}
-	                                alt={project.title}
-	                                fill
-	                                sizes="(min-width: 1024px) 560px, 100vw"
-	                                className="object-cover"
-	                                unoptimized
-	                              />
-	                            </div>
-	                          ) : null}
+                          {coverImage ? (
+                            <ProjectCoverImage
+                              src={coverImage}
+                              alt={project.title}
+                              sizes="(min-width: 1024px) 560px, 100vw"
+                              priority={index < 2}
+                              className="-mx-6 -mt-6 mb-5 h-44 border-b border-slate-200 dark:border-slate-700"
+                            />
+                          ) : null}
 	                          <div className="flex items-center justify-between mb-4">
 	                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
 	                              <span className="text-white font-bold text-sm">

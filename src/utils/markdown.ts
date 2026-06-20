@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { normalizeImageUrl } from './image-url';
 
 export const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, {
@@ -11,7 +12,7 @@ export const sanitizeHtml = (html: string): string => {
 export function convertGitHubImageUrls(text: string): string {
   return text.replace(
     /https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/([^"'\s)]+)/g,
-    'https://raw.githubusercontent.com/$1/$2/$3/$4'
+    (url) => normalizeImageUrl(url)
   );
 }
 export function convertGitHubImageUrlsInHtml(html: string): string {

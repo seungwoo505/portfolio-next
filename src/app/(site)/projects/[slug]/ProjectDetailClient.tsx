@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
+import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { projectApi } from "@/lib/api";
 import { Project } from "@/types";
 import toast from 'react-hot-toast';
@@ -259,35 +259,14 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
               </div>
 
               <div className="relative">
-                <div className="relative overflow-hidden rounded-lg border border-slate-200/70 shadow-sm dark:border-slate-700/60">
-                  {coverImage ? (
-                    <div className="relative h-full min-h-[260px] w-full">
-                      <Image
-                        src={coverImage}
-                        alt={project.title}
-                        fill
-                        priority
-                        sizes="(min-width: 1280px) 480px, 100vw"
-                        className="object-cover"
-                        unoptimized
-                        onError={(e) => {
-                          console.error('Image load error:', coverImage);
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-            </div>
-                  ) : (
-                    <div className="flex h-full min-h-[260px] flex-col items-center justify-center gap-3 px-6 py-10 text-center text-slate-500 dark:text-slate-400">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200/70 dark:bg-slate-700/70">
-                        <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 13h18" />
-                    </svg>
-                  </div>
-                      <p className="text-sm font-medium">대표 이미지가 등록되지 않았습니다.</p>
-                </div>
-                  )}
-                </div>
+                <ProjectCoverImage
+                  src={coverImage}
+                  alt={project.title}
+                  priority
+                  sizes="(min-width: 1280px) 480px, 100vw"
+                  fallbackLabel="대표 이미지가 등록되지 않았습니다."
+                  className="min-h-[260px] w-full rounded-lg border border-slate-200/70 shadow-sm dark:border-slate-700/60"
+                />
               </div>
             </div>
           </header>
