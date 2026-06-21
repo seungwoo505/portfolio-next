@@ -21,9 +21,9 @@ export default function SettingsPage() {
    */
   const fetchSettings = async () => {
     try {
-      const response = await api.get<{ data: SitePublicSettings }>('/settings');
-      if (response.data?.data) {
-        setSettings(response.data.data);
+      const response = await api.get<SitePublicSettings>('/settings');
+      if (response.data) {
+        setSettings(response.data);
       }
     } catch {
       toast.error('설정을 가져오는데 실패했습니다.');

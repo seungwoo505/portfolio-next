@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import toast from "react-hot-toast";
 import { Plus, Save, Search, Tag, X } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, FormEvent, KeyboardEvent, SetStateAction } from "react";
 import type { AdminBlogPostForm, AdminTagOption } from "@/types";
 import type { BlockEditorValue } from "@/utils/block-content";
 import { getErrorMessage } from "@/utils/api-response";
@@ -83,8 +83,45 @@ export default function BlogPostForm({
     }
   };
 
+  const submitCurrentStatus = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    void onSubmit(formData.is_published);
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    submitCurrentStatus();
+  };
+
+  const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    if (event.metaKey || event.ctrlKey) {
+      event.preventDefault();
+      submitCurrentStatus();
+      return;
+    }
+
+    if (
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLSelectElement ||
+      event.target instanceof HTMLButtonElement
+    ) {
+      event.preventDefault();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
+      className="min-h-screen bg-slate-50 dark:bg-slate-900"
+    >
       <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="sticky top-16 z-40 mb-6 rounded-lg border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -120,9 +157,9 @@ export default function BlogPostForm({
                 취소
               </Link>
               <button
-                type="button"
-                onClick={() => onSubmit(formData.is_published)}
+                type="submit"
                 disabled={isSubmitting}
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
@@ -504,6 +541,6 @@ export default function BlogPostForm({
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

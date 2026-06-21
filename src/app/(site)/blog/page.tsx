@@ -148,8 +148,8 @@ export default function Blog() {
      */
     const fetchSettings = async () => {
       try {
-        const response = await api.get<{ data: SiteSettings }>('/settings');
-        setSettings(response.data?.data ?? {});
+        const response = await api.get<SiteSettings>('/settings');
+        setSettings(response.data ?? {});
       } catch {
       }
     };
@@ -168,10 +168,8 @@ export default function Blog() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // 모든 포스트를 한 번에 가져오기 (페이지네이션 없이)
         const [postsResponse, tagsResponse] = await Promise.all([
-          blogApi.getPosts({
-            limit: 1000, // 충분히 큰 값으로 모든 포스트 가져오기
+          blogApi.getAllPosts({
             sort: 'published_at',
             order: 'desc'
           }),

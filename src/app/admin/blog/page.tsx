@@ -17,6 +17,7 @@ import {
   StarOff
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
+import { fetchAllPages } from '@/lib/paginated-api';
 import { BlogPost } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
@@ -55,9 +56,7 @@ export default function BlogManagement() {
     try {
       setLoading(true);
       setLoadError(null);
-      const response = await authApi.get('/admin/blog/posts');
-      ensureApiSuccess(response, '포스트를 가져오는데 실패했습니다.');
-      const postsData = (response.data || []) as Array<{
+      const response = await fetchAllPages<{
         id: string;
         title: string;
         content: string;
@@ -71,7 +70,12 @@ export default function BlogManagement() {
         created_at: string;
         updated_at: string;
         view_count?: number;
-      }>;
+      }>(
+        ({ page, limit }) => authApi.get('/admin/blog/posts', { page, limit }),
+        { pageSize: 100 }
+      );
+      ensureApiSuccess(response, '포스트를 가져오는데 실패했습니다.');
+      const postsData = response.data || [];
       const postsWithTags = postsData.map(post => {
         let processedTags: Array<{ id: string; name: string; color: string; slug: string }> = [];
         if (post.tags) {

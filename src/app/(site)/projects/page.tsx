@@ -250,9 +250,7 @@ export default function Projects() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // 모든 프로젝트를 한 번에 가져오기 (페이지네이션 없이)
-        const projectsResponse = await projectApi.getProjects({
-          limit: 1000, // 충분히 큰 값으로 모든 프로젝트 가져오기
+        const projectsResponse = await projectApi.getAllProjects({
           status: 'published',
           sort: 'created_at',
           order: 'desc'

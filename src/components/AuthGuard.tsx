@@ -1,7 +1,8 @@
 'use client';
 import Link from "next/link";
-import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { ReactNode, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAdmin } from '@/contexts/AdminContext';
 /**
  * @interface AuthGuardProps
  * @description 인증 상태에 따라 보호된 콘텐츠를 렌더링하기 위한 설정입니다.
@@ -19,7 +20,15 @@ interface AuthGuardProps {
  * @returns {JSX.Element} 인증 상태에 따라 보호된 콘텐츠, 대체 UI, 로딩 화면을 반환합니다.
  */
 export default function AuthGuard({ children, fallback }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAdmin();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !fallback) {
+      router.replace('/admin-login');
+    }
+  }, [fallback, isAuthenticated, isLoading, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">

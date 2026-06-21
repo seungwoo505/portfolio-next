@@ -1,4 +1,5 @@
 import type {
+  ApiResponse,
   BlogPost,
   BlogTag,
   ContactMessage,
@@ -9,30 +10,69 @@ import type {
   SkillCategory,
 } from "@/types";
 import { api } from "@/lib/api-client";
+import { fetchAllPages } from "@/lib/paginated-api";
+
+const PUBLIC_LIST_PAGE_SIZE = 50;
+
+type BlogPostListParams = {
+  limit?: number;
+  page?: number;
+  featured?: boolean;
+  search?: string;
+  tags?: string[];
+  status?: "published" | "draft" | "all";
+  sort?: "published_at" | "created_at" | "title" | "view_count" | "reading_time";
+  order?: "asc" | "desc";
+};
+
+type ProjectListParams = {
+  limit?: number;
+  page?: number;
+  featured?: boolean;
+  search?: string;
+  tags?: string[];
+  skills?: string[];
+  status?: "published" | "draft" | "all";
+  sort?: "created_at" | "title" | "view_count" | "display_order";
+  order?: "asc" | "desc";
+};
+
+const getPosts = (params?: BlogPostListParams): Promise<ApiResponse<BlogPost[]>> => {
+  const searchParams: Record<string, string | number | boolean> = {};
+  if (params?.limit) searchParams.limit = params.limit;
+  if (params?.page) searchParams.page = params.page;
+  if (params?.featured !== undefined) searchParams.featured = params.featured;
+  if (params?.search) searchParams.search = params.search;
+  if (params?.tags?.length) searchParams.tags = params.tags.join(",");
+  if (params?.status) searchParams.status = params.status;
+  if (params?.sort) searchParams.sort = params.sort;
+  if (params?.order) searchParams.order = params.order;
+
+  return api.get<BlogPost[]>("/public/posts", searchParams);
+};
+
+const getProjects = (params?: ProjectListParams): Promise<ApiResponse<Project[]>> => {
+  const searchParams: Record<string, string | number | boolean> = {};
+  if (params?.limit) searchParams.limit = params.limit;
+  if (params?.page) searchParams.page = params.page;
+  if (params?.featured !== undefined) searchParams.featured = params.featured;
+  if (params?.search) searchParams.search = params.search;
+  if (params?.tags?.length) searchParams.tags = params.tags.join(",");
+  if (params?.skills?.length) searchParams.skills = params.skills.join(",");
+  if (params?.status) searchParams.status = params.status;
+  if (params?.sort) searchParams.sort = params.sort;
+  if (params?.order) searchParams.order = params.order;
+
+  return api.get<Project[]>("/public/projects", searchParams);
+};
 
 export const blogApi = {
-  getPosts: (params?: {
-    limit?: number;
-    page?: number;
-    featured?: boolean;
-    search?: string;
-    tags?: string[];
-    status?: "published" | "draft" | "all";
-    sort?: "published_at" | "created_at" | "title" | "view_count" | "reading_time";
-    order?: "asc" | "desc";
-  }) => {
-    const searchParams: Record<string, string | number | boolean> = {};
-    if (params?.limit) searchParams.limit = params.limit;
-    if (params?.page) searchParams.page = params.page;
-    if (params?.featured !== undefined) searchParams.featured = params.featured;
-    if (params?.search) searchParams.search = params.search;
-    if (params?.tags?.length) searchParams.tags = params.tags.join(",");
-    if (params?.status) searchParams.status = params.status;
-    if (params?.sort) searchParams.sort = params.sort;
-    if (params?.order) searchParams.order = params.order;
-
-    return api.get<BlogPost[]>("/public/posts", searchParams);
-  },
+  getPosts,
+  getAllPosts: (params?: Omit<BlogPostListParams, "limit" | "page">) =>
+    fetchAllPages<BlogPost>(
+      ({ page, limit }) => getPosts({ ...params, page, limit }),
+      { pageSize: PUBLIC_LIST_PAGE_SIZE }
+    ),
   getPostBySlug: (slug: string) => api.get<BlogPost>(`/public/posts/${slug}`),
   searchPosts: (query: string, limit?: number) =>
     api.get<BlogPost[]>("/public/posts", {
@@ -48,30 +88,12 @@ export const blogApi = {
 };
 
 export const projectApi = {
-  getProjects: (params?: {
-    limit?: number;
-    page?: number;
-    featured?: boolean;
-    search?: string;
-    tags?: string[];
-    skills?: string[];
-    status?: "published" | "draft" | "all";
-    sort?: "created_at" | "title" | "view_count" | "display_order";
-    order?: "asc" | "desc";
-  }) => {
-    const searchParams: Record<string, string | number | boolean> = {};
-    if (params?.limit) searchParams.limit = params.limit;
-    if (params?.page) searchParams.page = params.page;
-    if (params?.featured !== undefined) searchParams.featured = params.featured;
-    if (params?.search) searchParams.search = params.search;
-    if (params?.tags?.length) searchParams.tags = params.tags.join(",");
-    if (params?.skills?.length) searchParams.skills = params.skills.join(",");
-    if (params?.status) searchParams.status = params.status;
-    if (params?.sort) searchParams.sort = params.sort;
-    if (params?.order) searchParams.order = params.order;
-
-    return api.get<Project[]>("/public/projects", searchParams);
-  },
+  getProjects,
+  getAllProjects: (params?: Omit<ProjectListParams, "limit" | "page">) =>
+    fetchAllPages<Project>(
+      ({ page, limit }) => getProjects({ ...params, page, limit }),
+      { pageSize: PUBLIC_LIST_PAGE_SIZE }
+    ),
   getProject: (slug: string) => api.get<Project>(`/public/projects/${slug}`),
   getFeaturedProjects: () =>
     api.get<Project[]>("/public/projects", { featured: "true" }),

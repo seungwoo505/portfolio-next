@@ -29,9 +29,9 @@ export default function ContactPage() {
      */
     const fetchSettings = async () => {
       try {
-        const response = await api.get<{ data: SiteSettings }>('/settings');
-        if (response.data?.data) {
-          setSettings(response.data.data);
+        const response = await api.get<SiteSettings>('/settings');
+        if (response.data) {
+          setSettings(response.data);
         }
       } catch {
       }

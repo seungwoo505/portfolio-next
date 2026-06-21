@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ScrollProgress from "@/components/ScrollProgress";
 import { blogApi, personalApi, projectApi } from "@/lib/api";
 import type { BlogPost } from "@/types";
@@ -25,6 +25,7 @@ const SKILL_PLACEHOLDER_COUNT = 1;
 const CARD_REVEAL_INTERVAL = 120;
 const SKILL_REVEAL_INTERVAL = 80;
 const SKILL_REVEAL_STEP = 3;
+const VIEW_COUNT_REFRESH_INTERVAL_MS = 60_000;
 
 export default function ClientHome({
   blogPosts: initialBlogPosts = [],
@@ -47,6 +48,8 @@ export default function ClientHome({
   const [blogRevealCount, setBlogRevealCount] = useState(0);
   const [projectRevealCount, setProjectRevealCount] = useState(0);
   const [skillsRevealCount, setSkillsRevealCount] = useState(0);
+  const lastViewCountRefreshAtRef = useRef(0);
+  const isRefreshingViewCountsRef = useRef(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -94,7 +97,22 @@ export default function ClientHome({
   }, [initialBlogPosts, initialProjects, initialSkills]);
 
   useEffect(() => {
-    const updateViewCounts = async () => {
+    const updateViewCounts = async (force = false) => {
+      const now = Date.now();
+      if (
+        !force &&
+        now - lastViewCountRefreshAtRef.current < VIEW_COUNT_REFRESH_INTERVAL_MS
+      ) {
+        return;
+      }
+
+      if (isRefreshingViewCountsRef.current) {
+        return;
+      }
+
+      isRefreshingViewCountsRef.current = true;
+      lastViewCountRefreshAtRef.current = now;
+
       try {
         const [blogResponse, projectResponse] = await Promise.all([
           blogApi.getPosts({ limit: 2, featured: true }),
@@ -138,6 +156,8 @@ export default function ClientHome({
         }
       } catch (viewCountError) {
         console.error("조회수 갱신 실패:", viewCountError);
+      } finally {
+        isRefreshingViewCountsRef.current = false;
       }
     };
 

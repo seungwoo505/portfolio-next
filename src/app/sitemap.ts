@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
+import { fetchAllPages } from "@/lib/paginated-api";
 import { serverFetch } from "@/lib/server-fetch";
 import type { BlogPost, Project } from "@/types";
 
 const SITE_URL = "https://seungwoo.i234.me";
+const PUBLIC_LIST_PAGE_SIZE = 50;
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
@@ -16,12 +18,17 @@ function toLastModified(value?: string): Date {
 
 async function getBlogPostEntries(): Promise<SitemapEntry[]> {
   try {
-    const response = await serverFetch<BlogPost[]>("/public/posts", {
-      searchParams: {
-        limit: 100,
-        status: "published",
-      },
-    });
+    const response = await fetchAllPages<BlogPost>(
+      ({ page, limit }) =>
+        serverFetch<BlogPost[]>("/public/posts", {
+          searchParams: {
+            page,
+            limit,
+            status: "published",
+          },
+        }),
+      { pageSize: PUBLIC_LIST_PAGE_SIZE }
+    );
 
     return (response.data || [])
       .filter((post) => post.slug)
@@ -38,12 +45,17 @@ async function getBlogPostEntries(): Promise<SitemapEntry[]> {
 
 async function getProjectEntries(): Promise<SitemapEntry[]> {
   try {
-    const response = await serverFetch<Project[]>("/public/projects", {
-      searchParams: {
-        limit: 100,
-        status: "published",
-      },
-    });
+    const response = await fetchAllPages<Project>(
+      ({ page, limit }) =>
+        serverFetch<Project[]>("/public/projects", {
+          searchParams: {
+            page,
+            limit,
+            status: "published",
+          },
+        }),
+      { pageSize: PUBLIC_LIST_PAGE_SIZE }
+    );
 
     return (response.data || [])
       .filter((project) => project.slug)

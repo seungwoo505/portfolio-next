@@ -30,10 +30,10 @@ export const skillApi = {
 export const adminApi = {
   login: (username: string, password: string) =>
     api.post<AdminLoginResponse>("/admin/login", { username, password }),
-  logout: () => api.post<{ message: string }>("/admin/logout"),
+  logout: () => authApi.post<{ message: string }>("/admin/logout"),
   refresh: (refreshToken: string) =>
     api.post<{ token: string }>("/admin/refresh", { refreshToken }),
-  getMe: () => api.get<{ user: AdminUser; permissions: string[] }>("/admin/me"),
+  getMe: () => authApi.get<{ user: AdminUser; permissions: string[] }>("/admin/me"),
   changePassword: (oldPassword: string, newPassword: string) =>
     authApi.put<{ message: string }>("/admin/password", {
       oldPassword,
@@ -71,7 +71,6 @@ export const adminApi = {
   },
   tags: {
     getTags: () => authApi.get<BlogTag[]>("/admin/tags"),
-    getTag: (id: string) => authApi.get<BlogTag>(`/admin/tags/${id}`),
     createTag: (tag: Partial<BlogTag>) =>
       authApi.post<BlogTag>("/admin/tags", tag),
     updateTag: (id: string, tag: Partial<BlogTag>) =>
@@ -80,14 +79,10 @@ export const adminApi = {
       authApi.delete<{ message: string }>(`/admin/tags/${id}`),
   },
   contacts: {
-    getMessages: (params?: { page?: number; limit?: number; status?: string }) =>
+    getMessages: (params?: { page?: number; limit?: number; unread?: boolean }) =>
       authApi.get<ContactMessage[]>("/admin/contacts", params),
-    getMessage: (id: string) =>
-      authApi.get<ContactMessage>(`/admin/contacts/${id}`),
     markAsRead: (id: string) =>
       authApi.put<{ message: string }>(`/admin/contacts/${id}/read`),
-    markAsUnread: (id: string) =>
-      authApi.put<{ message: string }>(`/admin/contacts/${id}/unread`),
     deleteMessage: (id: string) =>
       authApi.delete<{ message: string }>(`/admin/contacts/${id}`),
   },
@@ -110,7 +105,6 @@ export const adminApi = {
       user_id?: string;
       action?: string;
     }) => authApi.get<ActivityLog[]>("/admin/logs", params),
-    getLog: (id: string) => authApi.get<ActivityLog>(`/admin/logs/${id}`),
   },
   users: {
     getUsers: () => authApi.get<AdminUser[]>("/admin/users"),

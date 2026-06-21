@@ -13,6 +13,7 @@ import {
   Search
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
+import { fetchAllPages } from '@/lib/paginated-api';
 import { AdminContactMessage } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
@@ -52,9 +53,12 @@ export default function ContactsManagement() {
     try {
       setLoading(true);
       setLoadError(null);
-      const response = await authApi.get('/admin/contacts');
+      const response = await fetchAllPages<AdminContactMessage>(
+        ({ page, limit }) => authApi.get('/admin/contacts', { page, limit }),
+        { pageSize: 1000 }
+      );
       ensureApiSuccess(response, '문의 메시지를 가져오는데 실패했습니다.');
-      setMessages((response.data || []) as AdminContactMessage[]);
+      setMessages(response.data || []);
     } catch (error) {
       const errorMessage = getErrorMessage(error, '문의 메시지를 가져오는데 실패했습니다.');
       setLoadError(errorMessage);

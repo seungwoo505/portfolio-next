@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import BlogPostClient from "./BlogPostClient";
 import { generateMetadata as createMetadata } from "@/lib/seo";
 import { serverFetch } from "@/lib/server-fetch";
@@ -152,16 +153,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const slug = decodeSlug(rawSlug);
   const post = await getPost(slug);
 
+  if (!post) {
+    notFound();
+  }
+
   return (
     <>
-      {post ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: toJsonLd(createBlogPostStructuredData(post, slug)),
-          }}
-        />
-      ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: toJsonLd(createBlogPostStructuredData(post, slug)),
+        }}
+      />
       <BlogPostClient slug={slug} initialPost={post} />
     </>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ProjectDetailClient from "./ProjectDetailClient";
 import { generateMetadata as createMetadata } from "@/lib/seo";
 import { serverFetch } from "@/lib/server-fetch";
@@ -150,16 +151,18 @@ export default async function ProjectDetailPage({
   const slug = decodeSlug(rawSlug);
   const project = await getProject(slug);
 
+  if (!project) {
+    notFound();
+  }
+
   return (
     <>
-      {project ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: toJsonLd(createProjectStructuredData(project, slug)),
-          }}
-        />
-      ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: toJsonLd(createProjectStructuredData(project, slug)),
+        }}
+      />
       <ProjectDetailClient slug={slug} initialProject={project} />
     </>
   );

@@ -15,6 +15,7 @@ import {
   Star
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
+import { fetchAllPages } from '@/lib/paginated-api';
 import { Project } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
@@ -50,9 +51,12 @@ export default function ProjectsPage() {
     try {
       setLoading(true);
       setLoadError(null);
-      const response = await authApi.get('/admin/projects');
+      const response = await fetchAllPages<Project>(
+        ({ page, limit }) => authApi.get('/admin/projects', { page, limit }),
+        { pageSize: 100 }
+      );
       ensureApiSuccess(response, '프로젝트를 가져오는데 실패했습니다.');
-      setProjects((response.data || []) as Project[]);
+      setProjects(response.data || []);
     } catch (error) {
       const errorMessage = getErrorMessage(error, '프로젝트를 가져오는데 실패했습니다.');
       setLoadError(errorMessage);

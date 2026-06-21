@@ -20,6 +20,7 @@ import {
   Download
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
+import { fetchAllPages } from '@/lib/paginated-api';
 import { AdminActivityLog } from '@/types';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
 import {
@@ -57,7 +58,10 @@ export default function ActivityLogs() {
     try {
       setLoading(true);
       setLoadError(null);
-      const response = await authApi.get<AdminActivityLog[]>('/admin/logs');
+      const response = await fetchAllPages<AdminActivityLog>(
+        ({ page, limit }) => authApi.get('/admin/logs', { page, limit }),
+        { pageSize: 1000 }
+      );
       ensureApiSuccess(response, '활동 로그를 가져오는데 실패했습니다.');
       setLogs(response.data || []);
     } catch (error) {
