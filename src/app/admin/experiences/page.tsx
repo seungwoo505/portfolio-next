@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ import { AdminEmptyState, AdminErrorState, AdminListSkeleton } from '../componen
  * @returns {JSX.Element} 경력 관리 페이지 컴포넌트.
  */
 export default function ExperiencesPage() {
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const [experiences, setExperiences] = useState<AdminExperience[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export default function ExperiencesPage() {
    * @description 경험 모달을 닫고 입력값을 초기화합니다.
    * @returns {void}
    */
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false);
     setEditingExperience(null);
     setFormData({
@@ -113,7 +114,34 @@ export default function ExperiencesPage() {
       description: '',
       achievements: ''
     });
-  };
+  }, []);
+  useEffect(() => {
+    if (!showModal) {
+      return;
+    }
+    const focusTimer = window.setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 0);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showModal]);
+  useEffect(() => {
+    if (!showModal) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !saving) {
+        closeModal();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showModal, saving, closeModal]);
   /**
    * @description 경험 정보를 저장합니다.
    * @returns {Promise<void>}
@@ -311,11 +339,14 @@ export default function ExperiencesPage() {
           onClick={saving ? undefined : closeModal}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="experience-modal-title"
             className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 id="experience-modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingExperience ? '경험 수정' : '경험 추가'}
                 </h3>
                 <button
@@ -353,6 +384,7 @@ export default function ExperiencesPage() {
                       직책/제목 *
                     </label>
                     <input
+                      ref={titleInputRef}
                       id="exp-title"
                       type="text"
                       name="title"

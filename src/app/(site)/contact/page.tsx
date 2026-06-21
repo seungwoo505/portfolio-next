@@ -48,6 +48,8 @@ export default function ContactPage() {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
     try {
       const response = await contactApi.sendMessage(formData);

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { AdminNewUserModalProps, AdminUserForm, AdminUser } from '@/types';
@@ -13,6 +13,7 @@ import { X, AlertCircle, EyeOff, Eye, Save } from 'lucide-react';
  * @returns {JSX.Element | null} 사용자 생성 모달.
  */
 export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNewUserModalProps) {
+  const usernameInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<AdminUserForm>({
     username: '',
     email: '',
@@ -25,6 +26,33 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const focusTimer = window.setTimeout(() => {
+      usernameInputRef.current?.focus();
+    }, 0);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isSubmitting) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, isSubmitting, onClose]);
   const validateForm = (): boolean => {
     const newErrors: Partial<AdminUserForm> = {};
     if (!formData.username.trim()) {
@@ -129,12 +157,18 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-user-modal-title"
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+      >
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 id="new-user-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             새 사용자 추가
           </h2>
           <button
+            type="button"
             onClick={onClose}
             disabled={isSubmitting}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-slate-700 dark:hover:text-slate-300"
@@ -149,6 +183,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
               사용자명 *
             </label>
             <input
+              ref={usernameInputRef}
               id="user-username"
               type="text"
               value={formData.username}

@@ -110,6 +110,15 @@ export default function PersonalInfoPage() {
       setSaving(false);
     }
   };
+  /**
+   * @description 개인정보 입력 폼 제출을 처리합니다.
+   * @param {React.FormEvent<HTMLFormElement>} event 폼 제출 이벤트.
+   * @returns {void}
+   */
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSave();
+  };
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -137,7 +146,10 @@ export default function PersonalInfoPage() {
   }
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
+      >
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div>
@@ -155,7 +167,7 @@ export default function PersonalInfoPage() {
                 </span>
               )}
               <button
-                onClick={handleSave}
+                type="submit"
                 disabled={!hasChanges || saving}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   hasChanges && !saving
@@ -372,7 +384,7 @@ export default function PersonalInfoPage() {
             </div>
           )}
         </div>
-      </div>
+      </form>
     </div>
   );
 }

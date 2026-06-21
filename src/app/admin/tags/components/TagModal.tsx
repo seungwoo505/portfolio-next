@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
@@ -40,6 +40,7 @@ const colorOptions = [
  * @returns {JSX.Element | null} 태그 모달 요소 혹은 닫힌 상태에서는 null.
  */
 export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defaultType }: TagModalProps) {
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<TagForm>({
     name: '',
     slug: '',
@@ -69,6 +70,33 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
     }
     setErrors({});
   }, [editingTag, isOpen, defaultType]);
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const focusTimer = window.setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 0);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isSubmitting) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, isSubmitting, onClose]);
   /**
    * @description 태그명을 기반으로 슬러그를 생성합니다.
    * @param {string} name 태그명.
@@ -141,9 +169,14 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tag-modal-title"
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+      >
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 id="tag-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             {editingTag ? '태그 편집' : '새 태그 추가'}
           </h2>
           <button
@@ -162,6 +195,7 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
               태그명 *
             </label>
             <input
+              ref={nameInputRef}
               id="tag-name"
               type="text"
               value={formData.name}

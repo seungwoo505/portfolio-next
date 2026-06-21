@@ -524,6 +524,15 @@ export default function SettingsPage() {
     }
   };
   /**
+   * @description 설정 입력 폼 제출을 처리합니다.
+   * @param {React.FormEvent<HTMLFormElement>} event 폼 제출 이벤트.
+   * @returns {void}
+   */
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSave();
+  };
+  /**
    * @description 설정 타입에 맞는 입력 컴포넌트를 렌더링합니다.
    * @param {string} key 설정 키.
    * @param {AdminSettingEntry} setting 설정 값.
@@ -679,7 +688,7 @@ export default function SettingsPage() {
               ))}
             </nav>
           </div>
-          <div className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6">
             {(() => {
               const currentSettings = getTabSettings(activeTab);
               if (Object.keys(currentSettings).length === 0) {
@@ -727,14 +736,14 @@ export default function SettingsPage() {
                 )}
               </div>
               <button
-                onClick={handleSave}
+                type="submit"
                 disabled={saving || Object.keys(changedSettings).length === 0}
                 className="w-full rounded-md bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 sm:w-auto"
               >
                 {saving ? '저장 중...' : '설정 저장'}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

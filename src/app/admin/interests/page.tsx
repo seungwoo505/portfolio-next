@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { authApi } from "@/lib/api";
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ import { AdminEmptyState, AdminErrorState, AdminListSkeleton } from '../componen
  * @returns {JSX.Element} 관심사 관리 페이지 컴포넌트.
  */
 export default function InterestsPage() {
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const [interests, setInterests] = useState<AdminInterest[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -92,7 +93,7 @@ export default function InterestsPage() {
    * @description 관심사 모달을 닫고 입력값을 초기화합니다.
    * @returns {void}
    */
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false);
     setEditingInterest(null);
     setFormData({
@@ -101,7 +102,34 @@ export default function InterestsPage() {
       category: 'technical',
       display_order: 0
     });
-  };
+  }, []);
+  useEffect(() => {
+    if (!showModal) {
+      return;
+    }
+    const focusTimer = window.setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 0);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showModal]);
+  useEffect(() => {
+    if (!showModal) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !saving) {
+        closeModal();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showModal, saving, closeModal]);
   /**
    * @description 관심사를 저장합니다.
    * @returns {Promise<void>}
@@ -325,11 +353,14 @@ export default function InterestsPage() {
           onClick={saving ? undefined : closeModal}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="interest-modal-title"
             className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 id="interest-modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingInterest ? '관심사 수정' : '관심사 추가'}
                 </h3>
                 <button
@@ -348,6 +379,7 @@ export default function InterestsPage() {
                     제목 *
                   </label>
                   <input
+                    ref={titleInputRef}
                     id="interest-title"
                     type="text"
                     name="title"

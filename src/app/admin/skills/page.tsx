@@ -203,6 +203,24 @@ export default function AdminSkillsPage() {
       loadSkills();
     }
   }, [isCategoryModalOpen, loadSkills]);
+  useEffect(() => {
+    if (!isCategoryModalOpen) {
+      return;
+    }
+    const focusTimer = window.setTimeout(() => {
+      categoryInputRef.current?.focus();
+    }, 0);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsCategoryModalOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCategoryModalOpen]);
   if (loading) {
     return (
       <div className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
@@ -235,12 +253,14 @@ export default function AdminSkillsPage() {
             </h1>
             <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
               <button 
+                type="button"
                 onClick={() => setIsCategoryModalOpen(true)}
                 className="rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
               >
                 카테고리 관리
               </button>
               <button 
+                type="button"
                 onClick={openAddModal}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
               >
@@ -265,12 +285,14 @@ export default function AdminSkillsPage() {
                         </div>
                         <div className="flex shrink-0 gap-2">
                           <button
+                            type="button"
                             onClick={() => openEditModal(skill)}
                             className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                           >
                             수정
                           </button>
                           <button
+                            type="button"
                             onClick={() => openDeleteModal(skill.id)}
                             className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300"
                           >
@@ -294,6 +316,7 @@ export default function AdminSkillsPage() {
 
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         <button
+                          type="button"
                           onClick={() => toggleFeatured(skill.id, skill.is_featured)}
                           className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-medium ${
                             skill.is_featured
@@ -364,6 +387,7 @@ export default function AdminSkillsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
+                            type="button"
                             onClick={() => toggleFeatured(skill.id, skill.is_featured)}
                             className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-medium ${
                               skill.is_featured
@@ -380,12 +404,14 @@ export default function AdminSkillsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button
+                              type="button"
                               onClick={() => openEditModal(skill)}
                               className="inline-flex min-h-8 items-center rounded-md px-2 text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
                             >
                               수정
                             </button>
                             <button
+                              type="button"
                               onClick={() => openDeleteModal(skill.id)}
                               className="inline-flex min-h-8 items-center rounded-md px-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                             >
@@ -419,13 +445,19 @@ export default function AdminSkillsPage() {
         />
         {isCategoryModalOpen && (
           <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="category-modal-title"
+              className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4"
+            >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <h2 id="category-modal-title" className="text-xl font-bold text-gray-900 dark:text-white">
                     카테고리 관리
                   </h2>
                   <button
+                    type="button"
                     onClick={() => setIsCategoryModalOpen(false)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-300"
                     aria-label="카테고리 관리 닫기"
@@ -442,13 +474,15 @@ export default function AdminSkillsPage() {
                       type="text"
                       placeholder="새 카테고리명"
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
-                      onKeyPress={(e) => {
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          e.preventDefault();
                           handleAddCategory(e.currentTarget.value.trim());
                         }
                       }}
                     />
                     <button 
+                      type="button"
                       onClick={() => {
                         if (categoryInputRef.current && categoryInputRef.current.value.trim()) {
                           handleAddCategory(categoryInputRef.current.value.trim());
@@ -464,6 +498,7 @@ export default function AdminSkillsPage() {
                       <div key={category.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
                         <span className="text-gray-900 dark:text-white">{category.name}</span>
                         <button 
+                          type="button"
                           onClick={() => handleDeleteCategory(category.id)}
                           className="inline-flex min-h-8 items-center rounded-md px-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-800 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                         >

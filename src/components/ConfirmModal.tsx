@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 /**
  * @interface ConfirmModalProps
@@ -40,6 +40,7 @@ export default function ConfirmModal({
   isDestructive = false
 }: ConfirmModalProps) {
   const [isConfirming, setIsConfirming] = useState(false);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     /**
      * @function handleEscape
@@ -61,6 +62,17 @@ export default function ConfirmModal({
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, isConfirming, onClose]);
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const focusTimer = window.setTimeout(() => {
+      cancelButtonRef.current?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(focusTimer);
+    };
+  }, [isOpen]);
   useEffect(() => {
     if (!isOpen) {
       setIsConfirming(false);
@@ -90,12 +102,18 @@ export default function ConfirmModal({
         className="absolute inset-0 bg-black/75"
         onClick={isConfirming ? undefined : onClose}
       />
-      <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4"
+      >
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h3 id="confirm-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             {title}
           </h3>
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={onClose}
             disabled={isConfirming}

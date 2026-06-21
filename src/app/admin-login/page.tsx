@@ -25,11 +25,22 @@ function AdminLoginContent() {
    * @param {React.FormEvent} e 폼 제출 이벤트.
    * @returns {Promise<void>} 로그인 작업.
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLoading) return;
+
+    const formData = new FormData(e.currentTarget);
+    const username = String(formData.get('username') ?? '').trim();
+    const password = String(formData.get('password') ?? '');
+
+    if (!username || !password) {
+      return;
+    }
+
+    setCredentials({ username, password });
     setIsLoading(true);
     try {
-      const success = await login(credentials.username, credentials.password);
+      const success = await login(username, password);
       if (success) {
         toast.success('로그인에 성공했습니다!');
         router.push('/admin');
@@ -44,6 +55,28 @@ function AdminLoginContent() {
     } finally {
       setIsLoading(false);
     }
+  };
+  /**
+   * @function handleFormKeyDown
+   * @description 입력 필드에서 Enter 입력 시 브라우저 기본 제출을 명시적으로 실행한다.
+   * @param {React.KeyboardEvent<HTMLFormElement>} e 폼 키보드 이벤트.
+   * @returns {void}
+   */
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key !== 'Enter' || e.nativeEvent.isComposing) {
+      return;
+    }
+
+    if (
+      e.target instanceof HTMLTextAreaElement ||
+      e.target instanceof HTMLButtonElement ||
+      e.target instanceof HTMLSelectElement
+    ) {
+      return;
+    }
+
+    e.preventDefault();
+    e.currentTarget.requestSubmit();
   };
   /**
    * @function handleChange
@@ -71,7 +104,7 @@ function AdminLoginContent() {
           </p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-6">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 사용자명
@@ -128,7 +161,7 @@ function AdminLoginContent() {
             </div>
             <button
               type="submit"
-              disabled={isLoading || !credentials.username || !credentials.password}
+              disabled={isLoading}
               className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold rounded-lg transition-colors duration-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isLoading ? (

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Skill } from '@/types';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/api-response';
@@ -17,6 +17,7 @@ interface SkillModalProps {
  * @returns {JSX.Element | null} 모달 요소 또는 닫힌 상태에서는 null.
  */
 export default function SkillModal({ isOpen, onClose, skill, onSave, categories, keepOpenOnSuccess = false }: SkillModalProps) {
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Skill>>({
     name: '',
     category_id: '',
@@ -50,15 +51,32 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
     setErrors({});
   }, [isOpen, skill, categories]);
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+    if (!isOpen) {
+      return;
     }
+    const focusTimer = window.setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 0);
+    document.body.style.overflow = 'hidden';
     return () => {
+      window.clearTimeout(focusTimer);
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !loading) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, loading, onClose]);
   /**
    * @description 폼 데이터를 검증합니다.
    * @returns {boolean} 검증 통과 여부.
@@ -140,10 +158,15 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="skill-modal-title"
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+      >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <h2 id="skill-modal-title" className="text-xl font-semibold text-slate-900 dark:text-white">
               {skill ? '기술 스택 수정' : '새 기술 스택 추가'}
             </h2>
             <button
@@ -164,6 +187,7 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
                 기술명 *
               </label>
               <input
+                ref={nameInputRef}
                 id="skill-name"
                 type="text"
                 value={formData.name || ''}

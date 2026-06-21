@@ -153,6 +153,7 @@ export default function ProjectAdminForm({
                 취소
               </Link>
               <button
+                type="button"
                 onClick={onSubmit}
                 disabled={isSubmitting}
                 className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -590,6 +591,7 @@ export default function ProjectAdminForm({
                     >
                       <span>{tag.name}</span>
                       <button
+                        type="button"
                         onClick={() => onToggleTag(tag)}
                         className="inline-flex h-7 w-7 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/15 hover:text-white"
                         aria-label={`${tag.name} 태그 제거`}
