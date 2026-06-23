@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import BlogPostClient from "./BlogPostClient";
 import { generateMetadata as createMetadata } from "@/lib/seo";
 import { serverFetch } from "@/lib/server-fetch";
@@ -41,7 +42,7 @@ function getDescription(post: BlogPost): string {
   );
 }
 
-async function getPost(slug: string): Promise<BlogPost | null> {
+const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
   try {
     const response = await serverFetch<BlogPost>(
       `/public/posts/${encodeURIComponent(slug)}`
@@ -50,7 +51,7 @@ async function getPost(slug: string): Promise<BlogPost | null> {
   } catch {
     return null;
   }
-}
+});
 
 function toJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");

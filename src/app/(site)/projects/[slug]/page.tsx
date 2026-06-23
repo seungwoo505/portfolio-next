@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import ProjectDetailClient from "./ProjectDetailClient";
 import { generateMetadata as createMetadata } from "@/lib/seo";
 import { serverFetch } from "@/lib/server-fetch";
@@ -45,7 +46,7 @@ function getProjectImage(project: Project): string {
   return project.featured_image || project.image_url || "/og-image.svg";
 }
 
-async function getProject(slug: string): Promise<Project | null> {
+const getProject = cache(async (slug: string): Promise<Project | null> => {
   try {
     const response = await serverFetch<Project>(
       `/public/projects/${encodeURIComponent(slug)}`
@@ -54,7 +55,7 @@ async function getProject(slug: string): Promise<Project | null> {
   } catch {
     return null;
   }
-}
+});
 
 function toJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");

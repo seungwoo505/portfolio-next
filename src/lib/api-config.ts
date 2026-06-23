@@ -16,6 +16,16 @@ export function getClientApiBaseUrl(): string {
   );
 }
 
+export function getServerPublicApiFallbackBaseUrl(): string {
+  const runtimeFallbackUrl = normalizeApiBaseUrl(
+    process.env.SERVER_PUBLIC_API_FALLBACK_URL
+  );
+
+  return ABSOLUTE_HTTP_URL_PATTERN.test(runtimeFallbackUrl)
+    ? runtimeFallbackUrl
+    : DEFAULT_CLIENT_API_BASE_URL;
+}
+
 export function getServerApiBaseUrl(): string {
   const internalApiUrl = normalizeApiBaseUrl(process.env.INTERNAL_API_URL);
   if (internalApiUrl) {
