@@ -41,6 +41,9 @@ export interface Project {
   project_url?: string;
   image_url?: string;
   featured_image?: string;
+  catalog_summary?: string;
+  catalog_label?: string;
+  catalog_status?: string;
   slug: string;
   status: 'planning' | 'in_progress' | 'completed' | 'on_hold';
   featured: boolean;

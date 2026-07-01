@@ -2,6 +2,16 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
+import {
+  ExternalLink,
+  Eye,
+  Github,
+  PackageCheck,
+  Search,
+  ShoppingBag,
+  SlidersHorizontal,
+  Star,
+} from "lucide-react";
 import ScrollProgress from "@/components/ScrollProgress";
 import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { projectApi, api } from "@/lib/api";
@@ -209,7 +219,7 @@ export default function Projects() {
    * @returns {JSX.Element} 스켈레톤 프로젝트 카드.
    */
   const SkeletonProjectCard = () => (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/10">
       <ProjectSkeletonContent />
     </div>
   );
@@ -321,106 +331,143 @@ export default function Projects() {
   return (
     <>
       <ScrollProgress />
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen bg-[#f8faf7] dark:bg-neutral-950">
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <section className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-              프로젝트 포트폴리오
+          <section className="mb-12">
+            <div className="max-w-4xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold uppercase tracking-normal text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-slate-200">
+                <ShoppingBag className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                Project Catalog
+              </div>
+              <h1 className="text-4xl font-black leading-tight tracking-normal text-slate-950 md:text-5xl dark:text-white">
+                프로젝트를 상품처럼 고르는 포트폴리오 카탈로그
             </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8">
-              다양한 기술을 활용하여 제작한 프로젝트들을 소개합니다
-            </p>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 md:text-lg dark:text-slate-300">
+                기술 스택, 조회수, 데모 링크를 기준으로 프로젝트를 빠르게 비교하고 상세 페이지로 이동할 수 있습니다.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/10">
+                <p className="text-xs font-bold uppercase tracking-normal text-blue-700 dark:text-blue-300">
+                  Items
+                </p>
+                <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
+                  {totalProjects}
+                </p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  등록 프로젝트
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/10">
+                <p className="text-xs font-bold uppercase tracking-normal text-emerald-700 dark:text-emerald-300">
+                  Filtered
+                </p>
+                <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
+                  {filteredProjects.length}
+                </p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  현재 진열 수
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/10">
+                <p className="text-xs font-bold uppercase tracking-normal text-rose-600 dark:text-rose-300">
+                  Tags
+                </p>
+                <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
+                  {availableTechs.length}
+                </p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  선택 가능한 기술
+                </p>
+              </div>
+            </div>
           </section>
           <section className="mb-16">
-            <div className="mb-8">
-              <div 
-                className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
-              >
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="프로젝트 검색..." 
+            <div className="mb-8 rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/10">
+              <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="mb-1 text-xs font-bold uppercase tracking-normal text-slate-500 dark:text-slate-400">
+                    Store Controls
+                  </p>
+                  <h2 className="flex items-center gap-2 text-xl font-black text-slate-950 dark:text-white">
+                    <SlidersHorizontal className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+                    카탈로그 필터
+                  </h2>
+                </div>
+
+                <div className="relative w-full lg:w-96">
+                  <input
+                    type="text"
+                    placeholder="프로젝트, 설명, 키워드 검색"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full sm:w-80 px-4 py-2 pl-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 pl-11 text-sm font-semibold text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-white/15 dark:bg-neutral-900 dark:text-white dark:focus:ring-emerald-400/20"
                     aria-label="프로젝트 검색"
                   />
-                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 </div>
               </div>
-              <div 
-                className="flex flex-wrap justify-center gap-2 mb-8"
-              >
+
+              <div className="mb-5 flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedTechs([])}
                   data-all-projects="true"
-                  className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
+                  className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-sm font-bold transition-all duration-200 active:scale-95 ${
                     selectedTechs.length === 0
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-blue-700 ring-4 ring-blue-200 dark:ring-blue-800/50'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
+                      ? 'border-slate-950 bg-slate-950 text-white shadow-md dark:border-emerald-300 dark:bg-emerald-300 dark:text-slate-950'
+                      : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/10 dark:text-slate-200 dark:hover:border-emerald-300 dark:hover:text-emerald-200'
                   }`}
                 >
-                  전체
-                  {selectedTechs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                      ↺
-                    </span>
-                  )}
+                  전체 진열
                 </button>
                 {availableTechs.map((tech) => (
                   <button
                     key={tech}
                     onClick={() => handleTechFilter(tech)}
-                    className={`project-filter-btn px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
+                    className={`project-filter-btn inline-flex min-h-10 items-center rounded-lg border px-3 text-sm font-bold transition-all duration-200 active:scale-95 ${
                       selectedTechs.includes(tech)
-                        ? 'project-filter-btn-selected bg-blue-600 text-white border-blue-600 shadow-lg ring-2 ring-blue-200 dark:ring-blue-800/50'
-                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
+                        ? 'project-filter-btn-selected border-emerald-600 bg-emerald-600 text-white shadow-md dark:border-emerald-300 dark:bg-emerald-300 dark:text-slate-950'
+                        : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/10 dark:text-slate-200 dark:hover:border-emerald-300 dark:hover:text-emerald-200'
                     }`}
                   >
                     {tech}
-                    {!selectedTechs.includes(tech) && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                        +
-                      </span>
-                    )}
-                    {selectedTechs.includes(tech) && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                        ×
-                      </span>
-                    )}
                   </button>
                 ))}
               </div>
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  프로젝트 ({filteredProjects.length}개)
+
+              <div className="flex flex-col gap-4 border-t border-slate-200 pt-5 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-2xl font-black text-slate-950 dark:text-white">
+                  프로젝트 상품 ({filteredProjects.length}개)
                 </h2>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-3">
+                  <label htmlFor="project-sort" className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                    정렬
+                  </label>
                   <select
+                    id="project-sort"
                     value={sortOrder}
                     onChange={(e) => {
                       const newSortOrder = e.target.value as 'created_at' | 'title' | 'view_count' | 'display_order';
                       setSortOrder(newSortOrder);
                       const sortLabels = {
-                        'created_at': '생성일순',
-                        'title': '제목순',
-                        'view_count': '조회수순',
-                        'display_order': '표시순서순'
+                        'created_at': '최신 입고순',
+                        'title': '이름순',
+                        'view_count': '인기순',
+                        'display_order': '추천순'
                       };
                       toast(`${sortLabels[newSortOrder]}으로 정렬합니다.`, {
                         duration: 1500,
                         icon: '🔄',
                       });
                     }}
-                    className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:border-white/15 dark:bg-neutral-900 dark:text-white"
                     aria-label="프로젝트 정렬 방식 선택"
                   >
-                    <option value="created_at">생성일순</option>
-                    <option value="title">제목순</option>
-                    <option value="view_count">조회수순</option>
-                    <option value="display_order">표시순서</option>
+                    <option value="created_at">최신 입고순</option>
+                    <option value="title">이름순</option>
+                    <option value="view_count">인기순</option>
+                    <option value="display_order">추천순</option>
                   </select>
                 </div>
               </div>
@@ -432,17 +479,17 @@ export default function Projects() {
                 ))}
               </div>
             ) : error ? (
-              <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-sm dark:border-white/10 dark:bg-[rgba(15,23,42,0.55)]">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">
-                  Mission Pending
+              <div className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-white/10">
+                <p className="mb-3 text-xs font-bold uppercase tracking-normal text-amber-600 dark:text-amber-300">
+                  Catalog Pending
                 </p>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">프로젝트 데이터를 연결하는 중입니다</h3>
+                <h3 className="text-lg font-black text-slate-950 dark:text-white mb-2">프로젝트 데이터를 연결하는 중입니다</h3>
                 <p className="text-slate-600 dark:text-slate-300 mb-5">
                   라이브 서버가 연결되면 대표 프로젝트와 기술 스택이 표시됩니다. 지금은 프로젝트 탐색 흐름을 먼저 확인할 수 있습니다.
                 </p>
                 <button 
                   onClick={() => window.location.reload()} 
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="inline-flex min-h-10 items-center rounded-lg bg-slate-950 px-4 text-sm font-bold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-300 dark:text-slate-950 dark:hover:bg-emerald-200"
                 >
                   다시 시도
                 </button>
@@ -454,12 +501,12 @@ export default function Projects() {
                 </p>
               </div>
             ) : (
-              <div className="grid lg:grid-cols-2 gap-8">
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedProjects.map((project, index) => {
                   const isRevealed = index < projectRevealCount;
-                  const baseClass = "bg-white dark:bg-slate-800 rounded-xl shadow-sm transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700";
+                  const baseClass = "overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all duration-300 dark:border-white/10 dark:bg-white/10";
                   const stateClass = isRevealed
-                    ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+                    ? "cursor-pointer hover:-translate-y-1 hover:shadow-xl"
                     : "cursor-default pointer-events-none";
                   /**
                    * @description 프로젝트에 연결된 기술 스택 목록을 계산합니다.
@@ -478,122 +525,114 @@ export default function Projects() {
 	                    return [] as string[];
 	                  })();
 	                  const coverImage = project.featured_image || project.image_url;
-	                  return (
+                    const demoUrl = project.demo_url || project.project_url;
+                    const catalogLabel =
+                      project.catalog_label || (project.featured ? '추천' : '카탈로그');
+                    const catalogStatus =
+                      project.catalog_status ||
+                      (project.status === 'completed' ? '출시 완료' : '진행 기록');
+                    const catalogSummary =
+                      project.catalog_summary ||
+                      project.excerpt ||
+                      project.description ||
+                      project.content_text?.slice(0, 160) ||
+                      '프로젝트 설명이 없습니다.';
+		                  return (
                     <article
                       key={project.id}
                       className={`${baseClass} ${stateClass}`}
                       onClick={isRevealed ? () => (window.location.href = `/projects/${encodeURIComponent(project.slug)}`) : undefined}
                     >
 	                      {isRevealed ? (
-	                        <div className="p-6">
-                          {coverImage ? (
-                            <ProjectCoverImage
-                              src={coverImage}
-                              alt={project.title}
-                              sizes="(min-width: 1024px) 560px, 100vw"
-                              priority={index < 2}
-                              className="-mx-6 -mt-6 mb-5 h-44 border-b border-slate-200 dark:border-slate-700"
-                            />
-                          ) : null}
-	                          <div className="flex items-center justify-between mb-4">
-	                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
-	                              <span className="text-white font-bold text-sm">
-	                                {project.title.charAt(0).toUpperCase()}
-	                              </span>
-	                            </div>
-                            <div className="flex items-center gap-1">
-                              {project.demo_url && (
-                                <a
-                                  href={project.demo_url}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                                  onClick={(e) => e.stopPropagation()}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  aria-label={`${project.title} 데모 열기`}
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                </a>
+	                        <div className="flex h-full flex-col">
+                            <div className="relative border-b border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-neutral-900">
+                              {coverImage ? (
+                                <ProjectCoverImage
+                                  src={coverImage}
+                                  alt={project.title}
+                                  sizes="(min-width: 1280px) 360px, (min-width: 768px) 50vw, 100vw"
+                                  priority={index < 2}
+                                  className="h-44"
+                                />
+                              ) : (
+                                <div className="flex h-44 items-center justify-center">
+                                  <PackageCheck className="h-12 w-12 text-emerald-600 dark:text-emerald-300" />
+                                </div>
                               )}
-                              {project.github_url && (
-                                <a
-                                  href={project.github_url}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                                  onClick={(e) => e.stopPropagation()}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  aria-label={`${project.title} GitHub 열기`}
-                                >
-                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-                                  </svg>
-                                </a>
-                              )}
+                              <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-slate-800 shadow-sm dark:bg-neutral-950 dark:text-white">
+                                <Star className="h-3.5 w-3.5 text-amber-500" />
+                                {catalogLabel}
+                              </div>
+                              <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-slate-600 shadow-sm dark:bg-neutral-950 dark:text-slate-300">
+                                <Eye className="h-3.5 w-3.5" />
+                                {project.view_count || 0}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
-                            <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
-                            <span className="text-sm text-slate-400">{project.featured ? '주요 프로젝트' : '프로젝트'}</span>
-                          </div>
-                          <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
-                            {project.title}
-                          </h3>
-                          <p className="text-slate-600 dark:text-slate-300 mb-4 line-clamp-3">
-	                            {project.excerpt || project.description || project.content_text?.slice(0, 160)}
-                          </p>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {techList.length > 0 ? (
-                              techList.map((tech, techIndex) => (
-                                <span
-                                  key={`${project.id}-tech-${techIndex}`}
-                                  className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full cursor-pointer transition-transform transform hover:-translate-y-0.5 hover:scale-105"
+
+                            <div className="flex flex-1 flex-col p-5">
+                              <div className="mb-3 flex items-center justify-between gap-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
+                                <span>{catalogStatus}</span>
+                              </div>
+                              <h3 className="line-clamp-2 text-lg font-black text-slate-950 dark:text-white">
+                                {project.title}
+                              </h3>
+                              <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+	                              {catalogSummary}
+                              </p>
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                {techList.length > 0 ? (
+                                  techList.slice(0, 4).map((tech, techIndex) => (
+                                    <span
+                                      key={`${project.id}-tech-${techIndex}`}
+                                      className="rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-300/15 dark:text-emerald-200"
+                                    >
+                                      {tech}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                                    기술 정보 없음
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-200 pt-4 dark:border-white/10">
+                                <div className="flex items-center gap-1">
+                                  {demoUrl && (
+                                    <a
+                                      href={demoUrl}
+                                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-blue-100 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-blue-300/15 dark:hover:text-blue-200"
+                                      onClick={(e) => e.stopPropagation()}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      aria-label={`${project.title} 데모 열기`}
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </a>
+                                  )}
+                                  {project.github_url && (
+                                    <a
+                                      href={project.github_url}
+                                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                                      onClick={(e) => e.stopPropagation()}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      aria-label={`${project.title} GitHub 열기`}
+                                    >
+                                      <Github className="h-4 w-4" />
+                                    </a>
+                                  )}
+                                </div>
+                                <Link
+                                  href={`/projects/${encodeURIComponent(project.slug)}`}
+                                  className="inline-flex min-h-9 items-center rounded-lg bg-slate-950 px-3 text-sm font-bold text-white transition hover:bg-emerald-700 dark:bg-emerald-300 dark:text-slate-950 dark:hover:bg-emerald-200"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  {tech}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-sm rounded-full">
-                                기술 정보 없음
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2 mb-3">
-                            {project.demo_url && (
-                              <a
-                                href={project.demo_url}
-                                className="inline-flex min-h-9 items-center rounded-md px-1 text-sm font-medium text-blue-600 transition-transform hover:translate-x-1 hover:underline dark:text-blue-400"
-                                onClick={(e) => e.stopPropagation()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                데모 보기 →
-                              </a>
-                            )}
-                            {project.github_url && (
-                              <a
-                                href={project.github_url}
-                                className="inline-flex min-h-9 items-center rounded-md px-1 text-sm font-medium text-blue-600 transition-transform hover:translate-x-1 hover:underline dark:text-blue-400"
-                                onClick={(e) => e.stopPropagation()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                GitHub →
-                              </a>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <a
-                              href={`/projects/${encodeURIComponent(project.slug)}`}
-                              className="inline-flex min-h-9 items-center rounded-md px-1 text-sm font-medium text-blue-600 transition-transform hover:translate-x-1 hover:underline dark:text-blue-400"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              자세히 보기 →
-                            </a>
-                            <span className="text-xs text-slate-400">
-                              조회 {project.view_count || 0}
-                            </span>
-                          </div>
+                                  상세 보기
+                                </Link>
+                              </div>
+                            </div>
                         </div>
                       ) : (
                         <ProjectSkeletonContent />
@@ -619,18 +658,18 @@ export default function Projects() {
           <section 
             className="mt-16 text-center"
           >
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-8">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-white/10">
+              <h2 className="text-2xl font-black text-slate-950 dark:text-white mb-4">
                 함께 프로젝트를 만들어보실래요?
               </h2>
               <p className="text-slate-600 dark:text-slate-300 mb-6">
                 새로운 아이디어나 협업 제안을 언제든 환영합니다
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact" prefetch={false} className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                <Link href="/contact" prefetch={false} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-slate-950 px-8 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 dark:bg-emerald-300 dark:text-slate-950 dark:hover:bg-emerald-200">
                   연락하기
                 </Link>
-                <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-white transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-300 bg-white px-8 text-sm font-bold text-slate-700 shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-950 hover:text-slate-950 active:translate-y-0 dark:border-white/15 dark:bg-white/10 dark:text-slate-200 dark:hover:border-white dark:hover:text-white">
                   GitHub 보기
                 </a>
               </div>
