@@ -100,7 +100,7 @@ export default function Header() {
                 <h1
                   className="text-xl font-bold"
                   style={{
-                    background: 'linear-gradient(to right, #2563eb, #9333ea)',
+                    background: 'linear-gradient(to right, #0f172a, #059669)',
                     WebkitBackgroundClip: 'text',
                     backgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -120,8 +120,8 @@ export default function Header() {
                     prefetch={false}
                     className={`inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors ${
                       isActive(item.href)
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
+                        ? "text-emerald-700 dark:text-emerald-300"
+                        : "text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300"
                     }`}
                   >
                     {item.label}
@@ -180,8 +180,8 @@ export default function Header() {
                     onClick={closeMobileMenu}
                     className={`block rounded-lg px-3 py-3 text-lg font-medium transition duration-200 ${
                       isActive(item.href)
-                        ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
-                        : "text-slate-700 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400"
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-300/15 dark:text-emerald-300"
+                        : "text-slate-700 hover:bg-slate-100 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-300"
                     }`}
                   >
                     {item.label}

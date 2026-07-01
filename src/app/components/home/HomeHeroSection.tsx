@@ -1,9 +1,15 @@
 import Link from "next/link";
-import { lazy, Suspense } from "react";
-import { ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Code2,
+  PackageCheck,
+  Search,
+  ShoppingBag,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import type { GalaxyConfig, MousePosition } from "./homeTypes";
-
-const Galaxy = lazy(() => import("../OptimizedGalaxy"));
 
 interface HomeHeroSectionProps {
   displayName: string;
@@ -13,124 +19,176 @@ interface HomeHeroSectionProps {
   galaxyProps: GalaxyConfig;
 }
 
+const STORE_METRICS = [
+  { label: "Curated", value: "Projects", text: "완성도 중심의 대표 작업" },
+  { label: "Stack", value: "Next.js", text: "운영 가능한 웹 제품 경험" },
+  { label: "Support", value: "Docs", text: "개발 기록과 의사결정 정리" },
+];
+
+const SHELF_ITEMS = [
+  {
+    title: "Frontend Experience",
+    description: "사용자가 바로 이해하고 반복해서 쓰기 쉬운 화면",
+    badge: "Best",
+    Icon: Sparkles,
+    accent: "bg-emerald-500",
+  },
+  {
+    title: "Admin Workflow",
+    description: "콘텐츠와 데이터를 빠르게 관리하는 운영 도구",
+    badge: "Ready",
+    Icon: PackageCheck,
+    accent: "bg-blue-500",
+  },
+  {
+    title: "Performance Notes",
+    description: "측정값과 근거가 남는 개선 기록",
+    badge: "New",
+    Icon: Code2,
+    accent: "bg-rose-500",
+  },
+];
+
 export default function HomeHeroSection({
   displayName,
   displayDescription,
   titleWords,
-  mousePosition,
-  galaxyProps,
+  mousePosition: _mousePosition,
+  galaxyProps: _galaxyProps,
 }: HomeHeroSectionProps) {
+  const categories = titleWords.length > 0 ? titleWords : ["웹", "프론트엔드", "개발자"];
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-24 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-black overflow-hidden galaxy-section">
-        <div className="w-full h-full relative galaxy-container">
-          <Suspense fallback={<div className="w-full h-full bg-black" />}>
-            <Galaxy key="galaxy-static" {...galaxyProps} />
-          </Suspense>
-        </div>
+    <section className="relative overflow-hidden bg-[#f8faf7] text-slate-950 dark:bg-neutral-950 dark:text-white">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-[size:56px_56px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.06)_1px,transparent_1px)]" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-white/80 dark:bg-neutral-950/80" />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-950/20 to-black/90 pointer-events-none"></div>
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-      <div
-        className="absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`,
-        }}
-      />
-      <div className="relative z-10 mx-auto max-w-6xl text-center animate-fade-in-up">
-        <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100 shadow-2xl shadow-blue-500/10 backdrop-blur">
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
-          Galaxy Interface
-        </div>
-        <div className="mb-7 animate-fade-in-up">
-          <h1 className="mx-auto max-w-5xl cursor-pointer text-5xl font-black leading-[0.95] tracking-normal transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem]">
-            <span
-              className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient-x"
-              style={{
-                backgroundSize: "200% 200%",
-              }}
-            >
-              {displayName}
+
+      <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-16 sm:px-6 lg:px-8 lg:pt-20">
+        <div className="max-w-4xl">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold uppercase tracking-normal text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-slate-200">
+            <ShoppingBag className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+            Portfolio Market
+          </div>
+
+          <h1 className="max-w-4xl text-5xl font-black leading-tight tracking-normal text-slate-950 sm:text-6xl lg:text-7xl dark:text-white">
+            {displayName}
+            <span className="block text-emerald-600 dark:text-emerald-300">
+              프로젝트를 고르는 매장처럼
             </span>
           </h1>
-          <div className="flex justify-center items-center space-x-4 mt-6">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-blue-500" />
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse-slow" />
-            <div className="h-px w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse-slow animation-delay-1000" />
-          </div>
-        </div>
-        <div className="mb-10 animate-fade-in-up">
-          <p className="text-xl font-light text-slate-200 sm:text-2xl md:text-3xl">
-            {titleWords.map((word, index) => (
-              <span
-                key={word}
-                className={`inline-block mx-2 animate-fade-in-up ${
-                  index === 0
-                    ? "animation-delay-500"
-                    : index === 1
-                      ? "animation-delay-700"
-                      : "animation-delay-900"
-                }`}
-              >
-                {word}
-              </span>
-            ))}
-          </p>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg md:text-xl animate-fade-in-up animation-delay-1100">
+
+          <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg dark:text-slate-300">
             {displayDescription}
           </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 animate-fade-in-up">
-          <Link
-            href="/projects"
-            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 active:scale-95"
-          >
-            프로젝트 보기
-          </Link>
-          <Link
-            href="/contact"
-            className="px-8 py-3 border-2 border-slate-300 text-slate-300 font-semibold rounded-lg hover:bg-slate-300 hover:text-slate-900 transition-all duration-300 contact-btn active:scale-95"
-          >
-            연락하기
-          </Link>
-        </div>
-        <div className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3 animate-fade-in-up">
-          {[
-            ["Focus", "인터랙션과 콘텐츠가 함께 살아있는 화면"],
-            ["Stack", "Next.js, TypeScript, 운영형 관리자 경험"],
-            ["Mission", "빠르고 읽기 쉬운 웹 경험 설계"],
-          ].map(([label, text]) => (
-            <div
-              key={label}
-              className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur"
+
+          <div className="mt-7 flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <span
+                key={category}
+                className="inline-flex min-h-9 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/projects"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 dark:bg-emerald-400 dark:text-slate-950 dark:hover:bg-emerald-300"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
-                {label}
+              <ShoppingBag className="h-4 w-4" />
+              프로젝트 둘러보기
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/blog"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-bold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-400 hover:text-blue-700 active:translate-y-0 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:border-blue-300 dark:hover:text-blue-200"
+            >
+              <Search className="h-4 w-4" />
+              개발 기록 검색
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-12 grid gap-3 sm:grid-cols-3">
+          {STORE_METRICS.map((metric) => (
+            <div
+              key={metric.label}
+              className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/10"
+            >
+              <p className="text-xs font-bold uppercase tracking-normal text-rose-600 dark:text-rose-300">
+                {metric.label}
               </p>
-              <p className="mt-2 text-sm leading-6 text-slate-200">{text}</p>
+              <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
+                {metric.value}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                {metric.text}
+              </p>
             </div>
           ))}
         </div>
-        <div className="flex flex-col items-center mt-10 scroll-indicator animate-float">
-          <button
-            type="button"
-            className="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center cursor-pointer transition-transform duration-150 hover:scale-110"
-            onClick={() => {
-              document.querySelector("#latest-content")?.scrollIntoView({
-                behavior: "smooth",
-              });
-            }}
-          >
-            <div className="w-1 h-3 bg-slate-400 rounded-full mt-2 animate-pulse-slow" />
-          </button>
-          <ChevronDown className="w-4 h-4 text-slate-400 mx-auto mt-2" />
+
+        <div className="mt-10">
+          <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-normal text-blue-700 dark:text-blue-300">
+                Curated Shelf
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
+                오늘의 대표 진열
+              </h2>
+            </div>
+            <Link
+              href="/contact"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg px-1 text-sm font-bold text-slate-700 transition hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-300"
+            >
+              협업 문의
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {SHELF_ITEMS.map(({ title, description, badge, Icon, accent }) => (
+              <article
+                key={title}
+                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-white/10 dark:bg-white/10"
+              >
+                <div className="mb-5 flex items-center justify-between">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${accent}`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800 dark:bg-amber-300/20 dark:text-amber-200">
+                    <Star className="h-3.5 w-3.5" />
+                    {badge}
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-slate-950 dark:text-white">
+                  {title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  {description}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
-        <div className="flex justify-center items-center space-x-6 mt-6 animate-fade-in-up">
-          <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse-slow animation-delay-500" />
-          <div className="w-1 h-1 rounded-full bg-purple-400 animate-pulse-slow animation-delay-1000" />
-          <div className="w-2 h-2 rounded-full bg-pink-400 animate-pulse-slow animation-delay-1500" />
-        </div>
+
+        <button
+          type="button"
+          className="mx-auto mt-10 flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-emerald-700 dark:border-white/15 dark:bg-white/10 dark:text-slate-300 dark:hover:text-emerald-300"
+          onClick={() => {
+            document.querySelector("#latest-content")?.scrollIntoView({
+              behavior: "smooth",
+            });
+          }}
+          aria-label="다음 섹션으로 이동"
+        >
+          <ChevronDown className="h-5 w-5" />
+        </button>
       </div>
     </section>
   );

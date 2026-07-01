@@ -10,6 +10,9 @@ export interface HomeProject {
   slug: string;
   featured: boolean;
   image_url?: string;
+  catalog_summary?: string;
+  catalog_label?: string;
+  catalog_status?: string;
   created_at: string;
   tags?: string[];
   skills?: string[];

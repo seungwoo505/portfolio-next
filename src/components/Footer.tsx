@@ -90,7 +90,7 @@ export default function Footer() {
                 <h1
                   className="text-xl font-bold"
                   style={{
-                    background: 'linear-gradient(to right, #2563eb, #9333ea)',
+                    background: 'linear-gradient(to right, #0f172a, #059669)',
                     WebkitBackgroundClip: 'text',
                     backgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -109,16 +109,16 @@ export default function Footer() {
           <div className="space-y-4 animate-fade-in-up">
             <h4 className="font-semibold text-slate-900 dark:text-slate-100">빠른 링크</h4>
             <div className="space-y-2">
-              <Link href="/about" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/about" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors text-sm">
                 소개
               </Link>
-              <Link href="/projects" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/projects" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors text-sm">
                 프로젝트
               </Link>
-              <Link href="/blog" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/blog" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors text-sm">
                 블로그
               </Link>
-              <Link href="/contact" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
+              <Link href="/contact" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors text-sm">
                 연락처
               </Link>
               <Link href="/admin" prefetch={false} className="block text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors text-xs">
