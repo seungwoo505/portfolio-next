@@ -34,6 +34,7 @@ function getTagNames(tags: Project["tags"]): string[] {
 
 function getDescription(project: Project): string {
   return (
+    project.catalog_summary ||
     project.excerpt ||
     project.meta_description ||
     project.description ||

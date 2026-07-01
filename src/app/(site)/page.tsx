@@ -72,6 +72,9 @@ interface HomePageData {
     slug: string;
     featured: boolean;
     image_url?: string;
+    catalog_summary?: string;
+    catalog_label?: string;
+    catalog_status?: string;
     created_at: string;
     tags?: string[];
     skills?: string[];
@@ -157,6 +160,9 @@ async function getHomeData(): Promise<HomePageData> {
         slug: String(p.slug || ''),
         featured: Boolean(p.featured || p.is_featured),
         image_url: p.image_url || p.featured_image ? String(p.image_url || p.featured_image) : undefined,
+        catalog_summary: p.catalog_summary ? String(p.catalog_summary) : undefined,
+        catalog_label: p.catalog_label ? String(p.catalog_label) : undefined,
+        catalog_status: p.catalog_status ? String(p.catalog_status) : undefined,
         created_at: String(p.created_at || new Date().toISOString()),
         tags: normalizeProjectTags(p.tags),
         skills: normalizeProjectSkills(p.skills),

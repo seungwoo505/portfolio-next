@@ -219,7 +219,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
           </h1>
 
                 <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-                  {project.excerpt || project.meta_description || project.description || project.content_text?.slice(0, 180)}
+                  {project.catalog_summary || project.excerpt || project.meta_description || project.description || project.content_text?.slice(0, 180)}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
