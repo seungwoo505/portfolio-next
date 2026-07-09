@@ -26,6 +26,9 @@ interface HomeLatestContentProps {
   projectSkeletonCount: number;
 }
 
+type TagLike = string | { id?: string | number; name?: string; slug?: string };
+type TechLike = string | { id?: string | number; name?: string; slug?: string };
+
 const getPostSummary = (post: BlogPost) =>
   post.excerpt || `${post.content.substring(0, 100)}...`;
 
@@ -35,6 +38,26 @@ const getProjectSummary = (project: HomeProject) =>
   project.detailed_description ||
   project.description ||
   "프로젝트 설명이 없습니다.";
+
+const getLabelText = (item: TagLike | TechLike): string => {
+  if (typeof item === "string") {
+    return item;
+  }
+
+  return item.name || item.slug || String(item.id || "");
+};
+
+const getLabelKey = (
+  item: TagLike | TechLike,
+  fallbackPrefix: string,
+  index: number
+): string => {
+  if (typeof item === "string") {
+    return `${fallbackPrefix}-${item}-${index}`;
+  }
+
+  return `${fallbackPrefix}-${item.id || item.slug || item.name || index}`;
+};
 
 export default function HomeLatestContent({
   loading,
@@ -160,14 +183,20 @@ export default function HomeLatestContent({
 
                           <div className="mt-4 flex flex-wrap gap-2">
                             {post.tags && post.tags.length > 0
-                              ? post.tags.slice(0, 2).map((tag) => (
-                                  <span
-                                    key={tag.id}
-                                    className="rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-800 dark:bg-blue-300/15 dark:text-blue-200"
-                                  >
-                                    {tag.name}
-                                  </span>
-                                ))
+                              ? (post.tags as TagLike[])
+                                  .slice(0, 2)
+                                  .map((tag, tagIndex) => (
+                                    <span
+                                      key={getLabelKey(
+                                        tag,
+                                        `${post.id}-tag`,
+                                        tagIndex
+                                      )}
+                                      className="rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-800 dark:bg-blue-300/15 dark:text-blue-200"
+                                    >
+                                      {getLabelText(tag)}
+                                    </span>
+                                  ))
                               : null}
                           </div>
 
@@ -236,12 +265,15 @@ export default function HomeLatestContent({
                   const stateClass = isRevealed
                     ? "cursor-pointer hover:-translate-y-1 hover:shadow-lg"
                     : "cursor-default pointer-events-none";
-                  const techList =
+                  const rawTechList =
                     project.skills && Array.isArray(project.skills) && project.skills.length > 0
                       ? project.skills
                       : project.tags && Array.isArray(project.tags)
                         ? project.tags
                         : [];
+                  const techList = (rawTechList as TechLike[])
+                    .map((tech) => getLabelText(tech))
+                    .filter(Boolean);
                   const catalogLabel =
                     project.catalog_label || (project.featured ? "추천 프로젝트" : "프로젝트");
                   const catalogStatus =
@@ -292,7 +324,11 @@ export default function HomeLatestContent({
                           <div className="mt-4 flex flex-wrap gap-2">
                             {techList.slice(0, 3).map((tech, techIndex) => (
                               <span
-                                key={`${project.id}-tech-${techIndex}`}
+                                key={getLabelKey(
+                                  tech,
+                                  `${project.id}-tech`,
+                                  techIndex
+                                )}
                                 className="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800 dark:bg-amber-300/15 dark:text-amber-200"
                               >
                                 {tech}
