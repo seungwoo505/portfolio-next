@@ -17,31 +17,6 @@ interface HomeLatestContentProps {
   projectSkeletonCount: number;
 }
 
-type LabelLike =
-  | string
-  | { id?: string | number; name?: string; slug?: string };
-
-const getLabelText = (item: LabelLike): string => {
-  if (typeof item === "string") {
-    return item;
-  }
-
-  return item.name || item.slug || String(item.id ?? "");
-};
-
-const getLabelKey = (
-  item: LabelLike,
-  fallbackPrefix: string,
-  index: number
-): string => {
-  const identity =
-    typeof item === "string"
-      ? item
-      : item.id ?? item.slug ?? item.name ?? "unknown";
-
-  return `${fallbackPrefix}-${identity}-${index}`;
-};
-
 export default function HomeLatestContent({
   loading,
   blogPosts,
@@ -123,20 +98,14 @@ export default function HomeLatestContent({
                         </p>
                         <div className="flex flex-wrap gap-2 mb-4">
                           {post.tags && post.tags.length > 0
-                            ? (post.tags as LabelLike[])
-                                .slice(0, 2)
-                                .map((tag, tagIndex) => (
-                                  <span
-                                    key={getLabelKey(
-                                      tag,
-                                      `${post.id}-tag`,
-                                      tagIndex
-                                    )}
-                                    className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                                  >
-                                    {getLabelText(tag)}
-                                  </span>
-                                ))
+                            ? post.tags.slice(0, 2).map((tag, tagIndex) => (
+                                <span
+                                  key={tag.id || `${tag.name}-${tagIndex}`}
+                                  className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                                >
+                                  {typeof tag === "string" ? tag : tag.name}
+                                </span>
+                              ))
                             : null}
                         </div>
                         <div className="flex items-center justify-between">
@@ -239,35 +208,27 @@ export default function HomeLatestContent({
                           {project.skills &&
                           Array.isArray(project.skills) &&
                           project.skills.length > 0
-                            ? (project.skills as LabelLike[])
+                            ? project.skills
                                 .slice(0, 3)
-                                .map((skill, skillIndex) => (
+                                .map((skill: string, skillIndex: number) => (
                                   <span
-                                    key={getLabelKey(
-                                      skill,
-                                      `${project.id}-skill`,
-                                      skillIndex
-                                    )}
+                                    key={`${project.id}-skill-${skillIndex}`}
                                     className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
                                   >
-                                    {getLabelText(skill)}
+                                    {skill}
                                   </span>
                                 ))
                             : project.tags &&
                                 Array.isArray(project.tags) &&
                                 project.tags.length > 0
-                              ? (project.tags as LabelLike[])
+                              ? project.tags
                                   .slice(0, 3)
-                                  .map((tag, tagIndex) => (
+                                  .map((tag: string, tagIndex: number) => (
                                     <span
-                                      key={getLabelKey(
-                                        tag,
-                                        `${project.id}-tag`,
-                                        tagIndex
-                                      )}
+                                      key={`${project.id}-tag-${tagIndex}`}
                                       className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-full"
                                     >
-                                      {getLabelText(tag)}
+                                      {tag}
                                     </span>
                                   ))
                               : null}
