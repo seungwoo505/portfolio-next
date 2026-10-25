@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 import type { AdminProjectForm, AdminTagOption, Project } from "@/types";
 import { ensureApiSuccess, getErrorMessage } from "@/utils/api-response";
+import { isProjectFlagEnabled } from "@/utils/project-state";
 import { AdminErrorState } from "../../components/AdminState";
 import ProjectAdminForm from "../components/ProjectAdminForm";
 import {
@@ -99,8 +100,8 @@ function EditProjectContent() {
         start_date: project.start_date ? project.start_date.split("T")[0] : "",
         end_date: project.end_date ? project.end_date.split("T")[0] : "",
         is_featured: Boolean(project.featured),
-        is_published: project.status === "completed" || false,
-        is_ongoing: project.status === "in_progress" || false,
+        is_published: isProjectFlagEnabled(project.is_published),
+        is_ongoing: isProjectFlagEnabled(project.is_ongoing),
         meta_keywords: project.meta_keywords || "",
       });
 

@@ -33,7 +33,7 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
       setFormData({
         name: skill.name,
         category_id: skill.category_id || '',
-        proficiency_level: skill.proficiency_level,
+        proficiency_level: skill.proficiency_level ?? 50,
         display_order: skill.display_order,
         is_featured: skill.is_featured,
       });
@@ -113,7 +113,7 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
       const cleanFormData = {
         name: formData.name || '',
         category_id: formData.category_id || '',
-        proficiency_level: formData.proficiency_level || 50,
+        proficiency_level: formData.proficiency_level ?? 50,
         display_order: formData.display_order || 0,
         is_featured: formData.is_featured || false
       };
@@ -236,22 +236,22 @@ export default function SkillModal({ isOpen, onClose, skill, onSave, categories,
             </div>
             <div className="space-y-1.5">
               <label htmlFor="skill-proficiency" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                숙련도: {formData.proficiency_level}%
+                숙련도: {formData.proficiency_level ?? 50}%
               </label>
               <div className="flex items-center gap-4">
                 <input
                   id="skill-proficiency"
                   type="range"
-                  min="1"
+                  min="0"
                   max="100"
-                  value={formData.proficiency_level || 50}
+                  value={formData.proficiency_level ?? 50}
                   onChange={(e) => {
                     const value = parseInt(e.target.value);
                     handleChange('proficiency_level', value);
                   }}
                   className="flex-1 h-2.5 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   style={{
-                    background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(formData.proficiency_level || 50)}%, #e2e8f0 ${(formData.proficiency_level || 50)}%, #e2e8f0 100%)`
+                    background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(formData.proficiency_level ?? 50)}%, #e2e8f0 ${(formData.proficiency_level ?? 50)}%, #e2e8f0 100%)`
                   }}
                 />
               </div>

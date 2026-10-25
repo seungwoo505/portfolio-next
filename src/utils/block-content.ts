@@ -36,47 +36,38 @@ export function parseBlockContent(value: unknown): BlockContent {
 }
 
 export function hasMeaningfulBlockContent(blocks: BlockContent): boolean {
-  return extractPlainTextFromBlocks(blocks).trim().length > 0;
-}
+  if (extractPlainTextFromBlocks(blocks).trim()) return true;
 
-export function markdownToBasicBlocks(markdown: string): BlockContent {
-  if (!markdown.trim()) {
-    return emptyBlockContent;
-  }
-
-  return markdown
-    .split(/\n{2,}/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .map((chunk) => {
-      const heading = chunk.match(/^(#{1,3})\s+(.+)$/);
-      if (heading) {
-        return {
-          type: "heading",
-          props: {
-            level: heading[1].length,
-          },
-          content: heading[2],
-        };
-      }
-
-      return {
-        type: "paragraph",
-        content: chunk,
-      };
-    }) as BlockContent;
+  return blocks.some((block) => {
+    if (!block || typeof block !== "object") return false;
+    const record = block as Record<string, unknown>;
+    if (record.type === "divider") return true;
+    if (record.type === "table" && record.content) return true;
+    if (["image", "video", "audio", "file"].includes(String(record.type))) {
+      const props = record.props as Record<string, unknown> | undefined;
+      if (typeof props?.url === "string" && props.url.trim()) return true;
+    }
+    return Array.isArray(record.children) && hasMeaningfulBlockContent(record.children);
+  });
 }
 
 export function getInitialBlockContent(
   blockValue: unknown,
-  legacyMarkdown: string
+  legacyMarkdown: string,
+  parseMarkdown?: (markdown: string) => BlockContent
 ): BlockContent {
   const parsed = parseBlockContent(blockValue);
   if (hasMeaningfulBlockContent(parsed)) {
     return parsed;
   }
 
-  return markdownToBasicBlocks(legacyMarkdown);
+  if (!legacyMarkdown.trim()) return emptyBlockContent;
+  if (!parseMarkdown) throw new Error("Markdown을 가져올 편집기 파서가 필요합니다.");
+  const imported = parseMarkdown(legacyMarkdown);
+  if (!hasMeaningfulBlockContent(imported)) {
+    throw new Error("기존 본문을 빈 문서로 가져올 수 없습니다.");
+  }
+  return imported;
 }
 
 export function extractPlainTextFromBlocks(blocks: BlockContent): string {
@@ -88,21 +79,15 @@ export function extractPlainTextFromBlocks(blocks: BlockContent): string {
       return;
     }
 
-    if (!Array.isArray(content)) {
+    if (content && typeof content === "object" && !Array.isArray(content)) {
+      const record = content as Record<string, unknown>;
+      if (typeof record.text === "string") parts.push(record.text);
+      visitContent(record.content);
+      visitContent(record.rows);
+      visitContent(record.cells);
       return;
     }
-
-    content.forEach((item) => {
-      if (typeof item === "string") {
-        parts.push(item);
-      } else if (item && typeof item === "object") {
-        const record = item as Record<string, unknown>;
-        if (typeof record.text === "string") {
-          parts.push(record.text);
-        }
-        visitContent(record.content);
-      }
-    });
+    if (Array.isArray(content)) content.forEach(visitContent);
   };
 
   const visitBlock = (block: unknown) => {

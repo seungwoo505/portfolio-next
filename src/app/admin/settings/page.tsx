@@ -509,11 +509,19 @@ export default function SettingsPage() {
       });
       const response = await authApi.put('/admin/settings', { settings: settingsToUpdate });
       ensureApiSuccess(response, '설정 저장에 실패했습니다.');
-      toast.success(`${Object.keys(changedSettings).length}개 설정이 성공적으로 저장되었습니다!`, {
+      toast.success(`${Object.keys(settingsToUpdate).length}개 설정이 성공적으로 저장되었습니다!`, {
         duration: 3000,
         icon: '⚙️',
       });
-      setChangedSettings({}); 
+      setChangedSettings(current => {
+        const remaining = { ...current };
+        Object.entries(settingsToUpdate).forEach(([key, saved]) => {
+          if (Object.is(current[key], saved.value)) {
+            delete remaining[key];
+          }
+        });
+        return remaining;
+      });
     } catch (error) {
       toast.error(getErrorMessage(error, '설정 저장에 실패했습니다.'), {
         duration: 4000,

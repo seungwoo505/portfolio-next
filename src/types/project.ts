@@ -44,7 +44,8 @@ export interface Project {
   slug: string;
   status: 'planning' | 'in_progress' | 'completed' | 'on_hold';
   featured: boolean;
-  is_published?: boolean;
+  is_published?: boolean | 0 | 1;
+  is_ongoing?: boolean | 0 | 1;
   start_date?: string;
   end_date?: string;
   view_count: number;
@@ -61,7 +62,7 @@ export interface Project {
     usage_count?: number; 
     created_at?: string; 
     updated_at?: string; 
-  }> | string[]; 
+  }> | string[];
   skills?: Array<{ 
     id: string; 
     name: string; 
@@ -72,6 +73,6 @@ export interface Project {
     usage_count?: number; 
     created_at?: string; 
     updated_at?: string; 
-  }>; 
+  }> | string[];
   images?: string[]; 
 }

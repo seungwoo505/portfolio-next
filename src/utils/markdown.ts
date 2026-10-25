@@ -44,7 +44,8 @@ export function markdownToHtml(text: string): string {
   };
   renderer.code = function({ text, lang }: { text: string; lang?: string }): string {
     const languageClass = lang ? `language-${lang}` : '';
-    return `<pre class="markdown-code-block"><code class="${languageClass}">${text}</code></pre>`;
+    const escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<pre class="markdown-code-block"><code class="${languageClass}">${escapedText}</code></pre>`;
   };
   renderer.codespan = function({ text }: { text: string }): string {
     return `<code class="markdown-inline-code">${text}</code>`;

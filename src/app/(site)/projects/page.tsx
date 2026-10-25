@@ -470,7 +470,7 @@ export default function Projects() {
                       return project.technologies.split(',').map((tech) => tech.trim());
                     }
                     if (project.skills && project.skills.length > 0) {
-                      return project.skills.map((skill) => skill.name);
+                      return project.skills.map((skill) => typeof skill === 'string' ? skill : skill.name);
                     }
                     if (project.tags && project.tags.length > 0) {
                       return project.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name));

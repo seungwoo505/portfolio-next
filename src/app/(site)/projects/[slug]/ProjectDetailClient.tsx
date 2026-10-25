@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { projectApi } from "@/lib/api";
 import { Project } from "@/types";
+import { isProjectFlagEnabled } from "@/utils/project-state";
 import toast from 'react-hot-toast';
 
 interface ProjectDetailClientProps {
@@ -132,7 +133,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
     : [];
 
   const skillsList = Array.isArray(project.skills)
-    ? project.skills.map(skill => skill.name).filter(Boolean)
+    ? project.skills.map(skill => typeof skill === 'string' ? skill : skill.name).filter(Boolean)
     : [];
 
   const technologyList = [
@@ -149,8 +150,9 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
       })
     : '시작일 미정';
 
+  const isOngoing = isProjectFlagEnabled(project.is_ongoing);
   const endDate =
-    project.end_date && project.status !== 'in_progress'
+    project.end_date && !isOngoing
       ? new Date(project.end_date).toLocaleDateString('ko-KR', {
           year: 'numeric',
           month: 'long',
@@ -158,16 +160,18 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
       : null;
 
   const statusBadge = (() => {
+    if (isOngoing) {
+      return {
+        label: '진행 중',
+        className: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-200',
+      };
+    }
     switch (project.status) {
+      case 'in_progress':
       case 'completed':
         return {
           label: '완료된 프로젝트',
           className: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-200',
-        };
-      case 'in_progress':
-        return {
-          label: '진행 중',
-          className: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-200',
         };
       case 'planning':
         return {
@@ -228,7 +232,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                     {startDate}
-                    {endDate ? ` ~ ${endDate}` : project.status === 'in_progress' ? ' · 진행 중' : ''}
+                    {endDate ? ` ~ ${endDate}` : isOngoing ? ' · 진행 중' : ''}
                 </span>
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800/70">
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -6,7 +6,8 @@
     "dev": "WATCHPACK_POLLING=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --require ./tests/helpers/register-typescript.cjs --test tests/*.test.cjs"
   },
   "dependencies": {
     "@blocknote/core": "^0.51.4",

@@ -13,6 +13,7 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
@@ -25,7 +26,7 @@ const eslintConfig = [
     }
   },
   {
-    files: ["scripts/**/*.js"],
+    files: ["scripts/**/*.js", "tests/**/*.cjs"],
     rules: {
       "@typescript-eslint/no-require-imports": "off"
     }

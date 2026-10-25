@@ -3,7 +3,6 @@ import {
   API_BASE_URL,
   buildHeaders,
   createApiRequestError,
-  getApiResponseMessage,
   readApiResponse,
   shouldThrowApiResponse,
   throwNormalizedRequestError,
@@ -122,11 +121,13 @@ export class AuthenticatedApiClient {
     options: RequestInit,
     tokens: AuthTokenSnapshot
   ): RequestInit {
+    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
     return {
       ...options,
       headers: buildHeaders(
         {
-          "Content-Type": "application/json",
+          ...(!isFormData && { "Content-Type": "application/json" }),
           "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
           Pragma: "no-cache",
           Expires: "0",
@@ -333,26 +334,12 @@ export class AuthenticatedApiClient {
   async uploadImage(file: File): Promise<ApiResponse<{ url: string }>> {
     const formData = new FormData();
     formData.append("image", file);
-    const token = this.getToken();
-    const url = `${this.baseURL}/admin/upload/image`;
-    const config: RequestInit = {
-      method: "POST",
-      headers: buildHeaders(token ? { Authorization: `Bearer ${token}` } : {}),
-      body: formData,
-    };
 
     try {
-      const response = await fetch(url, config);
-      const data = await readApiResponse<{ url: string }>(response);
-
-      if (!response.ok) {
-        return {
-          success: false,
-          message: getApiResponseMessage(data, `HTTP error! status: ${response.status}`),
-        };
-      }
-
-      return data;
+      return await this.request<{ url: string }>("/admin/upload/image", {
+        method: "POST",
+        body: formData,
+      });
     } catch (error) {
       return {
         success: false,
