@@ -35,14 +35,14 @@ export default function AdminLayout({
   return (
     <AdminProvider>
       <AuthGuard>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 safari-admin-layout">
-          <div className="fixed top-0 left-0 right-0 z-50">
-            <AdminHeader onMenuToggle={handleMenuToggle} />
+        <div className="admin-shell min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+          <div className="sticky top-0 z-40">
+            <AdminHeader onMenuToggle={handleMenuToggle} sidebarOpen={sidebarOpen} />
           </div>
-          <div className="flex pt-20 lg:pt-16">
+          <div className="mx-auto flex max-w-[1600px]">
             <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
-            <main className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 lg:ml-0 safari-admin-main">
-              {children}
+            <main className="min-w-0 flex-1 p-4 sm:p-6 lg:py-8 lg:pr-8">
+              <div className="min-h-[calc(100dvh-10rem)] rounded-xl border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8 dark:border-zinc-800 dark:bg-zinc-900">{children}</div>
             </main>
           </div>
         </div>

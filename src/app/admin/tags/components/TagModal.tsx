@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { ensureApiSuccess, getErrorMessage } from '@/utils/api-response';
@@ -70,33 +71,6 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
     }
     setErrors({});
   }, [editingTag, isOpen, defaultType]);
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const focusTimer = window.setTimeout(() => {
-      nameInputRef.current?.focus();
-    }, 0);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isSubmitting) {
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, isSubmitting, onClose]);
   /**
    * @description 태그명을 기반으로 슬러그를 생성합니다.
    * @param {string} name 태그명.
@@ -166,19 +140,22 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
       setIsSubmitting(false);
     }
   };
-  if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tag-modal-title"
-        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+    <Dialog
+      open={isOpen}
+      onClose={() => { if (!isSubmitting) onClose(); }}
+      initialFocus={nameInputRef}
+      className="admin-shell fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'transparent' }}
+    >
+      <DialogBackdrop className="absolute inset-0 bg-black/50" />
+      <DialogPanel
+        className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 id="tag-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+          <DialogTitle as="h2" id="tag-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             {editingTag ? '태그 편집' : '새 태그 추가'}
-          </h2>
+          </DialogTitle>
           <button
             type="button"
             onClick={onClose}
@@ -330,7 +307,7 @@ export default function TagModal({ isOpen, onClose, onTagSaved, editingTag, defa
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogPanel>
+    </Dialog>
   );
 }

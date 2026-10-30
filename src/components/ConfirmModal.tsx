@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
+import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { X } from 'lucide-react';
 /**
  * @interface ConfirmModalProps
@@ -42,43 +43,10 @@ export default function ConfirmModal({
   const [isConfirming, setIsConfirming] = useState(false);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    /**
-     * @function handleEscape
-     * @description 사용자가 Esc 키를 누를 때 모달을 닫아 접근성을 보장합니다.
-     * @param {KeyboardEvent} e keydown 리스너로부터 전달된 키보드 이벤트.
-     * @returns {void}
-     */
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !isConfirming) {
-        onClose();
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, isConfirming, onClose]);
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const focusTimer = window.setTimeout(() => {
-      cancelButtonRef.current?.focus();
-    }, 0);
-    return () => {
-      window.clearTimeout(focusTimer);
-    };
-  }, [isOpen]);
-  useEffect(() => {
     if (!isOpen) {
       setIsConfirming(false);
     }
   }, [isOpen]);
-  if (!isOpen) return null;
   /**
    * @function handleConfirm
    * @description 확인 콜백을 실행한 뒤 즉시 모달을 닫습니다.
@@ -97,21 +65,23 @@ export default function ConfirmModal({
     }
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div 
+    <Dialog
+      open={isOpen}
+      onClose={() => { if (!isConfirming) onClose(); }}
+      initialFocus={cancelButtonRef}
+      className="admin-shell fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'transparent' }}
+    >
+      <DialogBackdrop
         className="absolute inset-0 bg-black/75"
-        onClick={isConfirming ? undefined : onClose}
       />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-modal-title"
+      <DialogPanel
         className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4"
       >
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 id="confirm-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+          <DialogTitle as="h3" id="confirm-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             {title}
-          </h3>
+          </DialogTitle>
           <button
             ref={cancelButtonRef}
             type="button"
@@ -124,9 +94,9 @@ export default function ConfirmModal({
           </button>
         </div>
         <div className="p-6">
-          <p className="text-slate-600 dark:text-slate-300">
+          <Description as="p" className="text-slate-600 dark:text-slate-300">
             {message}
-          </p>
+          </Description>
         </div>
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
           <button
@@ -150,7 +120,7 @@ export default function ConfirmModal({
             {isConfirming ? '처리 중...' : confirmText}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogPanel>
+    </Dialog>
   );
 }
