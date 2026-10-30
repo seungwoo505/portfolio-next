@@ -1,24 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import "./globals.css";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false, 
-  fallback: ['system-ui', 'arial'],
-});
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false, 
-  fallback: ['monospace', 'Courier New'],
-});
 const themeInitializer = `(function() {
   const storageKey = 'theme';
   const classNameDark = 'dark';
@@ -36,11 +21,11 @@ const themeInitializer = `(function() {
       root.classList.add(classNameDark);
     }
     root.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    root.style.setProperty('--background', isDark ? '#0a0a0a' : '#ffffff');
-    root.style.setProperty('--foreground', isDark ? '#ededed' : '#171717');
+
+
     root.style.colorScheme = isDark ? 'dark' : 'light';
-    root.style.backgroundColor = isDark ? '#0a0a0a' : '#ffffff';
-    root.style.color = isDark ? '#ededed' : '#171717';
+
+
   }
   /**
    * @description 저장된 테마 값을 가져옵니다.
@@ -138,11 +123,11 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased"
       >
         <ErrorBoundary>
           {children}
-          <Toaster 
+          <Toaster
             position="bottom-right"
             toastOptions={{
               duration: 4000,

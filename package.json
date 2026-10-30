@@ -7,14 +7,20 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --require ./tests/helpers/register-typescript.cjs --test tests/*.test.cjs"
+    "test": "node --require ./tests/helpers/register-typescript.cjs --test tests/*.test.cjs",
+    "isolated:preview": "node scripts/isolated-preview.js",
+    "isolated:build": "node scripts/isolated-preview.js --build-only",
+    "isolated:smoke": "node scripts/isolated-smoke.js",
+    "isolated:fixture": "node scripts/isolated-api.js"
   },
   "dependencies": {
     "@blocknote/core": "^0.51.4",
     "@blocknote/mantine": "^0.51.4",
     "@blocknote/react": "^0.51.4",
+    "@headlessui/react": "^2.2.10",
     "@mantine/core": "^9.3.2",
     "@mantine/hooks": "^9.3.2",
+    "clsx": "^2.1.1",
     "dompurify": "^3.4.3",
     "lucide-react": "^0.539.0",
     "marked": "^16.2.1",

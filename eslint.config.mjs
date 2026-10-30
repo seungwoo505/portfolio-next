@@ -5,6 +5,7 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**",
+      ".verification/**",
       "out/**",
       "node_modules/**",
       "next-env.d.ts",
