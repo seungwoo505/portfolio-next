@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import ProjectDetailClient from "./ProjectDetailClient";
 import { generateMetadata as createMetadata } from "@/lib/seo";
-import { serverFetch } from "@/lib/server-fetch";
+import { serverFetch, ServerFetchError } from "@/lib/server-fetch";
+import { normalizeImageUrl } from "@/utils/image-url";
 import type { Project } from "@/types";
 
 const SITE_URL = "https://seungwoo.i234.me";
@@ -42,8 +43,18 @@ function getDescription(project: Project): string {
   );
 }
 
-function getProjectImage(project: Project): string {
-  return project.featured_image || project.image_url || "/og-image.svg";
+function getProjectImage(project: Project): string | undefined {
+  const image = normalizeImageUrl(project.featured_image || project.image_url);
+  if (!image) return undefined;
+
+  try {
+    const url = new URL(image, SITE_URL);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 const getProject = cache(async (slug: string): Promise<Project | null> => {
@@ -51,9 +62,13 @@ const getProject = cache(async (slug: string): Promise<Project | null> => {
     const response = await serverFetch<Project>(
       `/public/projects/${encodeURIComponent(slug)}`
     );
-    return response.success && response.data ? response.data : null;
-  } catch {
-    return null;
+    if (!response?.success || !response.data) {
+      throw new Error(response?.message || "프로젝트 정보를 불러오지 못했습니다.");
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof ServerFetchError && error.status === 404) return null;
+    throw error;
   }
 });
 
@@ -64,7 +79,7 @@ function toJsonLd(data: unknown): string {
 function createProjectStructuredData(project: Project, slug: string) {
   const path = getProjectUrl(slug);
   const url = `${SITE_URL}${path}`;
-  const image = project.featured_image || project.image_url;
+  const image = getProjectImage(project);
   const tagNames = getTagNames(project.tags);
 
   return {
@@ -139,7 +154,7 @@ export async function generateMetadata({
     keywords:
       project.meta_keywords ||
       (tags.length ? tags.join(", ") : "웹개발, 프로젝트, React, Next.js"),
-    image: getProjectImage(project),
+    image: getProjectImage(project) || "/og-image.svg",
     url: getProjectUrl(slug),
     tags,
   });
