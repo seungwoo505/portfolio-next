@@ -12,6 +12,8 @@ interface ProjectCoverImageProps {
   sizes?: string;
   priority?: boolean;
   fallbackLabel?: string;
+  transitionKey?: string;
+  transitionRole?: 'list' | 'detail';
 }
 
 export default function ProjectCoverImage({
@@ -22,6 +24,8 @@ export default function ProjectCoverImage({
   sizes = "100vw",
   priority = false,
   fallbackLabel,
+  transitionKey,
+  transitionRole = 'list',
 }: ProjectCoverImageProps) {
   const normalizedSrc = useMemo(() => normalizeImageUrl(src), [src]);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -33,7 +37,7 @@ export default function ProjectCoverImage({
   }, [normalizedSrc]);
 
   return (
-    <div className={`relative overflow-hidden bg-slate-100 dark:bg-slate-900 ${className}`}>
+    <div data-project-image={transitionKey} data-project-image-role={transitionKey ? transitionRole : undefined} className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-950 ${className}`}>
       {shouldShowImage ? (
         <Image
           src={normalizedSrc}
@@ -46,8 +50,9 @@ export default function ProjectCoverImage({
           onError={() => setFailedSrc(normalizedSrc)}
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-200 via-slate-100 to-blue-100 p-4 text-center dark:from-slate-800 dark:via-slate-900 dark:to-blue-950">
-          <span className="line-clamp-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-zinc-50 p-8 text-center dark:bg-zinc-900">
+          <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-2xl border border-zinc-200 font-mono text-xl text-teal-700 dark:border-zinc-700 dark:text-teal-300">&lt;/&gt;</span>
+          <span className="line-clamp-2 text-base font-semibold tracking-tight text-zinc-600 dark:text-zinc-300">
             {fallbackText || "대표 이미지 없음"}
           </span>
         </div>

@@ -200,7 +200,7 @@ export default function UsersManagement() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               사용자 목록
@@ -211,7 +211,7 @@ export default function UsersManagement() {
           </div>
           <button 
             onClick={() => setShowNewUserModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>새 사용자</span>
@@ -229,7 +229,7 @@ export default function UsersManagement() {
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
               />
             </div>
-            <div className="flex flex-wrap space-x-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { key: 'all', label: '모든 역할' },
                 { key: 'super_admin', label: '슈퍼 관리자' },
@@ -239,7 +239,7 @@ export default function UsersManagement() {
                 <button
                   key={key}
                   onClick={() => setRoleFilter(key as 'all' | 'super_admin' | 'admin' | 'editor')}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                  className={`shrink-0 whitespace-nowrap px-3 py-2 text-sm rounded-lg transition-colors ${
                     roleFilter === key
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                       : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-500'
@@ -249,7 +249,7 @@ export default function UsersManagement() {
                 </button>
               ))}
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { key: 'all', label: '모든 상태' },
                 { key: 'active', label: '활성' },
@@ -258,7 +258,7 @@ export default function UsersManagement() {
                 <button
                   key={key}
                   onClick={() => setStatusFilter(key as 'all' | 'active' | 'inactive')}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                  className={`shrink-0 whitespace-nowrap px-3 py-2 text-sm rounded-lg transition-colors ${
                     statusFilter === key
                       ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                       : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-500'
@@ -290,8 +290,8 @@ export default function UsersManagement() {
                   const isCurrentUser = user.id === currentUser?.id;
                   return (
                     <div key={user.id} className={`bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 ${isCurrentUser ? 'ring-2 ring-blue-500' : ''}`}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
+                        <div className="flex w-full min-w-0 flex-1 items-center gap-3">
                           <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
                             <User className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                           </div>
@@ -304,7 +304,7 @@ export default function UsersManagement() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${roleInfo.color}`}>
                             <RoleIcon className="w-3 h-3 mr-1" />
                             {roleInfo.label}

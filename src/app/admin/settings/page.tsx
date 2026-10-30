@@ -552,6 +552,7 @@ export default function SettingsPage() {
       case 'boolean':
         return (
           <input
+            id={`setting-${key}`}
             type="checkbox"
             checked={setting.value === true}
             onChange={(e) => handleSettingChange(key, e.target.checked)}
@@ -561,6 +562,7 @@ export default function SettingsPage() {
       case 'number':
         return (
           <input
+            id={`setting-${key}`}
             type="number"
             value={typeof setting.value === 'number' ? setting.value : Number(setting.value) || 0}
             onChange={(e) => handleSettingChange(key, Number(e.target.value))}
@@ -570,6 +572,7 @@ export default function SettingsPage() {
       case 'json':
         return (
           <textarea
+            id={`setting-${key}`}
             value={typeof setting.value === 'string' ? setting.value : JSON.stringify(setting.value, null, 2)}
             onChange={(e) => {
               try {
@@ -587,6 +590,7 @@ export default function SettingsPage() {
       default: 
         return (
           <input
+            id={`setting-${key}`}
             type="text"
             value={typeof setting.value === 'string' ? setting.value : String(setting.value) || ''}
             onChange={(e) => handleSettingChange(key, e.target.value)}
@@ -712,7 +716,7 @@ export default function SettingsPage() {
                     <div key={key} className="flex flex-col gap-3 rounded-lg bg-gray-50 p-4 dark:bg-slate-800 sm:flex-row sm:items-start sm:gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex flex-wrap items-center gap-2">
-                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <label htmlFor={`setting-${key}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             {setting.description || key}
                           </label>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${

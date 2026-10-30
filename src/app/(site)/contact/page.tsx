@@ -1,10 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { contactApi } from "@/lib/api";
 import { ContactMessage, SiteSettings } from "@/types";
 import ScrollProgress from "@/components/ScrollProgress";
 import { api } from "@/lib/api";
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import './contact-feedback.css';
 
 /**
  * @component ContactPage
@@ -18,7 +20,10 @@ export default function ContactPage() {
     subject: '',
     message: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitState, setSubmitState] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const submitting = useRef(false);
+  const draftRevision = useRef(0);
+  const isSubmitting = submitState === 'pending';
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
 
   useEffect(() => {
@@ -48,22 +53,28 @@ export default function ContactPage() {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (submitting.current || settings.contact_enabled === false) return;
 
-    setIsSubmitting(true);
+    const submittedRevision = draftRevision.current;
+    submitting.current = true;
+    setSubmitState('pending');
     try {
       const response = await contactApi.sendMessage(formData);
       if (response.success) {
+        const hasNewDraft = draftRevision.current !== submittedRevision;
+        setSubmitState(hasNewDraft ? 'idle' : 'success');
         toast.success(response.message || '메시지가 성공적으로 전송되었습니다!');
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        if (!hasNewDraft) setFormData({ name: '', email: '', subject: '', message: '' });
       } else {
+        setSubmitState('error');
         toast.error(response.message || '전송 중 오류가 발생했습니다.');
       }
     } catch {
+      setSubmitState('error');
       const err = { message: '네트워크 오류가 발생했습니다.' };
       toast.error(err?.message || '네트워크 오류가 발생했습니다.');
     } finally {
-      setIsSubmitting(false);
+      submitting.current = false;
     }
   };
 
@@ -74,6 +85,8 @@ export default function ContactPage() {
    * @returns {void}
    */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    draftRevision.current += 1;
+    if (!submitting.current) setSubmitState('idle');
     setFormData(prev => ({
       ...prev,
       [e.target.id]: e.target.value
@@ -83,102 +96,34 @@ export default function ContactPage() {
   return (
     <>
       <ScrollProgress />
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="animate-fade-in-up">
-            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-8 text-center">
-              연락처
-            </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-300 mb-12 text-center max-w-2xl mx-auto">
-              {settings?.contact_description || '궁금한 점이 있으시거나 협업을 원하시면 언제든지 메시지를 보내주세요!'}
-            </p>
-          </div>
-
-          {settings?.contact_enabled === false ? (
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 text-center animate-fade-in-up">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
-                연락처 폼이 비활성화되었습니다
-              </h2>
-              <p className="text-slate-600 dark:text-slate-300">
-                현재 연락처 폼을 통한 메시지 전송이 불가능합니다.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 animate-fade-in-up">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
-                {settings.contact_form_submit_text || "메시지 보내기"}
-              </h2>
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    이름
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white transition duration-200 focus:scale-[1.01]"
-                    placeholder={settings.contact_form_name_placeholder || "홍길동"}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    이메일
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white transition duration-200 focus:scale-[1.01]"
-                    placeholder={settings.contact_form_email_placeholder || "hello@example.com"}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    제목
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white transition duration-200 focus:scale-[1.01]"
-                    placeholder={settings.contact_form_subject_placeholder || "문의 제목"}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    메시지
-                  </label>
-                  <textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={5}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white resize-y transition duration-200 focus:scale-[1.01]"
-                    placeholder={settings.contact_form_message_placeholder || "여기에 메시지를 입력해주세요..."}
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white font-medium py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-md"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? '전송 중...' : '메시지 전송'}
-                </button>
-              </form>
-            </div>
-          )}
-        </main>
+      <div className="site-container site-section">
+        <header className="max-w-2xl">
+          <p className="section-label">연락처</p>
+          <h1 className="page-heading mt-5">함께 만들고 싶은 일이 있나요?</h1>
+          <p className="page-intro mt-6">{settings?.contact_description || '궁금한 점이나 협업하고 싶은 일이 있다면 메시지를 남겨주세요.'}</p>
+        </header>
+        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-14">
+          {settings?.contact_enabled === false ? <section className="surface-card p-6 sm:p-8" role="status"><h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">연락처 폼이 비활성화되었습니다</h2><p className="mt-4 leading-7 muted-text">현재 연락처 폼을 통한 메시지 전송이 불가능합니다.</p></section> : <section className="surface-card p-6 sm:p-8">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{settings.contact_form_submit_text || '메시지 보내기'}</h2>
+            <form className="mt-7 space-y-6" onSubmit={handleSubmit} aria-busy={isSubmitting}>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div><label htmlFor="name" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">이름 <span className="text-teal-700 dark:text-teal-400" aria-hidden="true">*</span></label><input type="text" id="name" value={formData.name} onChange={handleChange} className="field-input" placeholder={settings.contact_form_name_placeholder || '홍길동'} required /></div>
+                <div><label htmlFor="email" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">이메일 <span className="text-teal-700 dark:text-teal-400" aria-hidden="true">*</span></label><input type="email" id="email" value={formData.email} onChange={handleChange} className="field-input" placeholder={settings.contact_form_email_placeholder || 'hello@example.com'} required /></div>
+              </div>
+              <div><label htmlFor="subject" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">제목 <span className="ml-1 font-normal muted-text">선택</span></label><input type="text" id="subject" value={formData.subject} onChange={handleChange} className="field-input" placeholder={settings.contact_form_subject_placeholder || '문의 제목'} /></div>
+              <div><label htmlFor="message" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">메시지 <span className="text-teal-700 dark:text-teal-400" aria-hidden="true">*</span></label><textarea id="message" value={formData.message} onChange={handleChange} rows={7} className="field-input resize-y" placeholder={settings.contact_form_message_placeholder || '어떤 이야기를 나누고 싶으신가요?'} required /></div>
+              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800"><p className="text-xs muted-text">* 표시는 필수 항목입니다.</p><Button type="submit" color="teal" disabled={isSubmitting} className="contact-submit" data-submit-state={submitState}>
+                <span key={submitState} className="contact-submit-feedback">
+                  {submitState === 'pending' && <span className="contact-submit-spinner" aria-hidden="true" />}
+                  {submitState === 'success' && <svg data-submit-check viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                  {submitState === 'error' && <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" /><path d="M10 6v5m0 3v.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>}
+                  {submitState === 'pending' ? '전송 중...' : submitState === 'success' ? '전송 완료' : submitState === 'error' ? '다시 전송' : '메시지 전송'}
+                </span>
+              </Button></div>
+            </form>
+          </section>}
+          <aside className="py-2"><p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">좋은 대화의 시작</p><p className="mt-4 text-sm leading-7 muted-text">프로젝트의 목표와 함께 고민하고 싶은 내용을 알려주세요. 남겨주신 이메일로 이야기를 이어갈 수 있습니다.</p><div className="mt-8 h-px w-10 bg-teal-600 dark:bg-teal-400" aria-hidden="true" /></aside>
+        </div>
       </div>
     </>
   );

@@ -1,269 +1,40 @@
 import Link from "next/link";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import ProjectCoverImage from "@/components/ProjectCoverImage";
+import { Container } from "@/components/site/Container";
 import type { BlogPost } from "@/types";
-import {
-  CardSkeletonContent,
-  EmptyState,
-  SkeletonCard,
-} from "./HomeStateViews";
 import type { HomeProject } from "./homeTypes";
+import { EmptyState, SkeletonCard } from "./HomeStateViews";
 
-interface HomeLatestContentProps {
-  loading: boolean;
-  blogPosts: BlogPost[];
-  featuredProjectItems: HomeProject[];
-  blogRevealCount: number;
-  projectRevealCount: number;
-  blogSkeletonCount: number;
-  projectSkeletonCount: number;
+function technologyNames(values?: Array<string | { name: string }>): string[] {
+  return (values || []).map(value => typeof value === 'string' ? value : value.name).filter(Boolean);
 }
 
-export default function HomeLatestContent({
-  loading,
-  blogPosts,
-  featuredProjectItems,
-  blogRevealCount,
-  projectRevealCount,
-  blogSkeletonCount,
-  projectSkeletonCount,
-}: HomeLatestContentProps) {
-  return (
-    <section
-      id="latest-content"
-      className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-x-hidden"
-    >
-      <div className="grid lg:grid-cols-2 gap-12">
-        <div>
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">
-                Signal Notes
-              </p>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                대표 블로그 포스트
-              </h2>
-            </div>
-            <Link
-              href="/blog"
-              prefetch={false}
-              className="text-blue-600 hover:underline font-medium text-sm"
-            >
-              모든 포스트 보기 →
-            </Link>
-          </div>
-          <div className="space-y-4">
-            {loading ? (
-              Array.from({ length: blogSkeletonCount }).map((_, index) => (
-                <SkeletonCard key={`blog-loading-skeleton-${index}`} />
-              ))
-            ) : blogPosts && blogPosts.length > 0 ? (
-              blogPosts.map((post, index) => {
-                const isRevealed = index < blogRevealCount;
-                const cardBaseClass =
-                  "bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 group overflow-hidden";
-                const stateClass = isRevealed
-                  ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
-                  : "cursor-default pointer-events-none";
+export function HomeFeaturedProjects({ loading, projects }: { loading: boolean; projects: HomeProject[] }) {
+  return <Container id="selected-work" className="scroll-mt-24 border-t border-zinc-200 py-16 sm:py-20 dark:border-zinc-800">
+    <div data-reveal className="mb-9 flex flex-wrap items-end justify-between gap-5">
+      <div><p className="section-label">대표 프로젝트</p><h2 className="mt-4 text-3xl font-bold leading-snug tracking-tight sm:text-4xl">직접 만들고, 고민한 것들</h2></div>
+      <Link href="/projects" prefetch={false} className="text-link">전체 프로젝트<ArrowUpRight size={16} aria-hidden="true" /></Link>
+    </div>
+    {loading ? <div className="grid gap-8 md:grid-cols-2"><SkeletonCard /><SkeletonCard /></div> : projects.length ? <div className="grid gap-8 md:grid-cols-2">
+      {projects.map((project, index) => <article data-reveal data-project-card={project.slug} key={project.id} className="project-card group min-w-0">
+        <Link data-project-link={project.slug} href={`/projects/${encodeURIComponent(project.slug)}`} prefetch={false} aria-label={`${project.title} 상세 보기`} className="block overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
+          <ProjectCoverImage transitionKey={project.slug} src={project.image_url} alt={project.title} className="project-cover aspect-[16/10] rounded-[15px]" imageClassName="object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
+        </Link>
+        <div className="mt-6 flex items-start justify-between gap-4"><div className="min-w-0"><p className="mb-2 font-mono text-[10px] tracking-wider text-zinc-400">{String(index + 1).padStart(2, '0')} / PROJECT</p><h3 className="text-xl font-bold tracking-tight"><Link data-project-link={project.slug} href={`/projects/${encodeURIComponent(project.slug)}`} prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">{project.title}</Link></h3></div><ArrowUpRight className="project-arrow mt-6 size-5 flex-none text-zinc-400 group-hover:text-teal-600" aria-hidden="true" /></div>
+        <p className="muted-text mt-3 line-clamp-2 text-sm leading-7">{project.excerpt || project.description}</p>
+        <div className="mt-4 flex flex-wrap gap-2">{technologyNames(project.skills?.length ? project.skills : project.tags).slice(0, 4).map(tech => <span key={tech} className="tag">{tech}</span>)}</div>
+        <p className="muted-text mt-4 text-xs">조회 {project.view_count ?? 0}</p>
+      </article>)}
+    </div> : <EmptyState eyebrow="프로젝트" title="프로젝트를 준비하고 있습니다" description="진행한 작업과 해결 과정을 이곳에 차근차근 기록합니다." href="/projects" action="프로젝트 목록" />}
+  </Container>;
+}
 
-                return (
-                  <article
-                    key={post.id}
-                    className={`${cardBaseClass} ${stateClass}`}
-                    onClick={
-                      isRevealed
-                        ? () =>
-                            (window.location.href = `/blog/${encodeURIComponent(
-                              post.slug
-                            )}`)
-                        : undefined
-                    }
-                  >
-                    {isRevealed ? (
-                      <div className="p-6">
-                        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
-                          <time>
-                            {new Date(post.created_at).toLocaleDateString("ko-KR")}
-                          </time>
-                          <span className="text-sm text-slate-400">블로그</span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          <Link
-                            href={`/blog/${encodeURIComponent(post.slug)}`}
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            {post.title}
-                          </Link>
-                        </h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
-                          {post.excerpt || `${post.content.substring(0, 100)}...`}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {post.tags && post.tags.length > 0
-                            ? post.tags.slice(0, 2).map((tag, tagIndex) => (
-                                <span
-                                  key={tag.id || `${tag.name}-${tagIndex}`}
-                                  className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                                >
-                                  {typeof tag === "string" ? tag : tag.name}
-                                </span>
-                              ))
-                            : null}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Link
-                            href={`/blog/${encodeURIComponent(post.slug)}`}
-                            className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            자세히 보기 →
-                          </Link>
-                          <span className="text-xs text-slate-400">
-                            조회 {post.view_count || 0}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <CardSkeletonContent />
-                    )}
-                  </article>
-                );
-              })
-            ) : (
-              <EmptyState
-                eyebrow="Content Standby"
-                title="대표 글을 연결하는 중입니다"
-                description="라이브 API가 준비되면 최신 개발 기록이 이 영역에 표시됩니다. 지금은 포트폴리오의 방향과 탐색 흐름을 먼저 확인할 수 있습니다."
-                href="/blog"
-                action="블로그 화면 보기"
-              />
-            )}
-          </div>
-        </div>
-        <div>
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">
-                Mission Archive
-              </p>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                대표 프로젝트
-              </h2>
-            </div>
-            <Link
-              href="/projects"
-              prefetch={false}
-              className="text-blue-600 hover:underline font-medium text-sm"
-            >
-              모든 프로젝트 보기 →
-            </Link>
-          </div>
-          <div className="space-y-4">
-            {loading ? (
-              Array.from({ length: projectSkeletonCount }).map((_, index) => (
-                <SkeletonCard key={`project-loading-skeleton-${index}`} />
-              ))
-            ) : featuredProjectItems.length > 0 ? (
-              featuredProjectItems.map((project, index) => {
-                const isRevealed = index < projectRevealCount;
-                const cardBaseClass =
-                  "bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 overflow-hidden";
-                const stateClass = isRevealed
-                  ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
-                  : "cursor-default pointer-events-none";
-
-                return (
-                  <article
-                    key={project.id}
-                    className={`${cardBaseClass} ${stateClass}`}
-                    onClick={
-                      isRevealed
-                        ? () =>
-                            (window.location.href = `/projects/${encodeURIComponent(
-                              project.slug
-                            )}`)
-                        : undefined
-                    }
-                  >
-                    {isRevealed ? (
-                      <div className="p-6">
-                        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
-                          <time>
-                            {project.created_at
-                              ? new Date(project.created_at).toLocaleDateString(
-                                  "ko-KR"
-                                )
-                              : "날짜 없음"}
-                          </time>
-                          <span className="text-sm text-slate-400">프로젝트</span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
-                          {project.title}
-                        </h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
-                          {project.excerpt ||
-                            project.detailed_description ||
-                            project.description ||
-                            "프로젝트 설명이 없습니다."}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {project.skills &&
-                          Array.isArray(project.skills) &&
-                          project.skills.length > 0
-                            ? project.skills
-                                .slice(0, 3)
-                                .map((skill: string, skillIndex: number) => (
-                                  <span
-                                    key={`${project.id}-skill-${skillIndex}`}
-                                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-                                  >
-                                    {skill}
-                                  </span>
-                                ))
-                            : project.tags &&
-                                Array.isArray(project.tags) &&
-                                project.tags.length > 0
-                              ? project.tags
-                                  .slice(0, 3)
-                                  .map((tag: string, tagIndex: number) => (
-                                    <span
-                                      key={`${project.id}-tag-${tagIndex}`}
-                                      className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-full"
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))
-                              : null}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Link
-                            href={`/projects/${encodeURIComponent(project.slug)}`}
-                            className="inline-flex items-center text-blue-600 hover:underline font-medium text-sm"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            자세히 보기 →
-                          </Link>
-                          <span className="text-xs text-slate-400">
-                            조회 {project.view_count || 0}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <CardSkeletonContent />
-                    )}
-                  </article>
-                );
-              })
-            ) : (
-              <EmptyState
-                eyebrow="Project Standby"
-                title="대표 프로젝트를 연결하는 중입니다"
-                description="프로젝트 데이터가 연결되면 이미지, 기술 스택, 결과 중심의 카드로 보여줍니다. 빈 상태에서도 화면 흐름이 무너지지 않도록 정리했습니다."
-                href="/projects"
-                action="프로젝트 화면 보기"
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+export function HomeLatestArticles({ loading, posts }: { loading: boolean; posts: BlogPost[] }) {
+  return <Container className="border-t border-zinc-200 py-16 sm:py-20 dark:border-zinc-800">
+    <div className="grid gap-10 lg:grid-cols-[0.8fr_1.4fr] lg:gap-20">
+      <div data-reveal><p className="section-label">개발 기록</p><h2 className="mt-4 text-3xl font-bold leading-snug tracking-tight">생각과 배움을<br />기록합니다.</h2><p className="muted-text mt-5 max-w-sm text-sm leading-7">개발하며 마주한 문제와 그 안에서 찾은 방법들을 정리합니다.</p><Link href="/blog" prefetch={false} className="text-link mt-6">모든 글 보기<ArrowRight size={15} aria-hidden="true" /></Link></div>
+      <div>{loading ? <SkeletonCard /> : posts.length ? posts.map(post => <article data-reveal key={post.id} className="border-b border-zinc-200 py-7 first:pt-0 last:border-0 dark:border-zinc-800"><div className="flex flex-wrap items-center justify-between gap-3"><time className="font-mono text-xs text-zinc-400" dateTime={post.created_at}>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time><span className="muted-text text-xs">조회 {post.view_count ?? 0}</span></div><h3 className="mt-3 text-lg font-semibold leading-relaxed tracking-tight"><Link href={`/blog/${encodeURIComponent(post.slug)}`} prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">{post.title}</Link></h3><p className="muted-text mt-3 line-clamp-2 text-sm leading-7">{post.excerpt || post.content?.replace(/<[^>]*>/g, '').slice(0, 140)}</p><Link href={`/blog/${encodeURIComponent(post.slug)}`} prefetch={false} className="text-link mt-4 text-xs">글 읽기<ArrowUpRight size={14} aria-hidden="true" /></Link></article>) : <EmptyState eyebrow="기록" title="다음 기록을 준비하고 있습니다" description="개발 과정에서 배운 내용을 이곳에 공유합니다." href="/blog" action="블로그 보기" />}</div>
+    </div>
+  </Container>;
 }

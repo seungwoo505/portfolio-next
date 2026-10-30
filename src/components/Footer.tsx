@@ -81,84 +81,29 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 overflow-x-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="space-y-4 animate-fade-in-up">
-            <div className="flex items-center space-x-4">
-              <Link href="/" prefetch={false}>
-                <h1
-                  className="text-xl font-bold"
-                  style={{
-                    background: 'linear-gradient(to right, #2563eb, #9333ea)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    color: 'transparent'
-                  }}
-                >
-                  승우.dev
-                </h1>
-              </Link>
-            </div>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
-              {personalInfo.bio || personalInfo.about || FOOTER_FALLBACK_DESCRIPTION}
-            </p>
+    <footer className="border-t border-zinc-200 dark:border-zinc-800">
+      <div className="site-container py-12 sm:py-16">
+        <div className="flex flex-col justify-between gap-10 sm:flex-row sm:gap-16">
+          <div className="max-w-sm">
+            <Link href="/" prefetch={false} className="text-lg font-semibold tracking-tight">승우<span className="muted-text font-normal">.dev</span></Link>
+            <p className="muted-text mt-4 text-sm leading-7">{personalInfo.bio || personalInfo.about || FOOTER_FALLBACK_DESCRIPTION}</p>
+            {personalInfo.email && <a href={`mailto:${personalInfo.email}`} className="text-link mt-5 break-all">{personalInfo.email}</a>}
           </div>
-
-          <div className="space-y-4 animate-fade-in-up">
-            <h4 className="font-semibold text-slate-900 dark:text-slate-100">빠른 링크</h4>
-            <div className="space-y-2">
-              <Link href="/about" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
-                소개
-              </Link>
-              <Link href="/projects" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
-                프로젝트
-              </Link>
-              <Link href="/blog" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
-                블로그
-              </Link>
-              <Link href="/contact" prefetch={false} className="block text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">
-                연락처
-              </Link>
-              <Link href="/admin" prefetch={false} className="block text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors text-xs">
-                관리자
-              </Link>
-            </div>
-          </div>
-
-          <div className="space-y-4 animate-fade-in-up">
-            <h4 className="font-semibold text-slate-900 dark:text-slate-100">연락처</h4>
-            <div className="space-y-2">
-              {personalInfo.email && (
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  이메일: {personalInfo.email}
-                </p>
-              )}
-              <div className="flex space-x-4">
-                {socialLinks.map(({ url, label, Icon }) => (
-                  url && (
-                    <a
-                      key={label}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition duration-200 hover:scale-110 active:scale-95"
-                      aria-label={label}
-                    >
-                      <Icon className="w-5 h-5" />
-                    </a>
-                  )
-                ))}
-              </div>
-            </div>
+          <div className="flex gap-12 sm:gap-16">
+            <nav aria-label="푸터 메뉴" className="grid content-start gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+              <Link href="/projects" prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">프로젝트</Link>
+              <Link href="/about" prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">소개</Link>
+              <Link href="/blog" prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">블로그</Link>
+              <Link href="/contact" prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">연락처</Link>
+            </nav>
+            {socialLinks.some(link => link.url) && <div>
+              <p className="mb-4 text-xs font-medium text-zinc-400">다른 곳에서도 만나요</p>
+              <div className="flex flex-wrap gap-2">{socialLinks.map(({ url, label, Icon }) => url && <a key={label} href={url} target="_blank" rel="noopener noreferrer" className="icon-button" aria-label={label}><Icon size={16} aria-hidden="true" /></a>)}</div>
+            </div>}
           </div>
         </div>
-
-        <div className="border-t border-slate-200 dark:border-slate-700 mt-8 pt-8 text-center animate-fade-in-up">
-          <p className="text-slate-500 dark:text-slate-500 text-sm">
-            © {currentYear} 승우.dev. 모든 권리 보유.
-          </p>
+        <div className="muted-text mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-zinc-200 pt-6 text-xs dark:border-zinc-800">
+          <p>© {currentYear} 승우.dev</p><Link href="/admin" prefetch={false} className="min-h-10 content-center hover:text-teal-700 dark:hover:text-teal-300">관리자</Link>
         </div>
       </div>
     </footer>

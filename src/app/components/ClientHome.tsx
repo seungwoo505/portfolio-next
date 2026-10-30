@@ -1,378 +1,87 @@
 "use client";
-
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ScrollProgress from "@/components/ScrollProgress";
+import { Container } from "@/components/site/Container";
 import { blogApi, personalApi, projectApi } from "@/lib/api";
 import type { BlogPost } from "@/types";
 import HomeHeroSection from "./home/HomeHeroSection";
-import HomeLatestContent from "./home/HomeLatestContent";
+import { HomeFeaturedProjects, HomeLatestArticles } from "./home/HomeLatestContent";
 import HomeSkillsSection from "./home/HomeSkillsSection";
-import {
-  HomeErrorState,
-  HomeLoadingState,
-} from "./home/HomeStateViews";
-import { FALLBACK_PROFILE, FALLBACK_SKILLS } from "./home/homeFallbacks";
-import type {
-  ClientHomeProps,
-  GalaxyConfig,
-  HomeProject,
-  HomeSkill,
-} from "./home/homeTypes";
+import { HomeErrorState, HomeLoadingState } from "./home/HomeStateViews";
+import { FALLBACK_PROFILE } from "./home/homeFallbacks";
+import type { ClientHomeProps, HomeProject, HomeSkill } from "./home/homeTypes";
 
-const BLOG_PLACEHOLDER_COUNT = 1;
-const PROJECT_PLACEHOLDER_COUNT = 1;
-const SKILL_PLACEHOLDER_COUNT = 1;
-const CARD_REVEAL_INTERVAL = 120;
-const SKILL_REVEAL_INTERVAL = 80;
-const SKILL_REVEAL_STEP = 3;
 const VIEW_COUNT_REFRESH_INTERVAL_MS = 60_000;
 
-export default function ClientHome({
-  blogPosts: initialBlogPosts = [],
-  projects: initialProjects = [],
-  skills: initialSkills = [],
-  loading: initialLoading = false,
-  error,
-  personalInfo: initialPersonalInfo,
-  hasError: _hasError,
-}: ClientHomeProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [activeSkillTab, setActiveSkillTab] = useState("all");
+export default function ClientHome({ blogPosts: initialBlogPosts = [], projects: initialProjects = [], skills: initialSkills = [], loading: initialLoading = false, error, personalInfo: initialPersonalInfo }: ClientHomeProps) {
+  const [activeSkillTab, setActiveSkillTab] = useState('all');
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
   const [projects, setProjects] = useState<HomeProject[]>(initialProjects);
   const [skills, setSkills] = useState<HomeSkill[]>(initialSkills);
   const [loading, setLoading] = useState(initialLoading);
-  const [_dataError, setDataError] = useState(false);
-  const [blogRevealCount, setBlogRevealCount] = useState(0);
-  const [projectRevealCount, setProjectRevealCount] = useState(0);
-  const [skillsRevealCount, setSkillsRevealCount] = useState(0);
-  const lastViewCountRefreshAtRef = useRef(0);
-  const isRefreshingViewCountsRef = useRef(false);
+  const lastRefreshAt = useRef(0);
+  const refreshing = useRef(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsDataLoading(true);
+    let active = true;
+    async function loadData() {
       try {
-        const [blogResponse, projectResponse, skillsResponse] = await Promise.all([
-          blogApi.getPosts({ limit: 2, featured: true }),
-          projectApi.getProjects({ limit: 2, featured: true }),
-          personalApi.getFeaturedSkills(),
-        ]);
-
-        if (blogResponse.success && blogResponse.data) {
-          setBlogPosts(blogResponse.data);
-        }
-        if (projectResponse.success && projectResponse.data) {
-          setProjects(projectResponse.data as HomeProject[]);
-        }
-        if (skillsResponse.success && skillsResponse.data) {
-          setSkills(skillsResponse.data);
-        }
-
-        setLoading(false);
-        setDataError(false);
-      } catch (loadError) {
-        console.error("데이터 로딩 실패:", loadError);
-        setDataError(true);
-        setLoading(false);
-      } finally {
-        setIsDataLoading(false);
-      }
-    };
-
-    if (
-      initialBlogPosts.length === 0 &&
-      initialProjects.length === 0 &&
-      initialSkills.length === 0
-    ) {
-      loadData();
-    } else {
-      setBlogPosts(initialBlogPosts);
-      setProjects(initialProjects);
-      setSkills(initialSkills);
-      setIsDataLoading(false);
+        const [blogs, work, tools] = await Promise.all([blogApi.getPosts({ limit: 2, featured: true }), projectApi.getProjects({ limit: 2, featured: true }), personalApi.getFeaturedSkills()]);
+        if (!active) return;
+        if (blogs.success && blogs.data) setBlogPosts(blogs.data);
+        if (work.success && work.data) setProjects(work.data as HomeProject[]);
+        if (tools.success && tools.data) setSkills(tools.data);
+      } catch { /* Keep the server data and empty-state UI available. */ }
+      finally { if (active) { setLoading(false); setIsDataLoading(false); } }
     }
+    if (!initialBlogPosts.length && !initialProjects.length && !initialSkills.length) loadData();
+    else { setBlogPosts(initialBlogPosts); setProjects(initialProjects); setSkills(initialSkills); setIsDataLoading(false); }
+    return () => { active = false; };
   }, [initialBlogPosts, initialProjects, initialSkills]);
 
   useEffect(() => {
-    const updateViewCounts = async (force = false) => {
-      const now = Date.now();
-      if (
-        !force &&
-        now - lastViewCountRefreshAtRef.current < VIEW_COUNT_REFRESH_INTERVAL_MS
-      ) {
-        return;
-      }
-
-      if (isRefreshingViewCountsRef.current) {
-        return;
-      }
-
-      isRefreshingViewCountsRef.current = true;
-      lastViewCountRefreshAtRef.current = now;
-
-      try {
-        const [blogResponse, projectResponse] = await Promise.all([
-          blogApi.getPosts({ limit: 2, featured: true }),
-          projectApi.getProjects({ limit: 2, featured: true }),
-        ]);
-
-        if (
-          blogResponse.success &&
-          blogResponse.data &&
-          Array.isArray(blogResponse.data)
-        ) {
-          setBlogPosts((prevPosts) =>
-            prevPosts.map((prevPost) => {
-              const updatedPost = blogResponse.data!.find(
-                (post) => post.id === prevPost.id
-              );
-              return updatedPost &&
-                updatedPost.view_count !== prevPost.view_count
-                ? { ...prevPost, view_count: updatedPost.view_count }
-                : prevPost;
-            })
-          );
-        }
-
-        if (
-          projectResponse.success &&
-          projectResponse.data &&
-          Array.isArray(projectResponse.data)
-        ) {
-          setProjects((prevProjects) =>
-            prevProjects.map((prevProject) => {
-              const updatedProject = projectResponse.data!.find(
-                (project) => project.id === prevProject.id
-              );
-              return updatedProject &&
-                updatedProject.view_count !== prevProject.view_count
-                ? { ...prevProject, view_count: updatedProject.view_count }
-                : prevProject;
-            })
-          );
-        }
-      } catch (viewCountError) {
-        console.error("조회수 갱신 실패:", viewCountError);
-      } finally {
-        isRefreshingViewCountsRef.current = false;
-      }
-    };
-
-    let visibilityTimer: NodeJS.Timeout | null = null;
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        if (visibilityTimer) clearTimeout(visibilityTimer);
-        visibilityTimer = setTimeout(() => {
-          updateViewCounts();
-        }, 500);
-      }
-    };
-
-    let focusTimer: NodeJS.Timeout | null = null;
-    const handleFocus = () => {
-      if (focusTimer) clearTimeout(focusTimer);
-      focusTimer = setTimeout(() => {
-        updateViewCounts();
-      }, 500);
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      if (visibilityTimer) clearTimeout(visibilityTimer);
-      if (focusTimer) clearTimeout(focusTimer);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, []);
-
-  useEffect(() => {
-    const loadPersonalInfo = async () => {
-      if (!personalInfo || Object.keys(personalInfo).length === 0) {
-        try {
-          const response = await personalApi.getPersonalInfo();
-          if (response.success && response.data) {
-            setPersonalInfo(response.data);
-          }
-        } catch {
-          setDataError(true);
-        }
-      }
-    };
-
-    loadPersonalInfo();
+    let active = true;
+    if (!personalInfo || !Object.keys(personalInfo).length) personalApi.getPersonalInfo().then(response => { if (active && response.success && response.data) setPersonalInfo(response.data); }).catch(() => {});
+    return () => { active = false; };
   }, [personalInfo]);
 
-  const galaxyProps = useMemo<GalaxyConfig>(
-    () => ({
-      mouseRepulsion: true,
-      mouseInteraction: true,
-      density: 1.5,
-      glowIntensity: 0.5,
-      saturation: 0.8,
-      hueShift: 240,
-      transparent: true,
-      disableAnimation: false,
-      speed: 1.0,
-    }),
-    []
-  );
-
   useEffect(() => {
-    setIsDataLoading(false);
-  }, [blogPosts, projects, skills]);
-
-  const categorizedSkills = useMemo(() => {
-    if (!skills || skills.length === 0) return {};
-    const categories: Record<string, HomeSkill[]> = {};
-
-    skills.forEach((skill) => {
-      const category = skill.category_name || "기타";
-      if (!categories[category]) {
-        categories[category] = [];
-      }
-      categories[category].push(skill);
-    });
-
-    return categories;
-  }, [skills]);
-
-  const currentSkills = useMemo(() => {
-    if (activeSkillTab === "all") {
-      return skills;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    async function updateViewCounts() {
+      if (refreshing.current || Date.now() - lastRefreshAt.current < VIEW_COUNT_REFRESH_INTERVAL_MS) return;
+      refreshing.current = true;
+      lastRefreshAt.current = Date.now();
+      try {
+        const [blogs, work] = await Promise.all([blogApi.getPosts({ limit: 2, featured: true }), projectApi.getProjects({ limit: 2, featured: true })]);
+        if (!active) return;
+        if (blogs.success && Array.isArray(blogs.data)) setBlogPosts(previous => previous.map(item => { const fresh = blogs.data!.find(post => post.id === item.id); return fresh ? { ...item, view_count: fresh.view_count } : item; }));
+        if (work.success && Array.isArray(work.data)) setProjects(previous => previous.map(item => { const fresh = work.data!.find(project => project.id === item.id); return fresh ? { ...item, view_count: fresh.view_count } : item; }));
+      } catch { /* A view count refresh does not replace visible content. */ }
+      finally { refreshing.current = false; }
     }
-
-    return categorizedSkills[activeSkillTab] || [];
-  }, [activeSkillTab, skills, categorizedSkills]);
-
-  const featuredProjectItems = useMemo(() => {
-    if (!projects || projects.length === 0) return [];
-    return projects.filter((project) => project.featured);
-  }, [projects]);
-
-  const displayName =
-    personalInfo?.full_name || personalInfo?.name || FALLBACK_PROFILE.name;
-  const displayDescription =
-    personalInfo?.bio || personalInfo?.about || FALLBACK_PROFILE.description;
-  const blogSkeletonCount =
-    blogPosts.length > 0 ? blogPosts.length : BLOG_PLACEHOLDER_COUNT;
-  const projectSkeletonCount =
-    featuredProjectItems.length > 0
-      ? featuredProjectItems.length
-      : PROJECT_PLACEHOLDER_COUNT;
-  const skillSkeletonCount =
-    currentSkills.length > 0 ? currentSkills.length : SKILL_PLACEHOLDER_COUNT;
-
-  useEffect(() => {
-    if (loading || !blogPosts || blogPosts.length === 0) {
-      setBlogRevealCount(0);
-      return;
-    }
-
-    setBlogRevealCount(0);
-    const interval = window.setInterval(() => {
-      setBlogRevealCount((prev) => {
-        const next = Math.min(prev + 1, blogPosts.length);
-        if (next === blogPosts.length) {
-          window.clearInterval(interval);
-        }
-        return next;
-      });
-    }, CARD_REVEAL_INTERVAL);
-
-    return () => window.clearInterval(interval);
-  }, [loading, blogPosts]);
-
-  useEffect(() => {
-    if (loading || featuredProjectItems.length === 0) {
-      setProjectRevealCount(0);
-      return;
-    }
-
-    setProjectRevealCount(0);
-    const interval = window.setInterval(() => {
-      setProjectRevealCount((prev) => {
-        const next = Math.min(prev + 1, featuredProjectItems.length);
-        if (next === featuredProjectItems.length) {
-          window.clearInterval(interval);
-        }
-        return next;
-      });
-    }, CARD_REVEAL_INTERVAL);
-
-    return () => window.clearInterval(interval);
-  }, [loading, featuredProjectItems]);
-
-  useEffect(() => {
-    if (loading || !currentSkills || currentSkills.length === 0) {
-      setSkillsRevealCount(0);
-      return;
-    }
-
-    setSkillsRevealCount(0);
-    const interval = window.setInterval(() => {
-      setSkillsRevealCount((prev) => {
-        const next = Math.min(prev + SKILL_REVEAL_STEP, currentSkills.length);
-        if (next >= currentSkills.length) {
-          window.clearInterval(interval);
-        }
-        return next;
-      });
-    }, SKILL_REVEAL_INTERVAL);
-
-    return () => window.clearInterval(interval);
-  }, [loading, currentSkills, activeSkillTab]);
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    function scheduleRefresh() { if (document.hidden) return; clearTimeout(timer); timer = setTimeout(updateViewCounts, 500); }
+    document.addEventListener('visibilitychange', scheduleRefresh);
+    window.addEventListener('focus', scheduleRefresh);
+    return () => { active = false; clearTimeout(timer); document.removeEventListener('visibilitychange', scheduleRefresh); window.removeEventListener('focus', scheduleRefresh); };
   }, []);
 
-  if (error) {
-    return <HomeErrorState />;
-  }
+  const categorizedSkills = useMemo(() => skills.reduce<Record<string, HomeSkill[]>>((groups, skill) => { const category = skill.category_name || '기타'; (groups[category] ||= []).push(skill); return groups; }, {}), [skills]);
+  const currentSkills = activeSkillTab === 'all' ? skills : categorizedSkills[activeSkillTab] || [];
+  const featuredProjects = projects.filter(project => project.featured);
+  if (error) return <HomeErrorState />;
+  if (isDataLoading) return <HomeLoadingState />;
 
-  if (isDataLoading) {
-    return <HomeLoadingState />;
-  }
-
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
-      <ScrollProgress />
-      <HomeHeroSection
-        displayName={displayName}
-        displayDescription={displayDescription}
-        titleWords={FALLBACK_PROFILE.titleWords}
-        mousePosition={mousePosition}
-        galaxyProps={galaxyProps}
-      />
-      <HomeLatestContent
-        loading={loading}
-        blogPosts={blogPosts}
-        featuredProjectItems={featuredProjectItems}
-        blogRevealCount={blogRevealCount}
-        projectRevealCount={projectRevealCount}
-        blogSkeletonCount={blogSkeletonCount}
-        projectSkeletonCount={projectSkeletonCount}
-      />
-      <HomeSkillsSection
-        loading={loading}
-        activeSkillTab={activeSkillTab}
-        setActiveSkillTab={setActiveSkillTab}
-        categorizedSkills={categorizedSkills}
-        currentSkills={currentSkills}
-        fallbackSkills={FALLBACK_SKILLS}
-        skillSkeletonCount={skillSkeletonCount}
-        skillsRevealCount={skillsRevealCount}
-      />
-    </div>
-  );
+  return <div>
+    <ScrollProgress />
+    <HomeHeroSection displayName={personalInfo?.full_name || personalInfo?.name || FALLBACK_PROFILE.name} displayDescription={personalInfo?.bio || personalInfo?.about || FALLBACK_PROFILE.description} titleWords={FALLBACK_PROFILE.titleWords} />
+    <HomeFeaturedProjects loading={loading} projects={featuredProjects} />
+    <HomeSkillsSection loading={loading} activeSkillTab={activeSkillTab} setActiveSkillTab={setActiveSkillTab} categorizedSkills={categorizedSkills} currentSkills={currentSkills} />
+    <HomeLatestArticles loading={loading} posts={blogPosts} />
+    <Container className="pb-16 sm:pb-24"><div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-7 sm:flex-row sm:items-center sm:p-10 dark:border-zinc-800 dark:bg-zinc-800/40"><div><p className="section-label">연락하기</p><h2 className="mt-3 text-2xl font-semibold tracking-tight">함께 이야기 나눠요.</h2><p className="muted-text mt-3 text-sm leading-7">프로젝트에 대한 질문이나 협업 이야기를 기다립니다.</p></div><Link href="/contact" prefetch={false} className="action-primary shrink-0">연락처 보기<ArrowUpRight size={16} aria-hidden="true" /></Link></div></Container>
+  </div>;
 }

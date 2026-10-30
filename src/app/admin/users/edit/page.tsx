@@ -281,30 +281,30 @@ function EditUserContent() {
         </div>
         {user && (
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <div className="w-16 h-16 shrink-0 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
                 <User className="w-8 h-8 text-slate-600 dark:text-slate-400" />
               </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{user.username}</h2>
-                <div className="flex items-center space-x-4 mt-1">
-                  <div className="flex items-center space-x-1">
+              <div className="min-w-0 w-full flex-1 sm:w-auto">
+                <h2 className="break-words text-xl font-semibold text-slate-900 dark:text-white">{user.username}</h2>
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                     {getRoleIcon(user.role)}
                     <span className="text-sm text-slate-600 dark:text-slate-400">{getRoleLabel(user.role)}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Mail className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">{user.email}</span>
+                  <div className="flex min-w-0 max-w-full items-start gap-1">
+                    <Mail className="w-4 h-4 shrink-0 text-slate-400" />
+                    <span className="min-w-0 break-all text-sm text-slate-600 dark:text-slate-400">{user.email}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="w-4 h-4 text-slate-400" />
+                  <div className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+                    <Calendar className="w-4 h-4 shrink-0 text-slate-400" />
                     <span className="text-sm text-slate-600 dark:text-slate-400">
                       {new Date(user.created_at).toLocaleDateString('ko-KR')}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+              <div className={`shrink-0 self-start whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium sm:self-auto ${
                 user.is_active 
                   ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                   : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'

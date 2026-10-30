@@ -6,8 +6,10 @@ import ScrollProgress from "@/components/ScrollProgress";
 import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { projectApi, api } from "@/lib/api";
 import { Project } from "@/types";
+import { AnimatedList } from '@/components/site/AnimatedList';
 import Pagination from "@/components/Pagination";
-const PROJECT_CARD_REVEAL_INTERVAL = 120;
+import { scrollToPageStart } from '@/lib/page-scroll';
+
 const PROJECTS_PAGE_SIZE = 6;
 
 /**
@@ -43,19 +45,19 @@ const matchesSearch = (text: string | undefined | null, query: string): boolean 
   if (!text) return false;
   const lowerText = text.toLowerCase();
   const lowerQuery = query.toLowerCase();
-  
+
   // 일반 문자열 검색 (대소문자 구분 없음)
   if (lowerText.includes(lowerQuery)) {
     return true;
   }
-  
+
   // 초성 검색
   const textInitial = getInitialConsonant(text);
   const queryInitial = getInitialConsonant(query);
   if (textInitial.includes(queryInitial)) {
     return true;
   }
-  
+
   return false;
 };
 /**
@@ -69,13 +71,11 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTechs, setSelectedTechs] = useState<string[]>([]);
   const [availableTechs, setAvailableTechs] = useState<string[]>([]);
-  const [_tags, setTags] = useState<Array<{id: string; name: string; slug: string}>>([]);
   const [sortOrder, setSortOrder] = useState<'created_at' | 'title' | 'view_count' | 'display_order'>('created_at');
   const [githubUrl, setGithubUrl] = useState<string>('https://github.com');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalProjects, setTotalProjects] = useState(0);
-  const [projectRevealCount, setProjectRevealCount] = useState(0);
+
   const [allProjects, setAllProjects] = useState<Project[]>([]); // 모든 프로젝트 저장
 
   // 프론트엔드에서 검색, 필터, 정렬, 페이지네이션 처리
@@ -85,7 +85,7 @@ export default function Projects() {
     // 검색어 필터링 (대소문자 구분 없음, 초성 검색 포함)
     if (searchQuery.trim()) {
       const query = searchQuery.trim();
-      filtered = filtered.filter(project => 
+      filtered = filtered.filter(project =>
         matchesSearch(project.title, query) ||
         matchesSearch(project.description, query) ||
         matchesSearch(project.excerpt, query)
@@ -126,15 +126,7 @@ export default function Projects() {
     const endIndex = startIndex + PROJECTS_PAGE_SIZE;
     return filteredProjects.slice(startIndex, endIndex);
   }, [filteredProjects, currentPage]);
-  const projectSkeletonCount = useMemo(() => {
-    if (filteredProjects.length > 0) {
-      return filteredProjects.length;
-    }
-    if (totalProjects > 0) {
-      return Math.max(Math.min(totalProjects, PROJECTS_PAGE_SIZE), 1);
-    }
-    return 1;
-  }, [filteredProjects, totalProjects]);
+
   /**
    * @function handleSearch
    * @description 검색어 입력에 따라 프로젝트 목록 필터를 초기화하고 알림을 표시한다.
@@ -154,7 +146,7 @@ export default function Projects() {
   const handleTechFilter = useCallback((tech: string) => {
     setSelectedTechs(prev => {
       const isCurrentlySelected = prev.includes(tech);
-      const newTechs = isCurrentlySelected 
+      const newTechs = isCurrentlySelected
         ? prev.filter(t => t !== tech)
         : [...prev, tech];
       if (isCurrentlySelected) {
@@ -170,49 +162,8 @@ export default function Projects() {
       }
       return newTechs;
     });
-    setCurrentPage(1); 
+    setCurrentPage(1);
   }, []);
-  /**
-   * @component ProjectSkeletonContent
-   * @description 프로젝트 카드 로딩 상태를 위한 스켈레톤 콘텐츠.
-   * @returns {JSX.Element} 스켈레톤 카드 콘텐츠.
-   */
-  const ProjectSkeletonContent = () => (
-    <div className="p-6 animate-pulse">
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg" />
-        <div className="flex space-x-3">
-          <div className="w-5 h-5 bg-slate-300 dark:bg-slate-600 rounded" />
-          <div className="w-5 h-5 bg-slate-300 dark:bg-slate-600 rounded" />
-        </div>
-      </div>
-      <div className="h-6 bg-slate-300 dark:bg-slate-600 rounded w-3/4 mb-2" />
-      <div className="space-y-2 mb-4">
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-full" />
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-5/6" />
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-4/5" />
-      </div>
-      <div className="flex gap-2 mb-4">
-        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-12" />
-        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-16" />
-        <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-14" />
-      </div>
-      <div className="flex justify-between items-center">
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-20" />
-        <div className="h-4 bg-slate-300 dark:bg-slate-600 rounded w-12" />
-      </div>
-    </div>
-  );
-  /**
-   * @component SkeletonProjectCard
-   * @description 공통 스타일을 적용한 프로젝트 스켈레톤 카드 컨테이너.
-   * @returns {JSX.Element} 스켈레톤 프로젝트 카드.
-   */
-  const SkeletonProjectCard = () => (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <ProjectSkeletonContent />
-    </div>
-  );
   useEffect(() => {
     /**
      * @function fetchTags
@@ -234,12 +185,12 @@ export default function Projects() {
         }
         const techNames = allTags.map(tag => tag.name).sort();
         setAvailableTechs(techNames);
-        setTags(allTags);
+
       } catch {
       }
     };
     fetchTags();
-  }, []); 
+  }, []);
   // 초기 데이터 로드 (한 번만)
   useEffect(() => {
     /**
@@ -257,7 +208,7 @@ export default function Projects() {
         });
         if (projectsResponse.success && projectsResponse.data) {
           setAllProjects(projectsResponse.data);
-          setTotalProjects(projectsResponse.data.length);
+
           setError(null);
         } else {
           setError('프로젝트를 불러올 수 없습니다.');
@@ -291,23 +242,6 @@ export default function Projects() {
     }
   }, [filteredProjects, currentPage]);
 
-  useEffect(() => {
-    if (loading || filteredProjects.length === 0) {
-      setProjectRevealCount(0);
-      return;
-    }
-    setProjectRevealCount(0);
-    const interval = window.setInterval(() => {
-      setProjectRevealCount((prev) => {
-        const next = Math.min(prev + 1, filteredProjects.length);
-        if (next === filteredProjects.length) {
-          window.clearInterval(interval);
-        }
-        return next;
-      });
-    }, PROJECT_CARD_REVEAL_INTERVAL);
-    return () => window.clearInterval(interval);
-  }, [loading, filteredProjects]);
   /**
    * @function handlePageChange
    * @description 페이지네이션 이동 시 현재 페이지와 스크롤 위치를 업데이트한다.
@@ -316,327 +250,80 @@ export default function Projects() {
    */
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToPageStart();
   };
   return (
     <>
       <ScrollProgress />
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <section className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-              프로젝트 포트폴리오
-            </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8">
-              다양한 기술을 활용하여 제작한 프로젝트들을 소개합니다
-            </p>
-          </section>
-          <section className="mb-16">
-            <div className="mb-8">
-              <div 
-                className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
-              >
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="프로젝트 검색..." 
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full sm:w-80 px-4 py-2 pl-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    aria-label="프로젝트 검색"
-                  />
-                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div 
-                className="flex flex-wrap justify-center gap-2 mb-8"
-              >
-                <button
-                  onClick={() => setSelectedTechs([])}
-                  data-all-projects="true"
-                  className={`px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
-                    selectedTechs.length === 0
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-blue-700 ring-4 ring-blue-200 dark:ring-blue-800/50'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
-                  }`}
-                >
-                  전체
-                  {selectedTechs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                      ↺
-                    </span>
-                  )}
-                </button>
-                {availableTechs.map((tech) => (
-                  <button
-                    key={tech}
-                    onClick={() => handleTechFilter(tech)}
-                    className={`project-filter-btn px-4 py-2 text-sm border-2 rounded-lg transition-all duration-200 font-semibold active:scale-95 relative group ${
-                      selectedTechs.includes(tech)
-                        ? 'project-filter-btn-selected bg-blue-600 text-white border-blue-600 shadow-lg ring-2 ring-blue-200 dark:ring-blue-800/50'
-                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-800/50'
-                    }`}
-                  >
-                    {tech}
-                    {!selectedTechs.includes(tech) && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                        +
-                      </span>
-                    )}
-                    {selectedTechs.includes(tech) && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                        ×
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  프로젝트 ({filteredProjects.length}개)
-                </h2>
-                <div className="flex items-center space-x-4">
-                  <select
-                    value={sortOrder}
-                    onChange={(e) => {
-                      const newSortOrder = e.target.value as 'created_at' | 'title' | 'view_count' | 'display_order';
-                      setSortOrder(newSortOrder);
-                      const sortLabels = {
-                        'created_at': '생성일순',
-                        'title': '제목순',
-                        'view_count': '조회수순',
-                        'display_order': '표시순서순'
-                      };
-                      toast(`${sortLabels[newSortOrder]}으로 정렬합니다.`, {
-                        duration: 1500,
-                        icon: '🔄',
-                      });
-                    }}
-                    className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="프로젝트 정렬 방식 선택"
-                  >
-                    <option value="created_at">생성일순</option>
-                    <option value="title">제목순</option>
-                    <option value="view_count">조회수순</option>
-                    <option value="display_order">표시순서</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            {loading ? (
-              <div className="grid lg:grid-cols-2 gap-8">
-                {Array.from({ length: projectSkeletonCount }).map((_, index) => (
-                  <SkeletonProjectCard key={`project-loading-${index}`} />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-sm dark:border-white/10 dark:bg-[rgba(15,23,42,0.55)]">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">
-                  Mission Pending
-                </p>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">프로젝트 데이터를 연결하는 중입니다</h3>
-                <p className="text-slate-600 dark:text-slate-300 mb-5">
-                  라이브 서버가 연결되면 대표 프로젝트와 기술 스택이 표시됩니다. 지금은 프로젝트 탐색 흐름을 먼저 확인할 수 있습니다.
-                </p>
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  다시 시도
-                </button>
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 dark:text-slate-400">
-                  {searchQuery || selectedTechs.length > 0 ? '검색 결과가 없습니다.' : '아직 프로젝트가 없습니다.'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid lg:grid-cols-2 gap-8">
-                {paginatedProjects.map((project, index) => {
-                  const isRevealed = index < projectRevealCount;
-                  const baseClass = "bg-white dark:bg-slate-800 rounded-xl shadow-sm transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700";
-                  const stateClass = isRevealed
-                    ? "cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
-                    : "cursor-default pointer-events-none";
-                  /**
-                   * @description 프로젝트에 연결된 기술 스택 목록을 계산합니다.
-                   * @returns {string[]} 표시할 기술 스택 배열.
-                   */
-	                  const techList = (() => {
-                    if (project.technologies) {
-                      return project.technologies.split(',').map((tech) => tech.trim());
-                    }
-                    if (project.skills && project.skills.length > 0) {
-                      return project.skills.map((skill) => typeof skill === 'string' ? skill : skill.name);
-                    }
-                    if (project.tags && project.tags.length > 0) {
-                      return project.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name));
-                    }
-	                    return [] as string[];
-	                  })();
-	                  const coverImage = project.featured_image || project.image_url;
-	                  return (
-                    <article
-                      key={project.id}
-                      className={`${baseClass} ${stateClass}`}
-                      onClick={isRevealed ? () => (window.location.href = `/projects/${encodeURIComponent(project.slug)}`) : undefined}
-                    >
-	                      {isRevealed ? (
-	                        <div className="p-6">
-                          {coverImage ? (
-                            <ProjectCoverImage
-                              src={coverImage}
-                              alt={project.title}
-                              sizes="(min-width: 1024px) 560px, 100vw"
-                              priority={index < 2}
-                              className="-mx-6 -mt-6 mb-5 h-44 border-b border-slate-200 dark:border-slate-700"
-                            />
-                          ) : null}
-	                          <div className="flex items-center justify-between mb-4">
-	                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
-	                              <span className="text-white font-bold text-sm">
-	                                {project.title.charAt(0).toUpperCase()}
-	                              </span>
-	                            </div>
-                            <div className="flex items-center gap-1">
-                              {project.demo_url && (
-                                <a
-                                  href={project.demo_url}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                                  onClick={(e) => e.stopPropagation()}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  aria-label={`${project.title} 데모 열기`}
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                </a>
-                              )}
-                              {project.github_url && (
-                                <a
-                                  href={project.github_url}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                                  onClick={(e) => e.stopPropagation()}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  aria-label={`${project.title} GitHub 열기`}
-                                >
-                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-                                  </svg>
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mb-3">
-                            <time>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 없음'}</time>
-                            <span className="text-sm text-slate-400">{project.featured ? '주요 프로젝트' : '프로젝트'}</span>
-                          </div>
-                          <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3 line-clamp-2">
-                            {project.title}
-                          </h3>
-                          <p className="text-slate-600 dark:text-slate-300 mb-4 line-clamp-3">
-	                            {project.excerpt || project.description || project.content_text?.slice(0, 160)}
-                          </p>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {techList.length > 0 ? (
-                              techList.map((tech, techIndex) => (
-                                <span
-                                  key={`${project.id}-tech-${techIndex}`}
-                                  className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full cursor-pointer transition-transform transform hover:-translate-y-0.5 hover:scale-105"
-                                >
-                                  {tech}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-sm rounded-full">
-                                기술 정보 없음
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2 mb-3">
-                            {project.demo_url && (
-                              <a
-                                href={project.demo_url}
-                                className="inline-flex min-h-9 items-center rounded-md px-1 text-sm font-medium text-blue-600 transition-transform hover:translate-x-1 hover:underline dark:text-blue-400"
-                                onClick={(e) => e.stopPropagation()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                데모 보기 →
-                              </a>
-                            )}
-                            {project.github_url && (
-                              <a
-                                href={project.github_url}
-                                className="inline-flex min-h-9 items-center rounded-md px-1 text-sm font-medium text-blue-600 transition-transform hover:translate-x-1 hover:underline dark:text-blue-400"
-                                onClick={(e) => e.stopPropagation()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                GitHub →
-                              </a>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <a
-                              href={`/projects/${encodeURIComponent(project.slug)}`}
-                              className="inline-flex min-h-9 items-center rounded-md px-1 text-sm font-medium text-blue-600 transition-transform hover:translate-x-1 hover:underline dark:text-blue-400"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              자세히 보기 →
-                            </a>
-                            <span className="text-xs text-slate-400">
-                              조회 {project.view_count || 0}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <ProjectSkeletonContent />
-                      )}
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-            {!searchQuery && selectedTechs.length === 0 && totalPages > 1 && (
-              <div className="mt-12">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <div className="text-center mt-4 text-sm text-slate-500 dark:text-slate-400">
-                  총 {totalProjects}개의 프로젝트 중 {((currentPage - 1) * 6) + 1}-{Math.min(currentPage * 6, totalProjects)}번째 프로젝트
-                </div>
-              </div>
-            )}
-          </section>
-          <section 
-            className="mt-16 text-center"
-          >
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-8">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                함께 프로젝트를 만들어보실래요?
-              </h2>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">
-                새로운 아이디어나 협업 제안을 언제든 환영합니다
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact" prefetch={false} className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                  연락하기
-                </Link>
-                <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-white transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                  GitHub 보기
-                </a>
-              </div>
-            </div>
-          </section>
-        </main>
+      <div className="site-container site-section">
+        <header className="mb-12 max-w-3xl">
+          <p className="section-label">프로젝트</p>
+          <h1 className="page-heading mt-4">만들고, 개선해 온 것들.</h1>
+          <p className="page-intro mt-6">프로젝트의 목적과 구현 과정, 사용한 기술을 정리했습니다. 각 작업의 상세 내용과 코드를 함께 살펴보세요.</p>
+        </header>
+
+        <section aria-label="프로젝트 검색 및 필터" className="mb-10 space-y-5 border-y border-zinc-200 py-6 dark:border-zinc-800">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <label className="block w-full sm:max-w-md">
+              <span className="mb-2 block text-sm font-medium">프로젝트 검색</span>
+              <input type="search" value={searchQuery} onChange={e => handleSearch(e.target.value)} placeholder="제목, 설명으로 검색 (초성 검색 가능)" aria-label="프로젝트 검색" className="field-input w-full" />
+            </label>
+            <label className="block sm:w-40">
+              <span className="mb-2 block text-sm font-medium">정렬</span>
+              <select value={sortOrder} onChange={e => setSortOrder(e.target.value as typeof sortOrder)} className="field-input w-full" aria-label="프로젝트 정렬 방식 선택">
+                <option value="created_at">생성일순</option><option value="title">제목순</option><option value="view_count">조회수순</option><option value="display_order">표시순서</option>
+              </select>
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2" aria-label="기술 스택 필터">
+            <button type="button" data-all-projects="true" aria-pressed={selectedTechs.length === 0} onClick={() => { setSelectedTechs([]); setCurrentPage(1); }} className="filter-chip">전체</button>
+            {availableTechs.map(tech => <button type="button" key={tech} aria-pressed={selectedTechs.includes(tech)} onClick={() => handleTechFilter(tech)} className="filter-chip">{tech}</button>)}
+          </div>
+        </section>
+
+        <section aria-label="프로젝트 목록" aria-busy={loading}>
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">프로젝트 <span className="muted-text ml-1 text-sm font-normal">{loading ? '불러오는 중' : `${filteredProjects.length}개`}</span></h2>
+            {selectedTechs.length > 0 && <p className="muted-text text-sm">선택한 기술 중 하나를 포함한 프로젝트</p>}
+          </div>
+          {loading ? (
+            <div role="status" className="grid gap-8 md:grid-cols-2"><span className="sr-only">프로젝트를 불러오는 중입니다.</span>{[0, 1].map(index => <div key={index} className="surface-card overflow-hidden motion-safe:animate-pulse"><div className="aspect-[16/10] bg-zinc-100 dark:bg-zinc-800" /><div className="space-y-4 p-6"><div className="h-6 w-2/3 rounded bg-zinc-100 dark:bg-zinc-800" /><div className="h-4 rounded bg-zinc-100 dark:bg-zinc-800" /><div className="h-4 w-3/4 rounded bg-zinc-100 dark:bg-zinc-800" /></div></div>)}</div>
+          ) : error ? (
+            <div className="surface-card p-8 sm:p-12" role="alert"><h3 className="text-xl font-semibold">프로젝트를 불러오지 못했습니다.</h3><p className="muted-text mt-3">{error} 잠시 후 다시 시도해 주세요.</p><button type="button" onClick={() => window.location.reload()} className="action-secondary mt-6">다시 시도</button></div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="surface-card px-6 py-16 text-center"><h3 className="text-lg font-semibold">{searchQuery || selectedTechs.length > 0 ? '검색 결과가 없습니다.' : '아직 프로젝트가 없습니다.'}</h3><p className="muted-text mt-3">{searchQuery || selectedTechs.length > 0 ? '다른 검색어를 입력하거나 기술 필터를 조정해 보세요.' : '프로젝트가 등록되면 이곳에서 확인할 수 있습니다.'}</p></div>
+          ) : (
+            <AnimatedList items={paginatedProjects.map(project => project.id)} className="grid gap-8 md:grid-cols-2">
+              {paginatedProjects.map((project, index) => {
+                const techList = project.technologies ? project.technologies.split(',').map(tech => tech.trim()).filter(Boolean) : project.skills?.length ? project.skills.map(skill => typeof skill === 'string' ? skill : skill.name) : project.tags?.map(tag => typeof tag === 'string' ? tag : tag.name) || [];
+                const href = `/projects/${encodeURIComponent(project.slug)}`;
+                return (
+                  <article data-reveal data-layout-id={project.id} data-project-card={project.slug} key={project.id} className="project-card surface-card group flex min-w-0 flex-col overflow-hidden">
+                    <Link data-project-link={project.slug} href={href} prefetch={false} aria-label={`${project.title} 상세 보기`} className="block overflow-hidden border-b border-zinc-200 dark:border-zinc-800">
+                      <ProjectCoverImage transitionKey={project.slug} src={project.featured_image || project.image_url} alt={project.title} className="project-cover aspect-[16/10] w-full rounded-t-[19px]" imageClassName="object-cover" sizes="(min-width: 768px) 536px, 100vw" priority={index < 2} fallbackLabel="대표 이미지가 등록되지 않았습니다." />
+                    </Link>
+                    <div className="flex flex-1 flex-col p-6 sm:p-7">
+                      <div className="muted-text mb-3 flex items-center justify-between gap-3 text-xs"><time dateTime={project.created_at}>{project.created_at ? new Date(project.created_at).toLocaleDateString('ko-KR') : '날짜 미등록'}</time>{project.featured && <span className="font-medium text-teal-700 dark:text-teal-400">대표 프로젝트</span>}</div>
+                      <h3 className="text-2xl font-semibold tracking-tight"><Link data-project-link={project.slug} href={href} prefetch={false} className="transition-colors hover:text-teal-700 dark:hover:text-teal-400">{project.title}</Link></h3>
+                      <p className="muted-text mt-3 line-clamp-3 text-sm leading-7">{project.excerpt || project.description || project.content_text?.slice(0, 160)}</p>
+                      {techList.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{techList.map((tech, techIndex) => <span key={`${tech}-${techIndex}`} className="tag">{tech}</span>)}</div>}
+                      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-5 text-sm dark:border-zinc-800">
+                        <Link data-project-link={project.slug} href={href} prefetch={false} className="font-semibold text-teal-700 hover:underline dark:text-teal-400">프로젝트 살펴보기 <span aria-hidden="true">→</span></Link>
+                        <span className="muted-text text-xs">조회 {project.view_count || 0}</span>
+                      </div>
+                      {(project.demo_url || project.project_url || project.github_url) && <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">{(project.demo_url || project.project_url) && <a href={project.demo_url || project.project_url} target="_blank" rel="noopener noreferrer" className="muted-text hover:text-teal-700 dark:hover:text-teal-400">프로젝트 링크 ↗</a>}{project.github_url && <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="muted-text hover:text-teal-700 dark:hover:text-teal-400">GitHub ↗</a>}</div>}
+                    </div>
+                  </article>
+                );
+              })}
+            </AnimatedList>
+          )}
+          {!loading && !error && totalPages > 1 && <div className="mt-12"><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /><p className="muted-text mt-4 text-center text-sm">총 {filteredProjects.length}개의 프로젝트 중 {(currentPage - 1) * PROJECTS_PAGE_SIZE + 1}–{Math.min(currentPage * PROJECTS_PAGE_SIZE, filteredProjects.length)}번째 프로젝트</p></div>}
+        </section>
+        <section className="mt-20 flex flex-col gap-6 border-t border-zinc-200 pt-10 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
+          <div><p className="section-label">함께 일하기</p><h2 className="mt-3 text-2xl font-semibold tracking-tight">나누고 싶은 이야기가 있나요?</h2><p className="muted-text mt-3">프로젝트와 협업에 관한 이야기를 기다립니다.</p></div>
+          <div className="flex flex-wrap gap-3"><Link href="/contact" prefetch={false} className="action-primary">연락하기</Link><a href={githubUrl} target="_blank" rel="noopener noreferrer" className="action-secondary">GitHub 보기 ↗</a></div>
+        </section>
       </div>
     </>
   );

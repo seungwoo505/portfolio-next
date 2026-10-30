@@ -241,16 +241,16 @@ export default function ExperiencesPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-4xl mx-auto">
         <div>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center space-x-3">
-              <Briefcase className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <Briefcase className="w-8 h-8 shrink-0 text-blue-600 dark:text-blue-400" />
+              <h1 className="break-keep text-3xl font-bold text-gray-900 dark:text-white">
                 경험 관리
               </h1>
             </div>
             <button
               onClick={() => openModal()}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>경험 추가</span>
@@ -262,14 +262,14 @@ export default function ExperiencesPage() {
                 key={experience.id}
                 className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6 transition-colors"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
+                  <div className="min-w-0 w-full flex-1">
+                    <div className="mb-2 flex flex-wrap items-center gap-3">
+                      <h3 className="break-words text-lg font-semibold text-gray-900 dark:text-white">
                         {experience.title}
                       </h3>
                       {experience.company && (
-                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full">
+                        <span className="max-w-full break-words px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full">
                           {experience.company}
                         </span>
                       )}
@@ -283,7 +283,7 @@ export default function ExperiencesPage() {
                       </div>
                     </div>
                     {experience.description && (
-                      <p className="text-gray-700 dark:text-gray-300 mb-3">
+                      <p className="break-words text-gray-700 dark:text-gray-300 mb-3">
                         {experience.description}
                       </p>
                     )}
@@ -303,7 +303,7 @@ export default function ExperiencesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
+                  <div className="flex shrink-0 self-end items-center gap-2 sm:ml-4 sm:self-start">
                     <button
                       onClick={() => openModal(experience)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"

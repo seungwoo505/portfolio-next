@@ -1,5 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
+import { Heading } from '@/components/ui/heading';
+import { DescriptionList, DescriptionTerm, DescriptionDetails } from '@/components/ui/description-list';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { SitePublicSettings } from '@/types';
@@ -40,25 +42,25 @@ export default function SettingsPage() {
    */
   const renderSettingValue = (key: string, value: string | number | boolean | Record<string, unknown>) => {
     if (value === undefined || value === null || value === '') {
-      return <span className="text-gray-400 italic">설정되지 않음</span>;
+      return <span className="muted-text italic">설정되지 않음</span>;
     }
     switch (typeof value) {
       case 'boolean':
         return (
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-            value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            value ? 'bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300' : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
           }`}>
             {value ? '활성화' : '비활성화'}
           </span>
         );
       case 'number':
-        return <span className="font-mono text-blue-600">{value}</span>;
+        return <span className="font-mono text-teal-700 dark:text-teal-400">{value}</span>;
       case 'string':
         if (key.includes('color')) {
           return (
             <div className="flex items-center space-x-2">
-              <div 
-                className="w-6 h-6 rounded border border-gray-300" 
+              <div
+                className="w-6 h-6 rounded border border-zinc-200 dark:border-zinc-700"
                 style={{ backgroundColor: value }}
               ></div>
               <span className="font-mono text-sm">{value}</span>
@@ -67,11 +69,11 @@ export default function SettingsPage() {
         }
         if (key.includes('url') || key.includes('link')) {
           return (
-            <a 
-              href={value} 
-              target="_blank" 
+            <a
+              href={value}
+              target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline break-all"
+              className="text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 underline break-all"
             >
               {value}
             </a>
@@ -79,17 +81,17 @@ export default function SettingsPage() {
         }
         if (key.includes('email')) {
           return (
-            <a 
+            <a
               href={`mailto:${value}`}
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 underline"
             >
               {value}
             </a>
           );
         }
-        return <span className="text-gray-900">{value}</span>;
+        return <span className="text-zinc-900 dark:text-zinc-100">{value}</span>;
       default:
-        return <span className="text-gray-900">{String(value)}</span>;
+        return <span className="text-zinc-900 dark:text-zinc-100">{String(value)}</span>;
     }
   };
   /**
@@ -150,87 +152,24 @@ export default function SettingsPage() {
     return groups;
   };
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">설정을 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
-  if (false) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-600 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">오류가 발생했습니다</h1>
-          <p className="text-gray-600">설정을 불러오는 중 오류가 발생했습니다.</p>
-        </div>
-      </div>
-    );
+    return <div className="site-container site-section" role="status"><p className="section-label">사이트 정보</p><h1 className="page-heading mt-5">사이트 설정</h1><p className="page-intro mt-6">설정을 불러오는 중입니다.</p></div>;
   }
   const groupedSettings = groupSettings();
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-3xl font-bold text-gray-900">사이트 설정</h1>
-            <p className="text-gray-600 mt-2">
-              현재 사이트에 적용된 설정 정보를 확인할 수 있습니다.
-            </p>
-          </div>
-          <div className="p-6">
-            {Object.entries(groupedSettings).map(([groupName, groupSettings]) => {
-              if (Object.keys(groupSettings).length === 0) return null;
-              return (
-                <div key={groupName} className="mb-8">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">
-                    {groupName}
-                  </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {Object.entries(groupSettings).map(([key, value]) => (
-                      <div key={key} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-sm font-medium text-gray-700 mb-1">
-                              {getSettingDescription(key)}
-                            </h3>
-                            <div className="text-xs text-gray-500 mb-2">
-                              <code className="bg-gray-200 px-1 rounded">{key}</code>
-                            </div>
-                            <div className="text-sm">
-                              {renderSettingValue(key, value)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800">정보</h3>
-                  <div className="mt-2 text-sm text-blue-700">
-                    <p>
-                      이 페이지는 사이트의 공개 설정 정보를 보여줍니다. 
-                      설정을 변경하려면 관리자 계정으로 로그인하여 관리자 페이지를 이용해주세요.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="site-container site-section">
+      <header className="max-w-2xl"><p className="section-label">사이트 정보</p><h1 className="page-heading mt-5">사이트 설정</h1><p className="page-intro mt-6">현재 사이트에 적용된 공개 설정을 확인할 수 있습니다.</p></header>
+      <div className="mt-12 max-w-4xl space-y-10">
+        {Object.entries(groupedSettings).map(([groupName, groupSettings]) => {
+          if (Object.keys(groupSettings).length === 0) return null;
+          return <section key={groupName} className="surface-card p-6 sm:p-8"><Heading level={2}>{groupName}</Heading><DescriptionList className="mt-6">
+            {Object.entries(groupSettings).map(([key, value]) => <Fragment key={key}>
+              <DescriptionTerm><span className="block text-sm text-zinc-700 dark:text-zinc-300">{getSettingDescription(key)}</span><code className="mt-1 block break-all text-xs text-zinc-400 dark:text-zinc-500">{key}</code></DescriptionTerm>
+              <DescriptionDetails className="min-w-0 break-words">{renderSettingValue(key, value)}</DescriptionDetails>
+            </Fragment>)}
+          </DescriptionList></section>;
+        })}
+        {Object.keys(settings).length === 0 && <p className="surface-card p-8 muted-text">표시할 공개 설정이 없습니다.</p>}
+        <p className="border-l-2 border-teal-600 pl-5 text-sm leading-7 muted-text">이 페이지는 사이트의 공개 설정 정보를 보여줍니다. 설정을 변경하려면 관리자 계정으로 로그인하여 관리자 페이지를 이용해 주세요.</p>
       </div>
     </div>
   );

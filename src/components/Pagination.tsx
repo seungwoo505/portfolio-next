@@ -56,7 +56,7 @@ const Pagination: React.FC<PaginationProps> = ({
     return null;
   }
   return (
-    <div className={`flex items-center justify-center space-x-2 ${className}`}>
+    <nav aria-label="페이지 이동" className={`pagination-control flex flex-wrap items-center justify-center gap-1 border-t border-zinc-200 pt-8 dark:border-zinc-800 ${className}`}>
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -85,10 +85,12 @@ const Pagination: React.FC<PaginationProps> = ({
       {pageNumbers.map((page) => (
         <button
           key={page}
+          aria-label={`${page}페이지`}
+          aria-current={page === currentPage ? 'page' : undefined}
           onClick={() => onPageChange(page)}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             page === currentPage
-              ? 'bg-blue-600 text-white shadow-md'
+              ? 'bg-teal-50 text-teal-800 ring-1 ring-teal-600/20 dark:bg-teal-950 dark:text-teal-200'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -120,7 +122,7 @@ const Pagination: React.FC<PaginationProps> = ({
         다음
         <ChevronRight className="w-4 h-4 ml-1" />
       </button>
-    </div>
+    </nav>
   );
 };
 export default Pagination;
