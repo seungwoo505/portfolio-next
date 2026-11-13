@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { normalizeImageUrl } from "@/utils/image-url";
+import { shouldBypassImageOptimization } from "@/lib/image-policy";
 
 interface ProjectCoverImageProps {
   src?: string | null;
@@ -45,7 +46,7 @@ export default function ProjectCoverImage({
           fill
           sizes={sizes}
           priority={priority}
-          unoptimized
+          unoptimized={shouldBypassImageOptimization(normalizedSrc)}
           className={imageClassName}
           onError={() => setFailedSrc(normalizedSrc)}
         />

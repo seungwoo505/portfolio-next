@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { shouldBypassImageOptimization } from "@/lib/image-policy";
 import { useState, useEffect } from "react";
 import { blogApi } from "@/lib/api";
 import { BlogPost as BlogPostType } from "@/types";
@@ -130,7 +131,7 @@ function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
           <div className="muted-text mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"><time dateTime={post.created_at}>{formattedDate}</time>{readingTime && <span>{readingTime}</span>}<span>조회 {viewCount}</span></div>
           {tagList.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{tagList.map(tag => <span key={tag} className="tag">{tag}</span>)}</div>}
         </header>
-        {post.featured_image && <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-[20px] border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"><Image src={post.featured_image} alt={post.title} fill priority sizes="(min-width: 768px) 720px, 100vw" className="object-cover" /></div>}
+        {post.featured_image && <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-[20px] border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"><Image src={post.featured_image} unoptimized={shouldBypassImageOptimization(post.featured_image)} alt={post.title} fill priority sizes="(min-width: 768px) 720px, 100vw" className="object-cover" /></div>}
         <article className="py-10 sm:py-12" aria-label="포스트 본문">
           <div className="prose-content">
             {(post.content_html?.trim() || post.content) ? postContentHtml ? <div className="blog-post-block-content" dangerouslySetInnerHTML={{ __html: postContentHtml }} /> : <p className="muted-text" role="status">포스트 내용을 렌더링하는 중입니다.</p> : <p className="muted-text">콘텐츠를 불러올 수 없습니다.</p>}

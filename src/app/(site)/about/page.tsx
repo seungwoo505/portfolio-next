@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
+import { shouldBypassImageOptimization } from '@/lib/image-policy';
 import { api, personalApi } from '@/lib/api';
 import ScrollProgress from '@/components/ScrollProgress';
 import { AboutPersonalInfo, AboutSkill, AboutExperience, AboutInterest, AboutCategory } from '@/types';
@@ -145,7 +146,7 @@ export default function AboutPage() {
           {isLoading ? <div role="status" className="mt-6 space-y-4"><p className="muted-text">소개를 불러오는 중입니다.</p><div className="h-12 w-48 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" /></div> : <>
             <div className="mt-5 flex flex-wrap items-center gap-6">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 text-3xl font-semibold text-teal-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-teal-400">
-                {personalInfo.avatar_url ? <Image src={personalInfo.avatar_url} alt={personalInfo.full_name || '프로필'} width={80} height={80} className="h-full w-full object-cover" /> : <span>{personalInfo.full_name?.charAt(0) || 'S'}</span>}
+                {personalInfo.avatar_url ? <Image src={personalInfo.avatar_url} unoptimized={shouldBypassImageOptimization(personalInfo.avatar_url)} alt={personalInfo.full_name || '프로필'} width={80} height={80} className="h-full w-full object-cover" /> : <span>{personalInfo.full_name?.charAt(0) || 'S'}</span>}
               </div>
               <div className="min-w-0">
                 {personalInfo.title && <p className="mb-2 text-sm font-medium text-teal-700 dark:text-teal-400">{personalInfo.title}</p>}

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { shouldBypassImageOptimization } from "@/lib/image-policy";
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -315,6 +316,7 @@ export default function BlogManagement() {
                       {post.featured_image && (
                         <Image
                           src={post.featured_image}
+                          unoptimized={shouldBypassImageOptimization(post.featured_image)}
                           alt={post.title}
                           width={60}
                           height={60}
@@ -426,6 +428,7 @@ export default function BlogManagement() {
                           {post.featured_image && (
                             <Image
                               src={post.featured_image}
+                              unoptimized={shouldBypassImageOptimization(post.featured_image)}
                               alt={post.title}
                               width={48}
                               height={48}
