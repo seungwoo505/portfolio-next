@@ -44,6 +44,8 @@ exports.createEditorHarness = (editor, props) => {
   const Component = exports.loadWithDependencies(
     '../../src/app/admin/components/BlockContentEditor.tsx',
     {
+      '@blocknote/core/fonts/inter.css': {},
+      '@blocknote/mantine/style.css': {},
       react,
       '@blocknote/react': { useCreateBlockNote(options) {
         if (!created) editor.document = options.initialContent;

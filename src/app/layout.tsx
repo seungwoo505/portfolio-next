@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
 import "./globals.css";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';

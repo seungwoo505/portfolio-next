@@ -88,6 +88,11 @@
   .skeleton { background: var(--border); border-radius: .375rem; animation: skeleton-pulse 1.6s ease-in-out infinite; }
 }
 /* Spotlight reading rhythm, shared by API-rendered Markdown and rich text. */
+/* Preserve BlockNote's exported alignment rules, including their original priority. */
+[data-text-alignment="left"] { text-align: left !important; justify-content: flex-start !important; }
+[data-text-alignment="center"] { text-align: center !important; justify-content: center !important; }
+[data-text-alignment="right"] { text-align: right !important; justify-content: flex-end !important; }
+[data-text-alignment="justify"] { text-align: justify !important; justify-content: flex-start !important; }
 .prose, .prose-content { max-width: 72ch; color: var(--foreground); font-size: 1rem; line-height: 1.95; overflow-wrap: anywhere; }
 :is(.prose, .prose-content) :is(h1, h2, h3, h4) { margin: 2.5em 0 1em; font-weight: 650; line-height: 1.4; letter-spacing: -.03em; scroll-margin-top: 6rem; }
 :is(.prose, .prose-content) h1 { font-size: 2rem; }
