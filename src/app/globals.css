@@ -145,6 +145,7 @@
 .high-contrast { --foreground: #000; --muted: #333; --border: #666; }
 .dark.high-contrast { --foreground: #fff; --muted: #e4e4e7; --border: #a1a1aa; }
 .keyboard-navigation *:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
+html.reduced-motion { scroll-behavior: auto; }
 .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 @keyframes skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 

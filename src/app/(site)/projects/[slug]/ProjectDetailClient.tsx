@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProjectCoverImage from "@/components/ProjectCoverImage";
+import ArticleContents from "@/components/site/ArticleContents";
 import { projectApi } from "@/lib/api";
 import { Project } from "@/types";
 import { isProjectFlagEnabled } from "@/utils/project-state";
@@ -20,6 +21,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
   const [project, setProject] = useState<Project | null>(initialProject ?? null);
   const [loading, setLoading] = useState(!initialProject);
   const [projectContentHtml, setProjectContentHtml] = useState('');
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!slug) {
@@ -183,7 +185,7 @@ function ProjectDetailContent({ slug, initialProject }: ProjectDetailClientProps
       <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,720px)_minmax(0,1fr)] lg:gap-16">
         <div className="min-w-0 max-w-[720px] space-y-10">
           {project.description && <section><p className="section-label">프로젝트 소개</p><h2 className="mt-3 text-2xl font-semibold tracking-tight">어떤 프로젝트인가요?</h2><p className="muted-text mt-5 whitespace-pre-line text-base leading-8">{project.description}</p></section>}
-          {(project.content_html || project.content) && <article className="border-t border-zinc-200 pt-10 dark:border-zinc-800"><h2 className="sr-only">프로젝트 상세</h2><div className="project-block-content prose-content">{projectContentHtml ? <div dangerouslySetInnerHTML={{ __html: projectContentHtml }} /> : <p className="muted-text" role="status">프로젝트 내용을 렌더링하는 중입니다.</p>}</div></article>}
+          {(project.content_html || project.content) && <article className="border-t border-zinc-200 pt-10 dark:border-zinc-800"><h2 className="sr-only">프로젝트 상세</h2><ArticleContents contentRef={contentRef} contentKey={`${slug}:${projectContentHtml}`} /><div className="project-block-content prose-content">{projectContentHtml ? <div ref={contentRef} dangerouslySetInnerHTML={{ __html: projectContentHtml }} /> : <p className="muted-text" role="status">프로젝트 내용을 렌더링하는 중입니다.</p>}</div></article>}
         </div>
         <aside className="space-y-8 border-t border-zinc-200 pt-8 lg:border-t-0 lg:pt-0 dark:border-zinc-800" aria-label="프로젝트 관련 정보">
           {uniqueTech.length > 0 && <section><h2 className="text-sm font-semibold">사용 기술</h2><div className="mt-4 flex flex-wrap gap-2">{uniqueTech.map(tech => <span key={tech} className="tag">{tech}</span>)}</div></section>}
