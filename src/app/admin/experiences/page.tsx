@@ -160,7 +160,7 @@ export default function ExperiencesPage() {
         .filter(achievement => achievement.length > 0);
       const data = {
         ...formData,
-        achievements: achievements.length > 0 ? achievements : undefined,
+        achievements,
         end_date: formData.end_date || null
       };
       let response;

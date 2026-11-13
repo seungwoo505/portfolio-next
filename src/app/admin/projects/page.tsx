@@ -98,7 +98,7 @@ export default function ProjectsPage() {
   const deleteProject = async () => {
     if (!deleteModal.projectSlug) return;
     try {
-      const response = await authApi.delete(`/admin/projects/slug/${deleteModal.projectSlug}`);
+      const response = await authApi.delete(`/admin/projects/slug/${encodeURIComponent(deleteModal.projectSlug)}`);
       ensureApiSuccess(response, '프로젝트 삭제에 실패했습니다.');
       setProjects(prev => prev.filter(project => project.slug !== deleteModal.projectSlug));
       toast.success('프로젝트가 삭제되었습니다.');
@@ -116,7 +116,7 @@ export default function ProjectsPage() {
     try {
       const normalizedCurrentStatus = Boolean(currentStatus);
       const newStatus = !normalizedCurrentStatus;
-      const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, {
+      const response = await authApi.put(`/admin/projects/slug/${encodeURIComponent(projectSlug)}`, {
         is_published: newStatus
       });
       ensureApiSuccess(response, '프로젝트 상태 변경에 실패했습니다.');
@@ -136,7 +136,7 @@ export default function ProjectsPage() {
     try {
       const normalizedCurrentStatus = Boolean(currentStatus);
       const newStatus = !normalizedCurrentStatus;
-      const response = await authApi.put(`/admin/projects/slug/${projectSlug}`, {
+      const response = await authApi.put(`/admin/projects/slug/${encodeURIComponent(projectSlug)}`, {
         is_featured: newStatus
       });
       ensureApiSuccess(response, '프로젝트 대표 상태 변경에 실패했습니다.');
@@ -325,7 +325,7 @@ export default function ProjectsPage() {
                             </div>
                             <div className="flex shrink-0 items-center gap-1">
                               <Link
-                                href={`/admin/projects/edit?slug=${project.slug}`}
+                                href={`/admin/projects/edit?slug=${encodeURIComponent(project.slug)}`}
                                 aria-label={`${project.title} 수정`}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-200"
                               >
@@ -596,7 +596,7 @@ export default function ProjectsPage() {
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <Link
-                            href={`/admin/projects/edit?slug=${project.slug}`}
+                            href={`/admin/projects/edit?slug=${encodeURIComponent(project.slug)}`}
                             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-200"
                             aria-label={`${project.title} 수정`}
                           >

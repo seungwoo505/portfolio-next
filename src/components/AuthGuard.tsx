@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
+import { AdminErrorState } from '@/app/admin/components/AdminState';
 /**
  * @interface AuthGuardProps
  * @description 인증 상태에 따라 보호된 콘텐츠를 렌더링하기 위한 설정입니다.
@@ -21,13 +22,13 @@ interface AuthGuardProps {
  */
 export default function AuthGuard({ children, fallback }: AuthGuardProps) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAdmin();
+  const { isAuthenticated, isLoading, authError, checkAuth } = useAdmin();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !fallback) {
+    if (!isLoading && !authError && !isAuthenticated && !fallback) {
       router.replace('/admin-login');
     }
-  }, [fallback, isAuthenticated, isLoading, router]);
+  }, [authError, fallback, isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -36,6 +37,17 @@ export default function AuthGuard({ children, fallback }: AuthGuardProps) {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-300">인증 상태를 확인하는 중...</p>
         </div>
+      </div>
+    );
+  }
+  if (authError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-6 dark:bg-zinc-950" role="alert">
+        <AdminErrorState
+          title="인증 상태를 확인하지 못했습니다"
+          description={authError}
+          onRetry={() => { void checkAuth(); }}
+        />
       </div>
     );
   }

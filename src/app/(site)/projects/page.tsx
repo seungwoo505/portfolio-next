@@ -98,7 +98,8 @@ export default function Projects() {
       filtered = filtered.filter(project => {
         const projectSkills = project.skills?.map(s => typeof s === 'string' ? s : s.name) || [];
         const projectTags = project.tags?.map(t => typeof t === 'string' ? t : t.name) || [];
-        const allTechs = [...projectSkills, ...projectTags];
+        const technologies = project.technologies?.split(',').map(tech => tech.trim()).filter(Boolean) || [];
+        const allTechs = [...technologies, ...projectSkills, ...projectTags];
         return selectedTechs.some(tech => allTechs.includes(tech));
       });
     }

@@ -20,7 +20,7 @@ interface BlogPostClientProps {
 function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
   const [post, setPost] = useState<BlogPostType | null>(initialPost ?? null);
   const [loading, setLoading] = useState(!initialPost);
-  const [postContentHtml, setPostContentHtml] = useState('');
+  const [postContentHtml, setPostContentHtml] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,8 +33,8 @@ function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
     let cancelled = false;
     const incrementViewCount = async () => {
       try {
-        await blogApi.incrementViewCount(slug);
-        if (!cancelled) {
+        const response = await blogApi.incrementViewCount(slug);
+        if (response.success && response.data?.success !== false && !cancelled) {
           setPost(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
         }
       } catch {
@@ -82,18 +82,18 @@ function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
   }, [slug, initialPost]);
   useEffect(() => {
     let cancelled = false;
-    if (!post?.content_html?.trim() && !post?.content) {
+    if (!post?.content_html?.trim() && !post?.content?.trim()) {
       setPostContentHtml('');
       return;
     }
+    setPostContentHtml(null);
     import('@/utils/markdown').then(({ markdownToHtml, sanitizeHtml }) => {
       if (!cancelled) {
-        setPostContentHtml(
-          post.content_html?.trim()
-            ? sanitizeHtml(post.content_html)
-            : markdownToHtml(post.content || '')
-        );
+        const html = post.content_html?.trim() ? sanitizeHtml(post.content_html) : '';
+        setPostContentHtml(html.trim() ? html : markdownToHtml(post.content || ''));
       }
+    }).catch(() => {
+      if (!cancelled) setPostContentHtml('');
     });
     return () => {
       cancelled = true;
@@ -137,7 +137,7 @@ function BlogPostContent({ slug, initialPost }: BlogPostClientProps) {
         <article className="py-10 sm:py-12" aria-label="포스트 본문">
           <ArticleContents contentRef={contentRef} contentKey={`${slug}:${postContentHtml}`} />
           <div className="prose-content">
-            {(post.content_html?.trim() || post.content) ? postContentHtml ? <div ref={contentRef} className="blog-post-block-content" dangerouslySetInnerHTML={{ __html: postContentHtml }} /> : <p className="muted-text" role="status">포스트 내용을 렌더링하는 중입니다.</p> : <p className="muted-text">콘텐츠를 불러올 수 없습니다.</p>}
+            {postContentHtml === null ? <p className="muted-text" role="status">포스트 내용을 렌더링하는 중입니다.</p> : postContentHtml.trim() ? <div ref={contentRef} className="blog-post-block-content" dangerouslySetInnerHTML={{ __html: postContentHtml }} /> : <p className="muted-text">콘텐츠를 불러올 수 없습니다.</p>}
           </div>
         </article>
         <footer className="flex flex-wrap items-center justify-between gap-5 border-t border-zinc-200 pt-8 dark:border-zinc-800"><Link href="/blog" prefetch={false} className="action-secondary">← 모든 포스트 보기</Link><Link href="/projects" prefetch={false} className="text-sm font-medium text-teal-700 hover:underline dark:text-teal-400">프로젝트 살펴보기 →</Link></footer>

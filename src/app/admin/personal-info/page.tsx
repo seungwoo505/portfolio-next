@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -34,6 +34,7 @@ export default function PersonalInfoPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const draftRevision = useRef(0);
   /**
    * @description 개인정보를 서버에서 불러옵니다.
    * @returns {Promise<void>}
@@ -69,6 +70,7 @@ export default function PersonalInfoPage() {
    * @returns {void}
    */
   const handleInputChange = (field: keyof PersonalInfo, value: string) => {
+    draftRevision.current += 1;
     setPersonalInfo(prev => ({
       ...prev,
       [field]: value
@@ -89,6 +91,7 @@ export default function PersonalInfoPage() {
       return;
     }
     setSaving(true);
+    const savedRevision = draftRevision.current;
     try {
       const payload: Record<string, unknown> = { ...personalInfo };
       const response = await authApi.put<PersonalInfo>('/admin/personal-info', payload);
@@ -97,9 +100,11 @@ export default function PersonalInfoPage() {
         duration: 3000,
         icon: '✅',
       });
-      setHasChanges(false);
-      if (response.data) {
-        setPersonalInfo(response.data);
+      if (draftRevision.current === savedRevision) {
+        setHasChanges(false);
+        if (response.data) {
+          setPersonalInfo(response.data);
+        }
       }
     } catch (error) {
       toast.error(getErrorMessage(error, '개인정보 저장 중 오류가 발생했습니다.'), {

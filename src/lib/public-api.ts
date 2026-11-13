@@ -73,7 +73,7 @@ export const blogApi = {
       ({ page, limit }) => getPosts({ ...params, page, limit }),
       { pageSize: PUBLIC_LIST_PAGE_SIZE }
     ),
-  getPostBySlug: (slug: string) => api.get<BlogPost>(`/public/posts/${slug}`),
+  getPostBySlug: (slug: string) => api.get<BlogPost>(`/public/posts/${encodeURIComponent(slug)}`),
   searchPosts: (query: string, limit?: number) =>
     api.get<BlogPost[]>("/public/posts", {
       search: query,
@@ -82,9 +82,9 @@ export const blogApi = {
   getTags: (popular?: boolean) =>
     api.get<BlogTag[]>("/public/tags", popular ? { popular: "true" } : undefined),
   getPostsByTag: (tagSlug: string, params?: { limit?: number; page?: number }) =>
-    api.get<BlogPost[]>(`/public/posts/tag/${tagSlug}`, params),
+    api.get<BlogPost[]>(`/public/posts/tag/${encodeURIComponent(tagSlug)}`, params),
   incrementViewCount: (slug: string) =>
-    api.post<{ success: boolean }>(`/public/posts/${slug}/view?t=${Date.now()}`),
+    api.post<{ success: boolean }>(`/public/posts/${encodeURIComponent(slug)}/view?t=${Date.now()}`),
 };
 
 export const projectApi = {
@@ -94,12 +94,12 @@ export const projectApi = {
       ({ page, limit }) => getProjects({ ...params, page, limit }),
       { pageSize: PUBLIC_LIST_PAGE_SIZE }
     ),
-  getProject: (slug: string) => api.get<Project>(`/public/projects/${slug}`),
+  getProject: (slug: string) => api.get<Project>(`/public/projects/${encodeURIComponent(slug)}`),
   getFeaturedProjects: () =>
     api.get<Project[]>("/public/projects", { featured: "true" }),
   incrementViewCount: (projectSlug: string) =>
     api.post<{ success: boolean }>(
-      `/public/projects/${projectSlug}/view?t=${Date.now()}`
+      `/public/projects/${encodeURIComponent(projectSlug)}/view?t=${Date.now()}`
     ),
 };
 

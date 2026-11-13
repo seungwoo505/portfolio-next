@@ -79,7 +79,7 @@ function EditProjectContent() {
     try {
       setIsLoading(true);
       setLoadError(null);
-      const response = await authApi.get(`/admin/projects/slug/${projectSlug}`);
+      const response = await authApi.get(`/admin/projects/slug/${encodeURIComponent(projectSlug)}`);
       ensureApiSuccess(response, "프로젝트를 불러오는데 실패했습니다.");
       const project = response.data as Project;
 
@@ -236,7 +236,7 @@ function EditProjectContent() {
       };
 
       const response = await authApi.put(
-        `/admin/projects/slug/${projectSlug}`,
+        `/admin/projects/slug/${encodeURIComponent(projectSlug)}`,
         projectData
       );
       ensureApiSuccess(response, "프로젝트 수정에 실패했습니다.");
