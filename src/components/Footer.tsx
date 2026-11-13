@@ -29,6 +29,7 @@ export default function Footer() {
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({});
 
   useEffect(() => {
+    let active = true;
     /**
      * @function fetchPersonalInfo
      * @description 개인 정보와 설정값을 불러와 푸터에 표시할 내용을 구성합니다.
@@ -36,7 +37,10 @@ export default function Footer() {
      */
     const fetchPersonalInfo = async () => {
       try {
-        const settingsResponse = await api.get<{ [key: string]: string }>('/settings');
+        const [settingsResponse, personalResponse] = await Promise.all([
+          api.get<{ [key: string]: string }>('/settings'),
+          personalApi.getPersonalInfo().catch(() => null),
+        ]);
         let settingsPersonalInfo = {};
         if (settingsResponse.success && settingsResponse.data) {
           const settings = settingsResponse.data;
@@ -54,15 +58,11 @@ export default function Footer() {
         }
 
         let personalTableInfo = {};
-        try {
-          const personalResponse = await personalApi.getPersonalInfo();
-          if (personalResponse.success && personalResponse.data) {
-            personalTableInfo = personalResponse.data;
-          }
-        } catch {
+        if (personalResponse?.success && personalResponse.data) {
+          personalTableInfo = personalResponse.data;
         }
 
-        setPersonalInfo({
+        if (active) setPersonalInfo({
           ...personalTableInfo,
           ...settingsPersonalInfo
         });
@@ -71,6 +71,7 @@ export default function Footer() {
     };
 
     fetchPersonalInfo();
+    return () => { active = false; };
   }, []);
 
   const socialLinks = [
