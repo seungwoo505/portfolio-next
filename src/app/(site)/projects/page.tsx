@@ -7,6 +7,7 @@ import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { projectApi, api } from "@/lib/api";
 import { Project } from "@/types";
 import { AnimatedList } from '@/components/site/AnimatedList';
+import ResponsiveListFilters from '@/components/site/ResponsiveListFilters';
 import Pagination from "@/components/Pagination";
 import { scrollToPageStart } from '@/lib/page-scroll';
 
@@ -266,22 +267,24 @@ export default function Projects() {
         </header>
 
         <section aria-label="프로젝트 검색 및 필터" className="mb-10 space-y-5 border-y border-zinc-200 py-6 dark:border-zinc-800">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <ResponsiveListFilters id="project-list-filters" selectedCount={selectedTechs.length} sortLabel={{ created_at: '생성일순', title: '제목순', view_count: '조회수순', display_order: '표시순서' }[sortOrder]}>
+            <div>
             <label className="block w-full sm:max-w-md">
               <span className="mb-2 block text-sm font-medium">프로젝트 검색</span>
               <input type="search" value={searchQuery} onChange={e => handleSearch(e.target.value)} placeholder="제목, 설명으로 검색 (초성 검색 가능)" aria-label="프로젝트 검색" className="field-input w-full" />
             </label>
-            <label className="block sm:w-40">
+            </div>
+            <label className="block md:w-40">
               <span className="mb-2 block text-sm font-medium">정렬</span>
               <select value={sortOrder} onChange={e => setSortOrder(e.target.value as typeof sortOrder)} className="field-input w-full" aria-label="프로젝트 정렬 방식 선택">
                 <option value="created_at">생성일순</option><option value="title">제목순</option><option value="view_count">조회수순</option><option value="display_order">표시순서</option>
               </select>
             </label>
-          </div>
           <div className="flex flex-wrap gap-2" aria-label="기술 스택 필터">
             <button type="button" data-all-projects="true" aria-pressed={selectedTechs.length === 0} onClick={() => { setSelectedTechs([]); setCurrentPage(1); }} className="filter-chip">전체</button>
             {availableTechs.map(tech => <button type="button" key={tech} aria-pressed={selectedTechs.includes(tech)} onClick={() => handleTechFilter(tech)} className="filter-chip">{tech}</button>)}
           </div>
+          </ResponsiveListFilters>
         </section>
 
         <section aria-label="프로젝트 목록" aria-busy={loading}>

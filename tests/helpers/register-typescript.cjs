@@ -30,3 +30,5 @@ const loadTypeScript = (module, filename) => {
 
 require.extensions['.ts'] = loadTypeScript;
 require.extensions['.tsx'] = loadTypeScript;
+// 스타일의 실제 적용은 격리 브라우저에서 검증한다.
+require.extensions['.css'] = () => {};

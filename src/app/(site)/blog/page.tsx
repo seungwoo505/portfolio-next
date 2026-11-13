@@ -7,6 +7,7 @@ import { BlogPost, BlogTag, RawBlogPost, SiteSettings } from "@/types";
 import ScrollProgress from "@/components/ScrollProgress";
 import { api } from "@/lib/api";
 import { AnimatedList } from '@/components/site/AnimatedList';
+import ResponsiveListFilters from '@/components/site/ResponsiveListFilters';
 import Pagination from "@/components/Pagination";
 import { scrollToPageStart } from '@/lib/page-scroll';
 
@@ -265,11 +266,13 @@ export default function Blog() {
       <div className="site-container site-section">
         <header className="mb-12 max-w-3xl"><p className="section-label">개발 기록</p><h1 className="page-heading mt-4">배운 것과 해결한 일의 기록.</h1><p className="page-intro mt-6">개발하며 마주한 문제와 고민, 그 과정에서 배운 내용을 차곡차곡 남깁니다.</p></header>
         <section aria-label="블로그 검색 및 필터" className="mb-10 space-y-5 border-y border-zinc-200 py-6 dark:border-zinc-800">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <ResponsiveListFilters id="blog-list-filters" selectedCount={selectedTags.length} hasSearch={(settings.enable_search ?? settings.search_enabled) !== false} sortLabel={{ published_at: '발행일순', created_at: '생성일순', title: '제목순', view_count: '조회수순' }[sortOrder]}>
+            <div>
             {(settings.enable_search ?? settings.search_enabled) !== false && <label className="block w-full sm:max-w-md"><span className="mb-2 block text-sm font-medium">글 검색</span><input type="search" value={searchQuery} onChange={e => handleSearch(e.target.value)} placeholder="제목, 내용으로 검색 (초성 검색 가능)" aria-label="블로그 포스트 검색" className="field-input w-full" /></label>}
-            <label className="block sm:ml-auto sm:w-40"><span className="mb-2 block text-sm font-medium">정렬</span><select value={sortOrder} onChange={e => setSortOrder(e.target.value as typeof sortOrder)} aria-label="블로그 정렬 방식 선택" className="field-input w-full"><option value="published_at">발행일순</option><option value="created_at">생성일순</option><option value="title">제목순</option><option value="view_count">조회수순</option></select></label>
-          </div>
+            </div>
+            <label className="block md:w-40"><span className="mb-2 block text-sm font-medium">정렬</span><select value={sortOrder} onChange={e => setSortOrder(e.target.value as typeof sortOrder)} aria-label="블로그 정렬 방식 선택" className="field-input w-full"><option value="published_at">발행일순</option><option value="created_at">생성일순</option><option value="title">제목순</option><option value="view_count">조회수순</option></select></label>
           <div className="flex flex-wrap gap-2" aria-label="블로그 태그 필터"><button type="button" onClick={clearAllTags} data-all-posts="true" aria-pressed={selectedTags.length === 0} className="filter-chip">모든 포스트</button>{tags.map(tag => <button type="button" key={tag.id} onClick={() => handleTagToggle(tag.slug)} data-blog-tag="true" aria-pressed={selectedTags.includes(tag.slug)} className="filter-chip">{tag.name}{tag.post_count ? ` (${tag.post_count})` : ''}</button>)}</div>
+          </ResponsiveListFilters>
         </section>
         <section aria-label="블로그 목록" aria-busy={loading}>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">포스트 <span className="muted-text ml-1 text-sm font-normal">{loading ? '불러오는 중' : `${filteredPosts.length}개`}</span></h2>{selectedTags.length > 0 && <p className="muted-text text-sm">선택한 태그 중 하나를 포함한 글</p>}</div>
