@@ -193,11 +193,6 @@ export default function Projects() {
   }, []);
   // 초기 데이터 로드 (한 번만)
   useEffect(() => {
-    /**
-     * @function fetchData
-     * @description 모든 프로젝트 목록을 한 번에 로드하여 상태를 갱신한다.
-     * @returns {Promise<void>} 데이터 로딩 작업.
-     */
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -208,21 +203,9 @@ export default function Projects() {
         });
         if (projectsResponse.success && projectsResponse.data) {
           setAllProjects(projectsResponse.data);
-
           setError(null);
         } else {
           setError('프로젝트를 불러올 수 없습니다.');
-        }
-        try {
-          const settingsResponse = await api.get<{ [key: string]: string }>('/settings');
-          if (settingsResponse.success && settingsResponse.data) {
-            const settings = settingsResponse.data;
-            const githubUrl = settings.github_url || settings.personal_github_url;
-            if (githubUrl && typeof githubUrl === 'string' && githubUrl !== 'https://github.com') {
-              setGithubUrl(githubUrl);
-            }
-          }
-        } catch {
         }
       } catch {
         setError('서버와의 연결에 문제가 발생했습니다.');
@@ -232,6 +215,26 @@ export default function Projects() {
     };
     fetchData();
   }, []); // 초기 로드만
+
+  // 부가 설정이 느려도 프로젝트 목록은 먼저 표시한다.
+  useEffect(() => {
+    let active = true;
+    const fetchSettings = async () => {
+      try {
+        const settingsResponse = await api.get<{ [key: string]: string }>('/settings');
+        if (active && settingsResponse.success && settingsResponse.data) {
+          const settings = settingsResponse.data;
+          const githubUrl = settings.github_url || settings.personal_github_url;
+          if (githubUrl && typeof githubUrl === 'string' && githubUrl !== 'https://github.com') {
+            setGithubUrl(githubUrl);
+          }
+        }
+      } catch {
+      }
+    };
+    fetchSettings();
+    return () => { active = false; };
+  }, []);
 
   // 필터링된 결과에 따라 페이지네이션 업데이트
   useEffect(() => {
