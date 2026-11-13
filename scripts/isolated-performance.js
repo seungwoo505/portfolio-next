@@ -17,7 +17,7 @@ const baseUrl = process.env.ISOLATED_APP_URL || 'http://127.0.0.1:4318';
 const apiUrl = process.env.ISOLATED_API_URL || 'http://127.0.0.1:4319';
 assertLocalDestination(baseUrl); assertLocalDestination(apiUrl);
 const origins = new Set([new URL(baseUrl).origin, new URL(apiUrl).origin]);
-const output = path.resolve(__dirname, `../.verification/performance/${phase}`);
+const output = path.resolve(process.env.ISOLATED_PERFORMANCE_ROOT || path.join(__dirname, '../.verification/performance'), phase);
 const reportFile = path.join(output, 'report.json');
 fs.mkdirSync(output, { recursive: true });
 const report = fs.existsSync(reportFile) ? JSON.parse(fs.readFileSync(reportFile, 'utf8')) : {};

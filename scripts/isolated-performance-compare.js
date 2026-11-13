@@ -1,7 +1,8 @@
 // Read saved local evidence only. This tool makes no network requests and starts no servers/browsers.
 const fs = require('node:fs');
 const path = require('node:path');
-const root = path.resolve(__dirname, '../.verification/performance');
+const root = path.resolve(process.env.ISOLATED_PERFORMANCE_ROOT || path.join(__dirname, '../.verification/performance'));
+const compareProjectTiming = !process.argv.includes('--screens-only');
 const phases = ['before', 'css', 'images', 'after'];
 const reports = Object.fromEntries(phases.map(phase => { const file = path.join(root, phase, 'report.json'); return [phase, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null]; }));
 const expectedCases = ['desktop-light', 'desktop-dark', 'mobile-light', 'mobile-dark'];
@@ -101,13 +102,15 @@ function timingFor(report, name) {
 
 (async () => {
   for (const phase of ['css', 'images', 'after']) await stage(phase);
-  for (const name of expectedCases) {
+  for (const name of compareProjectTiming ? expectedCases : []) {
     const before = timingFor(reports.before, name); const after = timingFor(reports.after, name);
     const beforeMs = before.medians.cardFromProjectsRequestMs; const afterMs = after.medians.cardFromProjectsRequestMs;
     output.timing.push({ case: name, before, after, sameQueries: JSON.stringify(before.projectQueries) === JSON.stringify(after.projectQueries), sameDelays: JSON.stringify(before.delaysMs) === JSON.stringify(after.delaysMs), cardImprovementMs: beforeMs !== null && afterMs !== null ? beforeMs - afterMs : null, cardReductionRatio: beforeMs && afterMs !== null ? 1 - afterMs / beforeMs : null });
   }
   const final = output.stages.after;
   output.hardGate = { expectedPages: 32, matched32Cases: Boolean(final && final.actualPageCount === 32 && final.uniquePageCount === 32 && final.missingKeys.length === 0 && final.unexpectedKeys.length === 0), styleLayoutText32Passed: final?.styleLayoutTextPassedCount === 32, imageRequestsAndSources32Passed: final?.imagePassedCount === 32, noExternalRequestsOrBrowserErrors: Boolean(reports.before && reports.after && [reports.before, reports.after].every(report => Array.isArray(report.blockedRequests) && Array.isArray(report.browserErrors) && report.blockedRequests.length === 0 && report.browserErrors.length === 0)), finalCapturePassed: reports.after?.passed === true, timing20SamplesComparable: output.timing.every(item => item.before.valid && item.after.valid && item.sameQueries && item.sameDelays) };
+  output.method.projectTimingComparisonEnabled = compareProjectTiming;
+  if (!compareProjectTiming) delete output.hardGate.timing20SamplesComparable;
   output.passed = Object.values(output.hardGate).every(value => value === true || value === 32);
   fs.writeFileSync(path.join(root, 'comparison.json'), JSON.stringify(output, null, 2));
   console.log(JSON.stringify({ passed: output.passed, hardGate: output.hardGate, phases: Object.fromEntries(Object.entries(output.stages).map(([phase, result]) => [phase, { styleLayoutTextPassedCount: result.styleLayoutTextPassedCount, imagePassedCount: result.imagePassedCount, totalDifferenceCount: result.totalDifferenceCount }])), timing: output.timing.map(item => ({ case: item.case, beforeMs: item.before.medians.cardFromProjectsRequestMs, afterMs: item.after.medians.cardFromProjectsRequestMs, reductionRatio: item.cardReductionRatio })) }, null, 2));
