@@ -5,23 +5,26 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ScrollProgress from "@/components/ScrollProgress";
 import { Container } from "@/components/site/Container";
 import { blogApi, personalApi, projectApi } from "@/lib/api";
-import type { BlogPost } from "@/types";
+import { toHomePersonalInfo, toHomePost, toHomeProject, toHomeSkill } from "@/lib/home-payload";
 import HomeHeroSection from "./home/HomeHeroSection";
 import { HomeFeaturedProjects, HomeLatestArticles } from "./home/HomeLatestContent";
 import HomeSkillsSection from "./home/HomeSkillsSection";
 import { HomeErrorState, HomeLoadingState } from "./home/HomeStateViews";
 import { FALLBACK_PROFILE } from "./home/homeFallbacks";
-import type { ClientHomeProps, HomeProject, HomeSkill } from "./home/homeTypes";
+import type { ClientHomeProps, HomePost, HomeProject, HomeSkill } from "./home/homeTypes";
 
 const VIEW_COUNT_REFRESH_INTERVAL_MS = 60_000;
+const EMPTY_POSTS: HomePost[] = [];
+const EMPTY_PROJECTS: HomeProject[] = [];
+const EMPTY_SKILLS: HomeSkill[] = [];
 
-export default function ClientHome({ blogPosts: initialBlogPosts = [], projects: initialProjects = [], skills: initialSkills = [], loading: initialLoading = false, error, personalInfo: initialPersonalInfo }: ClientHomeProps) {
+export default function ClientHome({ blogPosts: initialBlogPosts = EMPTY_POSTS, projects: initialProjects = EMPTY_PROJECTS, skills: initialSkills = EMPTY_SKILLS, loading: initialLoading = false, error, personalInfo: initialPersonalInfo }: ClientHomeProps) {
   const [activeSkillTab, setActiveSkillTab] = useState('all');
-  const [isDataLoading, setIsDataLoading] = useState(true);
-  const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
-  const [projects, setProjects] = useState<HomeProject[]>(initialProjects);
-  const [skills, setSkills] = useState<HomeSkill[]>(initialSkills);
+  const [isDataLoading, setIsDataLoading] = useState(() => !initialBlogPosts.length && !initialProjects.length && !initialSkills.length);
+  const [personalInfo, setPersonalInfo] = useState(() => toHomePersonalInfo(initialPersonalInfo));
+  const [blogPosts, setBlogPosts] = useState<HomePost[]>(() => initialBlogPosts.map(toHomePost));
+  const [projects, setProjects] = useState<HomeProject[]>(() => initialProjects.map(toHomeProject));
+  const [skills, setSkills] = useState<HomeSkill[]>(() => initialSkills.map(toHomeSkill));
   const [loading, setLoading] = useState(initialLoading);
   const lastRefreshAt = useRef(0);
   const refreshing = useRef(false);
@@ -32,20 +35,20 @@ export default function ClientHome({ blogPosts: initialBlogPosts = [], projects:
       try {
         const [blogs, work, tools] = await Promise.all([blogApi.getPosts({ limit: 2, featured: true }), projectApi.getProjects({ limit: 2, featured: true }), personalApi.getFeaturedSkills()]);
         if (!active) return;
-        if (blogs.success && blogs.data) setBlogPosts(blogs.data);
-        if (work.success && work.data) setProjects(work.data as HomeProject[]);
-        if (tools.success && tools.data) setSkills(tools.data);
+        if (blogs.success && blogs.data) setBlogPosts(blogs.data.map(toHomePost));
+        if (work.success && work.data) setProjects(work.data.map(toHomeProject));
+        if (tools.success && tools.data) setSkills(tools.data.map(toHomeSkill));
       } catch { /* Keep the server data and empty-state UI available. */ }
       finally { if (active) { setLoading(false); setIsDataLoading(false); } }
     }
     if (!initialBlogPosts.length && !initialProjects.length && !initialSkills.length) loadData();
-    else { setBlogPosts(initialBlogPosts); setProjects(initialProjects); setSkills(initialSkills); setIsDataLoading(false); }
+    else { setBlogPosts(initialBlogPosts.map(toHomePost)); setProjects(initialProjects.map(toHomeProject)); setSkills(initialSkills.map(toHomeSkill)); setIsDataLoading(false); }
     return () => { active = false; };
   }, [initialBlogPosts, initialProjects, initialSkills]);
 
   useEffect(() => {
     let active = true;
-    if (!personalInfo || !Object.keys(personalInfo).length) personalApi.getPersonalInfo().then(response => { if (active && response.success && response.data) setPersonalInfo(response.data); }).catch(() => {});
+    if (!personalInfo || !Object.keys(personalInfo).length) personalApi.getPersonalInfo().then(response => { if (active && response.success && response.data) setPersonalInfo(toHomePersonalInfo(response.data)); }).catch(() => {});
     return () => { active = false; };
   }, [personalInfo]);
 

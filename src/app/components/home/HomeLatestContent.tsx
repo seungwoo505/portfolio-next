@@ -2,8 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import ProjectCoverImage from "@/components/ProjectCoverImage";
 import { Container } from "@/components/site/Container";
-import type { BlogPost } from "@/types";
-import type { HomeProject } from "./homeTypes";
+import type { HomePost, HomeProject } from "./homeTypes";
 import { EmptyState, SkeletonCard } from "./HomeStateViews";
 
 function technologyNames(values?: Array<string | { name: string }>): string[] {
@@ -30,11 +29,11 @@ export function HomeFeaturedProjects({ loading, projects }: { loading: boolean; 
   </Container>;
 }
 
-export function HomeLatestArticles({ loading, posts }: { loading: boolean; posts: BlogPost[] }) {
+export function HomeLatestArticles({ loading, posts }: { loading: boolean; posts: HomePost[] }) {
   return <Container className="border-t border-zinc-200 py-16 sm:py-20 dark:border-zinc-800">
     <div className="grid gap-10 lg:grid-cols-[0.8fr_1.4fr] lg:gap-20">
       <div data-reveal><p className="section-label">개발 기록</p><h2 className="mt-4 text-3xl font-bold leading-snug tracking-tight">생각과 배움을<br />기록합니다.</h2><p className="muted-text mt-5 max-w-sm text-sm leading-7">개발하며 마주한 문제와 그 안에서 찾은 방법들을 정리합니다.</p><Link href="/blog" prefetch={false} className="text-link mt-6">모든 글 보기<ArrowRight size={15} aria-hidden="true" /></Link></div>
-      <div>{loading ? <SkeletonCard /> : posts.length ? posts.map(post => <article data-reveal key={post.id} className="border-b border-zinc-200 py-7 first:pt-0 last:border-0 dark:border-zinc-800"><div className="flex flex-wrap items-center justify-between gap-3"><time className="font-mono text-xs text-zinc-400" dateTime={post.created_at}>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time><span className="muted-text text-xs">조회 {post.view_count ?? 0}</span></div><h3 className="mt-3 text-lg font-semibold leading-relaxed tracking-tight"><Link href={`/blog/${encodeURIComponent(post.slug)}`} prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">{post.title}</Link></h3><p className="muted-text mt-3 line-clamp-2 text-sm leading-7">{post.excerpt || post.content?.replace(/<[^>]*>/g, '').slice(0, 140)}</p><Link href={`/blog/${encodeURIComponent(post.slug)}`} prefetch={false} className="text-link mt-4 text-xs">글 읽기<ArrowUpRight size={14} aria-hidden="true" /></Link></article>) : <EmptyState eyebrow="기록" title="다음 기록을 준비하고 있습니다" description="개발 과정에서 배운 내용을 이곳에 공유합니다." href="/blog" action="블로그 보기" />}</div>
+      <div>{loading ? <SkeletonCard /> : posts.length ? posts.map(post => <article data-reveal key={post.id} className="border-b border-zinc-200 py-7 first:pt-0 last:border-0 dark:border-zinc-800"><div className="flex flex-wrap items-center justify-between gap-3"><time className="font-mono text-xs text-zinc-400" dateTime={post.created_at}>{new Date(post.created_at).toLocaleDateString('ko-KR')}</time><span className="muted-text text-xs">조회 {post.view_count ?? 0}</span></div><h3 className="mt-3 text-lg font-semibold leading-relaxed tracking-tight"><Link href={`/blog/${encodeURIComponent(post.slug)}`} prefetch={false} className="hover:text-teal-700 dark:hover:text-teal-300">{post.title}</Link></h3><p className="muted-text mt-3 line-clamp-2 text-sm leading-7">{post.excerpt}</p><Link href={`/blog/${encodeURIComponent(post.slug)}`} prefetch={false} className="text-link mt-4 text-xs">글 읽기<ArrowUpRight size={14} aria-hidden="true" /></Link></article>) : <EmptyState eyebrow="기록" title="다음 기록을 준비하고 있습니다" description="개발 과정에서 배운 내용을 이곳에 공유합니다." href="/blog" action="블로그 보기" />}</div>
     </div>
   </Container>;
 }
