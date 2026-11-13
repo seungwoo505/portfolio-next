@@ -123,11 +123,15 @@ function createFixtureRouter() {
     const key = Object.keys(collections).sort((a, b) => b.length - a.length).find((name) => resource === name || resource.startsWith(`${name}/`));
     if (!key) return failure(404, `정의되지 않은 로컬 fixture 경로: ${pathname}`);
     const items = collections[key];
+    // 편집 폼은 이름을 보내고 조회 화면은 태그 메타데이터를 사용한다.
+    const storedBody = ['blog/posts', 'projects'].includes(key) && body && Array.isArray(body.tags)
+      ? { ...body, tags: body.tags.map(tag => typeof tag === 'string' ? tags.find(item => item.name === tag || item.id === tag) || tag : tag) }
+      : body;
     const remainder = resource.slice(key.length).replace(/^\/slug\//, '/').replace(/^\//, '');
     if (!remainder) {
       if (method === 'GET') return list(items, url.searchParams);
       if (!isPublic && method === 'POST') {
-        const item = { ...dates, ...body, id: `fixture-${++sequence}` };
+        const item = { ...dates, ...storedBody, id: `fixture-${++sequence}` };
         items.push(item);
         return success(item);
       }
@@ -138,7 +142,7 @@ function createFixtureRouter() {
     if (action === 'view' && method === 'POST') { items[index].view_count += 1; return success({ success: true }); }
     if (isPublic && method !== 'GET') return failure(405, '허용되지 않는 fixture 작업');
     if (method === 'DELETE') { items.splice(index, 1); return success({ message: '로컬 삭제 완료' }); }
-    if (method === 'PUT' || method === 'PATCH') Object.assign(items[index], body, action === 'read' ? { status: 'read' } : {});
+    if (method === 'PUT' || method === 'PATCH') Object.assign(items[index], storedBody, action === 'read' ? { status: 'read' } : {});
     return success(items[index]);
   };
 }

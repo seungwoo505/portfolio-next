@@ -1,5 +1,6 @@
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
+import { fixupConfigRules } from "@eslint/compat";
 
 const eslintConfig = [
   {
@@ -11,8 +12,9 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
-  ...nextCoreWebVitals,
-  ...nextTypescript,
+  // Next의 기존 규칙은 eslint 9 peer/API를 사용하고 실제 실행기는 ESLint 10이다.
+  ...fixupConfigRules(nextCoreWebVitals),
+  ...fixupConfigRules(nextTypescript),
   {
     files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {

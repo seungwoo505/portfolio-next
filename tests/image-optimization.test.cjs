@@ -10,9 +10,11 @@ const { getImageRemotePatterns, shouldBypassImageOptimization } = require('../sr
 const { createHarness, loadWithMocks, nodes } = require('./helpers/react-harness.cjs');
 
 function imageProps(input, config = require('../next.config.ts').default.images) {
+  const images = { ...imageConfigDefault, ...config };
   return getImgProps(input, {
     defaultLoader,
-    imgConf: { ...imageConfigDefault, ...config },
+    // Next 16.4는 호출자가 정렬된 전체 후보 크기를 전달한다.
+    imgConf: { ...images, allSizes: [...images.deviceSizes, ...images.imageSizes].sort((a, b) => a - b) },
   }).props;
 }
 

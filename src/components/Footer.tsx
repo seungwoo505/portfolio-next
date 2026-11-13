@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Github, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Github, Instagram, Linkedin, Twitter } from "@/components/icons/BrandIcons";
 import { useState, useEffect } from "react";
 import { api, personalApi } from "@/lib/api";
 

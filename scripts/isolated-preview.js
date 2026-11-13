@@ -42,9 +42,9 @@ function stop(code = 0) {
 }
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => stop());
 server.on('error', (error) => { console.error(error); stop(1); });
-function run(args) {
+function run(args, entry = next) {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [next, ...args], { cwd: root, env, stdio: 'inherit', windowsHide: true });
+    const child = spawn(process.execPath, [entry, ...args], { cwd: root, env, stdio: 'inherit', windowsHide: true });
     children.add(child);
     fs.mkdirSync(path.join(root, '.verification'), { recursive: true });
     fs.writeFileSync(path.join(root, '.verification', 'isolated-preview-processes.json'), JSON.stringify({ launcherPid: process.pid, nextPid: child.pid, appUrl: `http://127.0.0.1:${appPort}`, apiUrl, fixture: true }, null, 2));
@@ -56,6 +56,9 @@ server.on('listening', async () => {
   console.log(`Isolated preview: http://127.0.0.1:${appPort}; fixture API: ${apiUrl}`);
   console.log('Synthetic credentials: fixture-admin / fixture-only-password. Stop: Ctrl+C (owned children only).');
   if (process.argv.includes('--build') || process.argv.includes('--build-only')) {
+    const nativeTsc = path.join(path.dirname(require.resolve('@typescript/native/package.json')), 'bin', 'tsc');
+    const typecheckCode = await run(['--noEmit'], nativeTsc);
+    if (typecheckCode !== 0) { stop(typecheckCode); return; }
     const code = await run(['build', '--webpack']);
     if (code !== 0 || process.argv.includes('--build-only')) { stop(code); return; }
   }

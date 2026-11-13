@@ -120,6 +120,20 @@ test('fixture tags honor type filters and retain distinct project/general option
   assert.equal(new Set(options).size, options.length, 'project and general filters must not duplicate names');
 });
 
+test('fixture 편집 저장은 태그 이름을 기존 메타데이터로 복원해 반복 편집을 지원한다', async () => {
+  const route = require('../scripts/isolated-api.js').createFixtureRouter();
+  const authorization = 'Bearer isolated-fixture-token';
+  for (const endpoint of ['/admin/blog/posts/slug/fixture-post-1', '/admin/projects/slug/fixture-project-1']) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const saved = await route({ method: 'PUT', path: endpoint, authorization, body: { tags: ['TypeScript', '로컬 검증'] } });
+      assert.equal(saved.status, 200);
+      const loaded = await route({ method: 'GET', path: endpoint, authorization });
+      assert.deepEqual(loaded.body.data.tags.map(tag => tag.name), ['TypeScript', '로컬 검증']);
+      assert.ok(loaded.body.data.tags.every(tag => typeof tag.id === 'string' && typeof tag.type === 'string'));
+    }
+  }
+});
+
 test('fixture 장애 주입은 검증 토큰을 요구하고 지정 상세에만 한 번 실패한 뒤 원래 데이터로 복구한다', async () => {
   const { createFixtureRouter } = require('../scripts/isolated-api.js');
   const route = createFixtureRouter();
