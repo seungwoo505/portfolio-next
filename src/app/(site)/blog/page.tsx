@@ -67,7 +67,7 @@ const matchesSearch = (text: string | undefined | null, query: string): boolean 
  */
 export default function Blog() {
 
-  const [tags, setTags] = useState<BlogTag[]>([]);
+  const [tagOptions, setTagOptions] = useState<BlogTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +77,14 @@ export default function Blog() {
   const [totalPages, setTotalPages] = useState(1);
 
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
-  const [allPosts, setAllPosts] = useState<BlogPost[]>([]); // 모든 포스트 저장
+  const [rawPosts, setRawPosts] = useState<RawBlogPost[]>([]);
+  const tags = useMemo(() => tagOptions.filter(tag => tag.type === 'blog' || tag.type === 'general'), [tagOptions]);
+  const allPosts = useMemo<BlogPost[]>(() => rawPosts.map(post => ({
+    ...post,
+    tags: post.tags?.map(tag => typeof tag === 'string'
+      ? tagOptions.find(option => option.name === tag) || { id: tag, name: tag, slug: tag }
+      : tag),
+  })), [rawPosts, tagOptions]);
 
   // 프론트엔드에서 검색, 필터, 정렬, 페이지네이션 처리
   const filteredPosts = useMemo(() => {
@@ -153,54 +160,38 @@ export default function Blog() {
    * @returns {Promise<void>} 비동기 데이터 패치 결과
    */
   useEffect(() => {
+    let active = true;
     /**
      * @function fetchData
-     * @description 모든 블로그 포스트와 태그 데이터를 한 번에 가져와 상태를 갱신한다.
+     * @description 태그 응답을 기다리지 않고 블로그 포스트를 표시한다.
      * @returns {Promise<void>} 데이터 패치가 완료되면 해결되는 프로미스.
      */
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [postsResponse, tagsResponse] = await Promise.all([
-          blogApi.getAllPosts({
-            sort: 'published_at',
-            order: 'desc'
-          }),
-          blogApi.getTags(true)
-        ]);
+        const postsResponse = await blogApi.getAllPosts({ sort: 'published_at', order: 'desc' });
+        if (!active) return;
         if (postsResponse.success && postsResponse.data) {
-          const postsWithTags: BlogPost[] = (postsResponse.data as RawBlogPost[]).map((post) => {
-            if (post.tags && Array.isArray(post.tags)) {
-              const mappedTags: BlogTag[] = post.tags.map((tagItem) => {
-                if (typeof tagItem === 'string') {
-                  const foundTag = (tagsResponse.data ?? []).find((tag: BlogTag) => tag.name === tagItem);
-                  return foundTag || { id: tagItem, name: tagItem, slug: tagItem } as BlogTag;
-                }
-                return tagItem;
-              });
-              return { ...post, tags: mappedTags } as BlogPost;
-            }
-            return post as BlogPost;
-          });
-          setAllPosts(postsWithTags);
-
+          setRawPosts(postsResponse.data as RawBlogPost[]);
           setError(null);
         } else {
           setError('블로그 포스트를 불러올 수 없습니다.');
         }
-        if (tagsResponse.success && tagsResponse.data) {
-          const blogTags = tagsResponse.data.filter((tag: BlogTag) =>
-            tag.type === 'blog' || tag.type === 'general'
-          );
-          setTags(blogTags);
-        }
       } catch {
-        setError('서버와의 연결에 문제가 발생했습니다.');
+        if (active) setError('서버와의 연결에 문제가 발생했습니다.');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
+    const fetchTags = async () => {
+      try {
+        const response = await blogApi.getTags(true);
+        if (active && response.success && response.data) setTagOptions(response.data);
+      } catch { /* 태그를 불러오지 못해도 글과 검색은 사용할 수 있다. */ }
+    };
     fetchData();
+    fetchTags();
+    return () => { active = false; };
   }, []); // 초기 로드만
 
   // 필터링된 결과에 따라 페이지네이션 업데이트
