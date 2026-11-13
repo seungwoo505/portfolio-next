@@ -5,7 +5,7 @@ const timestamp = '2026-10-27T00:00:00.000Z';
 const credentials = { username: 'fixture-admin', password: 'fixture-only-password' };
 const token = 'isolated-fixture-token';
 const refreshToken = 'isolated-fixture-refresh-token';
-const cover = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720"><rect width="1200" height="720" fill="#f4f4f5"/><rect x="120" y="120" width="960" height="480" rx="24" fill="#0f766e"/><text x="600" y="375" text-anchor="middle" fill="white" font-size="48">LOCAL FIXTURE / TEST DATA</text></svg>');
+const cover = process.env.ISOLATED_RASTER_IMAGES === '1' ? `http://127.0.0.1:${Number(process.env.ISOLATED_API_PORT) || 4319}/__fixture/images/cover.jpg` : 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720"><rect width="1200" height="720" fill="#f4f4f5"/><rect x="120" y="120" width="960" height="480" rx="24" fill="#0f766e"/><text x="600" y="375" text-anchor="middle" fill="white" font-size="48">LOCAL FIXTURE / TEST DATA</text></svg>');
 
 function createFixtureRouter() {
   let sequence = 100;
@@ -25,8 +25,9 @@ function createFixtureRouter() {
   const categories = [{ id: 'category-1', name: '개발', display_order: 1, ...dates }];
   const settings = { site_title: '[검증 데이터] 포트폴리오', site_description: '실제 성과가 아닌 로컬 격리 검증 데이터', contact_email: 'fixture@example.invalid', contact_description: '이 폼은 로컬 메모리에만 저장됩니다.', contact_enabled: true, contact_form_success_message: '로컬 검증 메시지가 저장되었습니다.', enable_search: true, dark_mode: true };
   const content = '<h2>로컬 검증 데이터</h2><p>실제 프로젝트나 경력의 주장이 아닌 화면 검증 전용 본문입니다. 검색, 필터, 상세 및 관리자 저장을 확인합니다.</p><ul><li>외부 네트워크 요청 없음</li><li>메모리 안에서만 저장</li></ul>';
-  const projects = Array.from({ length: 14 }, (_, index) => ({ id: `project-${index + 1}`, slug: `fixture-project-${index + 1}`, title: `[검증 데이터] 프로젝트 ${index + 1}`, description: `로컬 격리 환경의 프로젝트 ${index + 1} 설명입니다.`, content, content_html: content, content_text: '로컬 검증 프로젝트 본문', featured_image: cover, image_url: cover, status: 'completed', featured: index < 3, is_published: true, is_ongoing: false, view_count: 12 + index, display_order: index, start_date: '2026-01-01', end_date: '2026-02-01', technologies: 'TypeScript', tags: index % 2 ? [tags[0]] : tags, skills, ...dates }));
-  const posts = Array.from({ length: 14 }, (_, index) => ({ id: `post-${index + 1}`, slug: `fixture-post-${index + 1}`, title: `[검증 데이터] 개발 기록 ${index + 1}`, excerpt: '로컬 검증을 위한 글 목록과 본문입니다.', content, content_html: content, content_text: '로컬 검증 개발 기록 본문', is_published: true, featured: index < 3, view_count: index + 5, read_time_minutes: 3, published_at: timestamp, tags: index % 2 ? [tags[0]] : tags, ...dates }));
+  const richFixture = process.env.ISOLATED_RASTER_IMAGES === '1' ? `<section data-rich-fixture><h3>호환 본문</h3><p style="text-align:center">가운데 정렬 본문 <strong>굵게</strong> <em>기울임</em> <u>밑줄</u> <s>취소선</s></p><p><span style="color:rgb(180,40,50);background-color:rgb(245,230,170)">색상 유지</span> <a href="#compatibility">내부 링크</a></p><blockquote>인용문과 줄 간격</blockquote><ul><li>중첩 목록<ul><li>안쪽 항목</li></ul></li></ul><ol start="3"><li>시작 번호</li><li>다음 번호</li></ol><p data-text-alignment="right">속성 정렬 본문</p><pre><code>const local = true;</code></pre><figure><img src="${cover}" width="360" height="203" loading="lazy" alt="호환 본문 이미지" /><figcaption>로컬 합성 이미지</figcaption></figure><table><thead><tr><th data-text-alignment="center">가운데 헤더</th><th>헤더</th></tr></thead><tbody><tr><td data-text-alignment="right">오른쪽 셀</td><td><p>중첩 문단</p></td></tr><tr><td colspan="2" data-text-color="red">병합 셀</td></tr></tbody></table></section>` : '';
+  const projects = Array.from({ length: 14 }, (_, index) => ({ id: `project-${index + 1}`, slug: `fixture-project-${index + 1}`, title: `[검증 데이터] 프로젝트 ${index + 1}`, description: `로컬 격리 환경의 프로젝트 ${index + 1} 설명입니다.`, content, content_html: content + richFixture, content_text: '로컬 검증 프로젝트 본문', featured_image: cover, image_url: cover, status: 'completed', featured: index < 3, is_published: true, is_ongoing: false, view_count: 12 + index, display_order: index, start_date: '2026-01-01', end_date: '2026-02-01', technologies: 'TypeScript', tags: index % 2 ? [tags[0]] : tags, skills, ...dates }));
+  const posts = Array.from({ length: 14 }, (_, index) => ({ id: `post-${index + 1}`, slug: `fixture-post-${index + 1}`, title: `[검증 데이터] 개발 기록 ${index + 1}`, excerpt: '로컬 검증을 위한 글 목록과 본문입니다.', content, content_html: content + richFixture, content_text: '로컬 검증 개발 기록 본문', is_published: true, featured: index < 3, view_count: index + 5, read_time_minutes: 3, published_at: timestamp, tags: index % 2 ? [tags[0]] : tags, ...dates }));
   const collections = {
     tags, projects, 'blog/posts': posts, skills, 'skills/categories': categories,
     contacts: [{ id: 'contact-1', name: '[검증] 방문자', email: 'fixture@example.invalid', subject: '[검증] 문의', message: '명시적인 로컬 검증 메시지', status: 'unread', ...dates }],
@@ -147,6 +148,16 @@ function startFixtureApi({ port = 4319 } = {}) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Cache-Control,Pragma,Expires,Last-Modified,X-Refresh-Token');
     res.setHeader('Cache-Control', 'no-store');
     if (req.method === 'OPTIONS') { res.writeHead(204).end(); return; }
+    if (process.env.ISOLATED_RASTER_IMAGES === '1' && req.method === 'GET' && req.url === '/__fixture/images/cover.jpg') {
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const asset = path.resolve(__dirname, '../.verification/performance/fixtures/cover.jpg');
+      if (!fs.existsSync(asset)) { res.writeHead(404).end('Prepare the synthetic performance fixture first.'); return; }
+      const data = fs.readFileSync(asset);
+      res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Content-Length': data.length });
+      res.end(data);
+      return;
+    }
     try {
       const chunks = [];
       let size = 0;
