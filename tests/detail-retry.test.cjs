@@ -12,7 +12,12 @@ test('상세 재시도는 검증된 프로젝트/블로그의 해당 경로만 �
   await retryDetail('/projects/local-project');
   await retryDetail('/blog/%EB%A1%9C%EC%BB%AC');
   assert.deepEqual(invalidated, [['/projects/local-project'], ['/blog/%EB%A1%9C%EC%BB%AC']]);
-  for (const pathname of ['/projects', '/blog/', '/admin/users', '/', '/projects/a/b', '/projects/..', '/projects/%2e%2e', '/projects/%2fadmin', '/blog/[slug]', '/projects/a?all=1', '/blog/a#hash', '//example.test/projects/a', 'https://example.test/projects/a']) {
+  for (const pathname of [
+    '/projects', '/blog/', '/admin/users', '/', '/projects/a/b', '/projects/..', '/projects/%2e%2e',
+    '/blog/[slug]', '/projects/a?all=1', '/blog/a#hash', '//example.test/projects/a', 'https://example.test/projects/a',
+    '/blog/%', '/blog/%ZZ', '/blog/%E0%A4%A', '/projects/%00', '/projects/%1F', '/projects/%7F',
+    '/projects/%5Cadmin', '/blog/%5Bslug%5D', `/projects/${'a'.repeat(1025)}`, null, undefined,
+  ]) {
     await assert.rejects(retryDetail(pathname));
   }
   assert.equal(invalidated.length, 2, '잘못된 경로가 목록이나 다른 화면의 캐시를 비우면 안 된다');
@@ -38,6 +43,26 @@ async function renderError(t, pathname, retry) {
   harness.mount(Page, { error: new Error('내부 API 주소나 오류 원문'), reset: () => events.push('reset') });
   await harness.flush();
   return { harness, events };
+}
+
+for (const prefix of ['projects', 'blog']) {
+  for (const slug of ['hash%23slug', 'query%3Fkey%3Dvalue', 'slash%2Fslug', '%2fadmin', 'literal%2520space']) {
+    const pathname = `/${prefix}/${slug}`;
+    test(`${pathname} 재시도는 실제 서버 함수로 원본 경로를 무효화한 뒤 화면을 다시 조회한다`, async t => {
+      const invalidated = [];
+      const { retryDetail } = loadWithMocks(source('lib/retry-detail.ts'), {
+        'next/cache': { revalidatePath: target => invalidated.push(target) },
+      });
+      const { harness, events } = await renderError(t, pathname, retryDetail);
+      const retryButton = () => nodes(harness.tree(), node => node.type === 'button')[0];
+      await retryButton().props.onClick();
+      await harness.flush();
+      assert.deepEqual(invalidated, [pathname]);
+      assert.deepEqual(events, ['refresh', 'reset']);
+      assert.equal(retryButton().props.disabled, true);
+      assert.equal(nodes(harness.tree(), node => node.props?.role === 'alert').length, 0);
+    });
+  }
 }
 
 for (const pathname of ['/projects/local-project', '/blog/local-post']) {
