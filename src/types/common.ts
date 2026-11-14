@@ -51,6 +51,7 @@ export interface SiteSettings {
   font_family?: string;
   dark_mode?: boolean;
   contact_email?: string;
+  enable_search?: boolean;
   search_enabled?: boolean;
   github_url?: string;
   linkedin_url?: string;

@@ -44,7 +44,7 @@ export default function ScrollProgress() {
   return (
     <div
       ref={progressRef}
-      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 origin-left z-50 scale-x-0"
+      className="fixed top-0 left-0 right-0 h-0.5 bg-teal-600 dark:bg-teal-400 origin-left z-[60] scale-x-0"
       data-scroll-behavior="ignore"
       data-nextjs-scroll-focus-boundary
     />

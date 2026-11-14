@@ -1,197 +1,145 @@
 "use client";
 import Link from "next/link";
-import { useState, useLayoutEffect } from "react";
+import { useState, useLayoutEffect, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { ArrowUpRight, Menu, Moon, Sun, X } from "lucide-react";
+import "./site/brand-motion.css";
 
 const NAV_ITEMS = [
   { href: "/", label: "홈" },
+  { href: "/projects", label: "프로젝트" },
   { href: "/about", label: "소개" },
   { href: "/blog", label: "블로그" },
-  { href: "/projects", label: "프로젝트" },
   { href: "/contact", label: "연락처" },
 ];
 
-/**
- * @component Header
- * @description 네비게이션, 테마 토글, 모바일 메뉴를 포함한 전역 헤더를 렌더링합니다.
- * @returns {JSX.Element} 주요 네비게이션을 담은 고정형 헤더 요소를 반환합니다.
- */
 export default function Header() {
-  // 초기 상태를 null로 설정하여 서버와 클라이언트가 같은 HTML 렌더링 (hydration mismatch 방지)
-  // useLayoutEffect 이후에 올바른 아이콘 표시
   const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuToggle = useRef<HTMLButtonElement>(null);
+  const desktopNavigation = useRef<HTMLElement>(null);
+  const activeIndicator = useRef<HTMLSpanElement>(null);
+  const lastIndicator = useRef<{ transform: string; width: string } | null>(null);
   const pathname = usePathname();
-
-  // useLayoutEffect를 사용하여 DOM이 페인트되기 전에 올바른 아이콘 표시
   useLayoutEffect(() => {
-    const root = document.documentElement;
-    const currentTheme = root.getAttribute('data-theme');
-    setIsDarkMode(currentTheme === 'dark');
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+  useLayoutEffect(() => {
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
   }, []);
 
-  /**
-   * @function toggleTheme
-   * @description 다크/라이트 테마를 전환하고 사용자의 선호를 저장합니다.
-   * @returns {void}
-   */
+  useLayoutEffect(() => {
+    const navigation = desktopNavigation.current;
+    const indicator = activeIndicator.current;
+    if (!navigation || !indicator) return;
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let animation: Animation | undefined;
+    let disposed = false;
+    const measure = (animate = false) => {
+      if (disposed) return;
+      const active = navigation.querySelector<HTMLElement>('[aria-current="page"]');
+      const bounds = navigation.getBoundingClientRect();
+      if (!active || !bounds.width) {
+        animation?.cancel();
+        indicator.style.visibility = 'hidden';
+        lastIndicator.current = null;
+        return;
+      }
+      const target = active.getBoundingClientRect();
+      const next = { transform: `translateX(${target.left - bounds.left}px)`, width: `${target.width}px` };
+      const previous = lastIndicator.current;
+      const reduced = preference.matches || document.documentElement.classList.contains('reduced-motion');
+      if (!animate && animation && previous?.transform === next.transform && previous.width === next.width && !document.hidden && !reduced) return;
+      const from = previous ?? next;
+      animation?.cancel();
+      Object.assign(indicator.style, next, { visibility: 'visible' });
+      lastIndicator.current = next;
+      if (animate && previous && !document.hidden && !reduced && indicator.animate && (previous.transform !== next.transform || previous.width !== next.width)) {
+        animation = indicator.animate([from, next], { duration: 180, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)' });
+      }
+    };
+    measure(true);
+    const refresh = () => measure();
+    const resize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(refresh) : null;
+    resize?.observe(navigation);
+    const rootClasses = typeof MutationObserver !== 'undefined' ? new MutationObserver(refresh) : null;
+    rootClasses?.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', refresh);
+    window.addEventListener('pageshow', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    preference.addEventListener('change', refresh);
+    document.fonts?.addEventListener('loadingdone', refresh);
+    if (document.fonts?.status === 'loading') void document.fonts.ready.then(refresh);
+    return () => {
+      disposed = true;
+      if (animation && lastIndicator.current) {
+        const rendered = getComputedStyle(indicator);
+        lastIndicator.current = { transform: rendered.transform, width: rendered.width };
+      }
+      animation?.cancel();
+      resize?.disconnect();
+      rootClasses?.disconnect();
+      window.removeEventListener('resize', refresh);
+      window.removeEventListener('pageshow', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+      preference.removeEventListener('change', refresh);
+      document.fonts?.removeEventListener('loadingdone', refresh);
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const onDesktop = () => { if (desktop.matches) setIsMobileMenuOpen(false); };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setIsMobileMenuOpen(false);
+      menuToggle.current?.focus();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    desktop.addEventListener('change', onDesktop);
+    return () => { document.removeEventListener('keydown', onKeyDown); desktop.removeEventListener('change', onDesktop); };
+  }, [isMobileMenuOpen]);
+
   const toggleTheme = () => {
     const root = document.documentElement;
-    const currentDarkMode = isDarkMode ?? (root.getAttribute('data-theme') === 'dark');
-    const newDarkMode = !currentDarkMode;
-    setIsDarkMode(newDarkMode);
-    if (newDarkMode) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      root.style.setProperty('--background', '#0a0a0a');
-      root.style.setProperty('--foreground', '#ededed');
-      root.style.colorScheme = 'dark';
-      root.setAttribute('data-theme', 'dark');
-      root.style.backgroundColor = '#0a0a0a';
-      root.style.color = '#ededed';
-      document.cookie = 'theme=dark; path=/; max-age=31536000';
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      root.style.setProperty('--background', '#ffffff');
-      root.style.setProperty('--foreground', '#171717');
-      root.style.colorScheme = 'light';
-      root.setAttribute('data-theme', 'light');
-      root.style.backgroundColor = '#ffffff';
-      root.style.color = '#171717';
-      document.cookie = 'theme=light; path=/; max-age=31536000';
-    }
+    const nextDark = !root.classList.contains('dark');
+    const theme = nextDark ? 'dark' : 'light';
+    setIsDarkMode(nextDark);
+    root.classList.toggle('dark', nextDark);
+    root.setAttribute('data-theme', theme);
+    root.style.colorScheme = theme;
+    try { localStorage.setItem('theme', theme); } catch { /* Theme still works with storage disabled. */ }
+    document.cookie = `theme=${theme}; path=/; max-age=31536000`;
   };
-
-  /**
-   * @function closeMobileMenu
-   * @description 모바일 네비게이션 드로어를 강제로 닫습니다.
-   * @returns {void}
-   */
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
-  const isActive = (href: string) => (
-    href === "/" ? pathname === "/" : pathname.startsWith(href)
-  );
-
-  const renderThemeIcon = () => {
-    if (isDarkMode === null) {
-      // 초기 렌더링 시 공간을 유지하기 위한 빈 박스 (서버와 클라이언트가 같은 HTML 렌더링)
-      return <div className="w-5 h-5" />;
-    }
-
-    if (isDarkMode) {
-      return <Sun className="w-5 h-5" />;
-    }
-
-    return <Moon className="w-5 h-5" />;
-  };
+  const isActive = (href: string) => href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <div className="sticky top-0 z-50 w-full backdrop-blur-md border-b border-slate-200 bg-white/95 safari-header-light dark:border-slate-700 dark:bg-slate-900/95 dark:safari-header-dark">
-      <header className="w-full">
-        <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4 transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
-              <Link href="/" prefetch={false} className="inline-flex min-h-10 items-center">
-                <h1
-                  className="text-xl font-bold"
-                  style={{
-                    background: 'linear-gradient(to right, #2563eb, #9333ea)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    color: 'transparent',
-                  }}
-                >
-                  승우.dev
-                </h1>
-              </Link>
-            </div>
-
-            <div className="hidden md:flex items-center gap-3">
-              {NAV_ITEMS.map((item) => (
-                <div key={item.href} className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.02]">
-                  <Link
-                    href={item.href}
-                    prefetch={false}
-                    className={`inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors ${
-                      isActive(item.href)
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </div>
-              ))}
-              <button
-                onClick={toggleTheme}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-200 hover:scale-105 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-                title="다크모드 토글"
-                aria-label="다크모드 토글"
-                suppressHydrationWarning
-              >
-                {renderThemeIcon()}
-              </button>
-            </div>
-
-            <div className="md:hidden flex items-center space-x-2">
-              <button
-                onClick={toggleTheme}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-200 hover:scale-105 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-                title="다크모드 토글"
-                aria-label="다크모드 토글"
-                suppressHydrationWarning
-              >
-                {renderThemeIcon()}
-              </button>
-              <button
-                onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-200 hover:scale-105 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-                title={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
-                aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-navigation"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="w-5 h-5" />
-                ) : (
-                  <Menu className="w-5 h-5" />
-                )}
-              </button>
-            </div>
+    <header className="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/90 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/90">
+      <div className="site-container">
+        <div className="flex min-h-20 flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
+          <Link href="/" prefetch={false} aria-label="승우.dev 홈" className="inline-flex min-h-11 min-w-0 max-w-full items-center gap-2.5 font-semibold tracking-tight">
+            <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 font-mono text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">s<span className="text-teal-400 dark:text-teal-600">.</span></span>
+            <span className="truncate">승우<span className="muted-text font-normal">.dev</span></span>
+          </Link>
+          <nav ref={desktopNavigation} aria-label="주요 메뉴" className="brand-navigation hidden items-center gap-1 rounded-full bg-zinc-50 px-2 py-1 ring-1 ring-zinc-900/5 md:flex dark:bg-zinc-800/70 dark:ring-white/10">
+            <span ref={activeIndicator} data-nav-indicator aria-hidden="true" className="brand-navigation-indicator" />
+            {NAV_ITEMS.map(item => <Link key={item.href} href={item.href} prefetch={false} aria-current={isActive(item.href) ? 'page' : undefined} className={`inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium ${isActive(item.href) ? 'text-teal-700 dark:text-teal-300' : 'text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100'}`}>{item.label}</Link>)}
+          </nav>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link href="/contact" prefetch={false} className="hidden min-h-11 items-center gap-1.5 pr-3 text-xs font-medium text-zinc-600 xl:inline-flex dark:text-zinc-400">연락하기<ArrowUpRight size={14} aria-hidden="true" /></Link>
+            <button type="button" onClick={toggleTheme} className="icon-button" aria-label="다크모드 토글" title="테마 전환" suppressHydrationWarning>
+              {isDarkMode === null ? <span className="size-4" /> : isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+            <button ref={menuToggle} type="button" onClick={() => setIsMobileMenuOpen(open => !open)} className="icon-button md:hidden" aria-expanded={isMobileMenuOpen} aria-controls="mobile-navigation" aria-label={isMobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}>{isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}</button>
           </div>
-
-          {isMobileMenuOpen && (
-            <div
-              id="mobile-navigation"
-              className="md:hidden border-t border-slate-200/70 bg-white/95 dark:border-slate-700/70 dark:bg-slate-900/95 animate-slide-down"
-            >
-              <div className="px-4 py-4 space-y-1">
-                {NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch={false}
-                    onClick={closeMobileMenu}
-                    className={`block rounded-lg px-3 py-3 text-lg font-medium transition duration-200 ${
-                      isActive(item.href)
-                        ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
-                        : "text-slate-700 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </nav>
-      </header>
-    </div>
+        </div>
+        <div className="mobile-menu md:hidden" data-open={isMobileMenuOpen} inert={!isMobileMenuOpen} aria-hidden={!isMobileMenuOpen}><div className="mobile-menu-inner">
+        <nav id="mobile-navigation" aria-label="모바일 메뉴" className="grid gap-1 border-t border-zinc-200 py-4 dark:border-zinc-800">
+          {NAV_ITEMS.map(item => <Link key={item.href} href={item.href} prefetch={false} onClick={() => setIsMobileMenuOpen(false)} aria-current={isActive(item.href) ? 'page' : undefined} className={`rounded-xl px-4 py-3 text-sm font-medium ${isActive(item.href) ? 'bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-200' : 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800'}`}>{item.label}</Link>)}
+        </nav></div></div>
+      </div>
+    </header>
   );
 }

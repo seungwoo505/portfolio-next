@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { AdminNewUserModalProps, AdminUserForm, AdminUser } from '@/types';
@@ -26,33 +27,6 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const focusTimer = window.setTimeout(() => {
-      usernameInputRef.current?.focus();
-    }, 0);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isSubmitting) {
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, isSubmitting, onClose]);
   const validateForm = (): boolean => {
     const newErrors: Partial<AdminUserForm> = {};
     if (!formData.username.trim()) {
@@ -154,19 +128,22 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
         return { label: '알 수 없음', description: '' };
     }
   };
-  if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="new-user-modal-title"
-        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+    <Dialog
+      open={isOpen}
+      onClose={() => { if (!isSubmitting) onClose(); }}
+      initialFocus={usernameInputRef}
+      className="admin-shell fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'transparent' }}
+    >
+      <DialogBackdrop className="absolute inset-0 bg-black/50" />
+      <DialogPanel
+        className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 id="new-user-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+          <DialogTitle as="h2" id="new-user-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             새 사용자 추가
-          </h2>
+          </DialogTitle>
           <button
             type="button"
             onClick={onClose}
@@ -334,7 +311,7 @@ export default function NewUserModal({ isOpen, onClose, onUserCreated }: AdminNe
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogPanel>
+    </Dialog>
   );
 }

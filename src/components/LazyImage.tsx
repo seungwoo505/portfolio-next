@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
+import { shouldBypassImageOptimization } from '@/lib/image-policy';
 /**
  * @interface LazyImageProps
  * @description Next.js 이미지의 지연 로딩 동작과 표시 방식을 제어하는 속성입니다.
@@ -105,6 +106,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
       {isInView ? (
         <Image
           src={src}
+          unoptimized={shouldBypassImageOptimization(src)}
           alt={alt}
           width={fill ? undefined : width}
           height={fill ? undefined : height}

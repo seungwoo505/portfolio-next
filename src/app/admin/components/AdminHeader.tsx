@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
+import { Button } from '@/components/ui/button';
 import { 
   LogOut,
   ArrowLeft,
@@ -11,6 +12,7 @@ import {
   Sun
 } from 'lucide-react';
 interface AdminHeaderProps {
+  sidebarOpen?: boolean;
   onMenuToggle?: () => void;
 }
 /**
@@ -18,7 +20,7 @@ interface AdminHeaderProps {
   * @param {*} { onMenuToggle } 입력값
  * @returns {JSX.Element} 처리 결과
  */
-export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
+export default function AdminHeader({ onMenuToggle, sidebarOpen = false }: AdminHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAdmin();
@@ -38,26 +40,15 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
     const root = document.documentElement;
     const newDarkMode = !(isDarkMode ?? root.classList.contains('dark'));
     setIsDarkMode(newDarkMode);
-    if (newDarkMode) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      root.style.setProperty('--background', '#0a0a0a');
-      root.style.setProperty('--foreground', '#ededed');
-      root.style.colorScheme = 'dark';
-      root.setAttribute('data-theme', 'dark');
-      root.style.backgroundColor = '#0a0a0a';
-      root.style.color = '#ededed';
-      document.cookie = 'theme=dark; path=/; max-age=31536000';
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      root.style.setProperty('--background', '#ffffff');
-      root.style.setProperty('--foreground', '#171717');
-      root.style.colorScheme = 'light';
-      root.setAttribute('data-theme', 'light');
-      root.style.backgroundColor = '#ffffff';
-      root.style.color = '#171717';
-      document.cookie = 'theme=light; path=/; max-age=31536000';
+    const theme = newDarkMode ? 'dark' : 'light';
+    root.classList.toggle('dark', newDarkMode);
+    root.style.colorScheme = theme;
+    root.setAttribute('data-theme', theme);
+    document.cookie = `theme=${theme}; path=/; max-age=31536000`;
+    try {
+      localStorage.setItem('theme', theme);
+    } catch {
+      // 저장소를 사용할 수 없는 환경에서도 현재 화면의 테마는 전환한다.
     }
   };
   /**
@@ -189,117 +180,21 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
     }
   };
   return (
-    <div 
-      className="sticky top-0 z-50 w-full backdrop-blur-md border-b border-slate-200 bg-white/95 safari-header-light dark:border-slate-700 dark:bg-slate-900/95 dark:safari-header-dark"
-    >
-      <header className="w-full">
-        <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:hidden">
-            <div className="flex justify-between items-center min-h-[4rem] py-2">
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={onMenuToggle}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
-                  aria-label="메뉴 열기"
-                >
-                  <Menu className="w-6 h-6" />
-                </button>
-                <Link href="/" prefetch={false}>
-                  <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    승우.dev
-                  </h1>
-                </Link>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-slate-600 dark:text-slate-400 hidden sm:block">
-                  {user?.username}님
-                </span>
-                {isClient && (
-                  <button
-                    onClick={toggleTheme}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-150 hover:scale-110 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-500"
-                    title="다크모드 토글"
-                    aria-label="다크모드 토글"
-                  >
-                    {renderThemeIcon()}
-                  </button>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition duration-150 hover:scale-105 hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
-                  aria-label="로그아웃"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <div className="pb-3 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center space-x-2">
-                {pageInfo.showBackButton && (
-                  <button
-                    onClick={handleBackNavigation}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition duration-150 hover:scale-110 hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                    aria-label={pageInfo.backText}
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                  </button>
-                )}
-                <h2 className="text-base font-semibold text-slate-700 dark:text-slate-300">
-                  {pageInfo.title}
-                </h2>
-              </div>
-            </div>
-          </div>
-          <div className="hidden lg:block">
-            <div className="flex justify-between items-center h-16">
-              <div
-                className="flex origin-left items-center space-x-4 transition-transform duration-150 hover:scale-[1.02]"
-              >
-                <Link href="/">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    승우.dev
-                  </h1>
-                </Link>
-                <span className="text-slate-400">|</span>
-                <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-300">
-                  {pageInfo.title}
-                </h2>
-                {pageInfo.showBackButton && (
-                  <button
-                    onClick={handleBackNavigation}
-                    className="flex min-h-10 items-center space-x-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition duration-150 hover:-translate-y-0.5 hover:bg-blue-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>{pageInfo.backText}</span>
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  안녕하세요, <span className="font-medium text-slate-900 dark:text-white">{user?.username}</span>님
-                </span>
-                {isClient && (
-                  <button
-                    onClick={toggleTheme}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition duration-150 hover:scale-110 hover:bg-slate-200 active:scale-95 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-500"
-                    title="다크모드 토글"
-                    aria-label="다크모드 토글"
-                  >
-                    {renderThemeIcon()}
-                  </button>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="flex min-h-10 items-center space-x-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition duration-150 hover:-translate-y-0.5 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>로그아웃</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
-    </div>
+    <header className="w-full border-b border-zinc-200 bg-white/95 dark:border-zinc-800 dark:bg-zinc-950/95">
+      <nav className="flex min-h-16 items-center justify-between gap-3 px-4 sm:px-6" aria-label="관리자 도구">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+          <Button plain onClick={onMenuToggle} className="lg:hidden" aria-label="관리자 메뉴 열기" aria-expanded={sidebarOpen} aria-controls="admin-navigation"><Menu className="h-5 w-5" /></Button>
+          <Link href="/" prefetch={false} className="shrink-0 text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">승우<span className="text-teal-700 dark:text-teal-400">.dev</span></Link>
+          <span className="hidden h-5 w-px bg-zinc-200 sm:block dark:bg-zinc-800" aria-hidden="true" />
+          <h1 className="hidden truncate text-sm font-medium text-zinc-600 sm:block dark:text-zinc-400">{pageInfo.title}</h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+          <span className="hidden text-sm text-zinc-500 xl:block dark:text-zinc-400">{user?.username}님</span>
+          {isClient && <Button plain onClick={toggleTheme} aria-label={(isDarkMode ?? false) ? '라이트 모드로 전환' : '다크 모드로 전환'}>{renderThemeIcon()}</Button>}
+          <Button plain onClick={handleLogout} aria-label="로그아웃"><LogOut className="h-4 w-4" /><span className="hidden sm:inline">로그아웃</span></Button>
+        </div>
+      </nav>
+      {pageInfo.showBackButton && <div className="flex items-center gap-2 border-t border-zinc-100 px-4 py-2 sm:px-6 dark:border-zinc-800/60"><button onClick={handleBackNavigation} className="inline-flex min-h-8 items-center gap-2 rounded-md px-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-teal-700 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-teal-400"><ArrowLeft className="h-3.5 w-3.5" /><span>{pageInfo.backText}</span></button><span className="truncate text-xs text-zinc-500 sm:hidden dark:text-zinc-400">{pageInfo.title}</span></div>}
+    </header>
   );
 }

@@ -51,21 +51,21 @@ export const adminApi = {
     getPosts: (params?: { page?: number; limit?: number; status?: string }) =>
       authApi.get<BlogPost[]>("/admin/blog/posts", params),
     getPost: (id: string) =>
-      authApi.get<BlogPost>(`/admin/blog/posts/slug/${id}`),
+      authApi.get<BlogPost>(`/admin/blog/posts/slug/${encodeURIComponent(id)}`),
     createPost: (post: Partial<BlogPost>) =>
       authApi.post<BlogPost>("/admin/blog/posts", post),
     updatePost: (id: string, post: Partial<BlogPost>) =>
-      authApi.put<BlogPost>(`/admin/blog/posts/slug/${id}`, post),
+      authApi.put<BlogPost>(`/admin/blog/posts/slug/${encodeURIComponent(id)}`, post),
     deletePost: (id: string) =>
-      authApi.delete<{ message: string }>(`/admin/blog/posts/slug/${id}`),
+      authApi.delete<{ message: string }>(`/admin/blog/posts/slug/${encodeURIComponent(id)}`),
     publishPost: (id: string) =>
       authApi.put<{ message: string }>(
-        `/admin/blog/posts/slug/${id}/publish`,
+        `/admin/blog/posts/slug/${encodeURIComponent(id)}/publish`,
         { is_published: true }
       ),
     unpublishPost: (id: string) =>
       authApi.put<{ message: string }>(
-        `/admin/blog/posts/slug/${id}/publish`,
+        `/admin/blog/posts/slug/${encodeURIComponent(id)}/publish`,
         { is_published: false }
       ),
   },
@@ -90,13 +90,13 @@ export const adminApi = {
     getProjects: (params?: { page?: number; limit?: number }) =>
       authApi.get<Project[]>("/admin/projects", params),
     getProject: (id: string) =>
-      authApi.get<Project>(`/admin/projects/slug/${id}`),
+      authApi.get<Project>(`/admin/projects/slug/${encodeURIComponent(id)}`),
     createProject: (project: Partial<Project>) =>
       authApi.post<Project>("/admin/projects", project),
     updateProject: (id: string, project: Partial<Project>) =>
-      authApi.put<Project>(`/admin/projects/slug/${id}`, project),
+      authApi.put<Project>(`/admin/projects/slug/${encodeURIComponent(id)}`, project),
     deleteProject: (id: string) =>
-      authApi.delete<{ message: string }>(`/admin/projects/slug/${id}`),
+      authApi.delete<{ message: string }>(`/admin/projects/slug/${encodeURIComponent(id)}`),
   },
   logs: {
     getLogs: (params?: {

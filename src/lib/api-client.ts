@@ -127,6 +127,7 @@ export const buildHeaders = (
 
 export class ApiClient {
   private baseURL: string;
+  private inFlightPublicGets = new Map<string, Promise<ApiResponse<unknown>>>();
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
@@ -221,13 +222,32 @@ export class ApiClient {
       : "";
     const url = searchParams ? `${endpoint}?${searchParams}` : endpoint;
 
-    return this.request<T>(url);
+    const normalizedEndpoint = this.normalizeEndpoint(url);
+    if (!normalizedEndpoint.startsWith('/public/')) return this.request<T>(url);
+
+    const queryIndex = normalizedEndpoint.indexOf('?');
+    const pathname = queryIndex < 0 ? normalizedEndpoint : normalizedEndpoint.slice(0, queryIndex);
+    const query = new URLSearchParams(queryIndex < 0 ? '' : normalizedEndpoint.slice(queryIndex + 1));
+    query.sort();
+    const key = `${pathname}?${query}`;
+    const pending = this.inFlightPublicGets.get(key);
+    // 공유한 응답도 각 소비자가 독립적으로 사용할 수 있게 복사한다.
+    if (pending) return structuredClone(await pending) as ApiResponse<T>;
+
+    const request = this.request<T>(url);
+    this.inFlightPublicGets.set(key, request);
+    try {
+      return await request;
+    } finally {
+      if (this.inFlightPublicGets.get(key) === request) this.inFlightPublicGets.delete(key);
+    }
   }
 
   async post<T>(
     endpoint: string,
     data?: Record<string, unknown>
   ): Promise<ApiResponse<T>> {
+    this.inFlightPublicGets.clear();
     return this.request<T>(endpoint, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
@@ -238,6 +258,7 @@ export class ApiClient {
     endpoint: string,
     data?: Record<string, unknown>
   ): Promise<ApiResponse<T>> {
+    this.inFlightPublicGets.clear();
     return this.request<T>(endpoint, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
@@ -245,6 +266,7 @@ export class ApiClient {
   }
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+    this.inFlightPublicGets.clear();
     return this.request<T>(endpoint, {
       method: "DELETE",
     });

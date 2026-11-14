@@ -212,16 +212,16 @@ export default function InterestsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-6xl mx-auto">
         <div>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center space-x-3">
-              <Heart className="w-8 h-8 text-pink-600 dark:text-pink-400" />
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <Heart className="w-8 h-8 shrink-0 text-pink-600 dark:text-pink-400" />
+              <h1 className="break-keep text-3xl font-bold text-gray-900 dark:text-white">
                 관심사 관리
               </h1>
             </div>
             <button
               onClick={() => openModal()}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>관심사 추가</span>
@@ -243,21 +243,21 @@ export default function InterestsPage() {
                   {technicalInterests.map((interest) => (
                     <div
                       key={interest.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg transition-colors"
+                      className="flex flex-col items-start justify-between gap-3 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg transition-colors sm:flex-row"
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="min-w-0 w-full flex-1">
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">
+                          <h3 className="break-words font-medium text-gray-900 dark:text-white">
                             {interest.title}
                           </h3>
                           {interest.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="break-words text-sm text-gray-600 dark:text-gray-400">
                               {interest.description}
                             </p>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex shrink-0 self-end items-center gap-2 sm:self-start">
                         <button
                           onClick={() => openModal(interest)}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
@@ -301,21 +301,21 @@ export default function InterestsPage() {
                   {personalInterests.map((interest) => (
                     <div
                       key={interest.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg transition-colors"
+                      className="flex flex-col items-start justify-between gap-3 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg transition-colors sm:flex-row"
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="min-w-0 w-full flex-1">
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">
+                          <h3 className="break-words font-medium text-gray-900 dark:text-white">
                             {interest.title}
                           </h3>
                           {interest.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="break-words text-sm text-gray-600 dark:text-gray-400">
                               {interest.description}
                             </p>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex shrink-0 self-end items-center gap-2 sm:self-start">
                         <button
                           onClick={() => openModal(interest)}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"

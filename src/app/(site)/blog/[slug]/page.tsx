@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import BlogPostClient from "./BlogPostClient";
 import { generateMetadata as createMetadata } from "@/lib/seo";
-import { serverFetch } from "@/lib/server-fetch";
+import { serverFetch, ServerFetchError } from "@/lib/server-fetch";
 import type { BlogPost } from "@/types";
 
 const SITE_URL = "https://seungwoo.i234.me";
@@ -47,9 +47,13 @@ const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
     const response = await serverFetch<BlogPost>(
       `/public/posts/${encodeURIComponent(slug)}`
     );
-    return response.success && response.data ? response.data : null;
-  } catch {
-    return null;
+    if (!response?.success || !response.data) {
+      throw new Error(response?.message || "블로그 글을 불러오지 못했습니다.");
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof ServerFetchError && error.status === 404) return null;
+    throw error;
   }
 });
 

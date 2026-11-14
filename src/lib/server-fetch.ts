@@ -10,6 +10,13 @@ const DEFAULT_FALLBACK_TIMEOUT_MS = 5000;
 const MIN_TIMEOUT_MS = 250;
 const MAX_TIMEOUT_MS = 30000;
 
+export class ServerFetchError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = "ServerFetchError";
+  }
+}
+
 type QueryValue =
   | string
   | number
@@ -177,7 +184,10 @@ async function readApiResponse<T>(
     return normalizeApiResponse<T>(JSON.parse(text));
   } catch {
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status} when requesting ${url}: ${text}`);
+      throw new ServerFetchError(
+        `HTTP ${response.status} when requesting ${url}: ${text}`,
+        response.status
+      );
     }
 
     throw new Error(`Invalid JSON response when requesting ${url}`);
@@ -194,6 +204,7 @@ export async function serverFetch<T>(
 ): Promise<ApiResponse<T>> {
   const baseUrls = getServerFetchBaseUrls(path, options?.init);
   let lastError: unknown = null;
+  let nonNotFoundError: unknown = null;
 
   for (const { baseUrl, isFallback } of baseUrls) {
     const url = buildUrl(baseUrl, path, options?.searchParams);
@@ -217,17 +228,22 @@ export async function serverFetch<T>(
       const data = await readApiResponse<T>(response, url);
 
       if (!response.ok) {
-        throw new Error(
+        throw new ServerFetchError(
           `HTTP ${response.status} when requesting ${url}: ${getApiResponseMessage(
             data,
             "API 요청에 실패했습니다."
-          )}`
+          )}`,
+          response.status
         );
       }
 
       return data;
     } catch (error) {
       lastError = error;
+      // 문서 부재는 모든 대상이 404일 때만 확정한다.
+      if (!(error instanceof ServerFetchError && error.status === 404)) {
+        nonNotFoundError = error;
+      }
 
       if (baseUrl !== baseUrls[baseUrls.length - 1]?.baseUrl) {
         console.warn(
@@ -240,7 +256,8 @@ export async function serverFetch<T>(
     }
   }
 
-  throw lastError instanceof Error
-    ? lastError
+  const error = nonNotFoundError ?? lastError;
+  throw error instanceof Error
+    ? error
     : new Error("API 요청에 실패했습니다.");
 }

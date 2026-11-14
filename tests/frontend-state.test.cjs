@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
+require('@headlessui/react');
 const { createHarness, loadWithMocks, nodes, textContent } = require('./helpers/react-harness.cjs');
 
 const source = name => path.resolve(__dirname, '../src', name);
@@ -82,13 +83,11 @@ test('프로젝트 상세는 completed 기본 status보다 진행중 boolean을 
 
 for (const skills of [['React'], [{ id: 'react', name: 'React' }]]) {
   test(`프로젝트 카드는 ${typeof skills[0]} 기술 목록의 이름을 표시한다`, async t => {
-    const { harness, mocks, intervals } = setup(t, { '@/lib/api': {
+    const { harness, mocks } = setup(t, { '@/lib/api': {
       projectApi: { getAllProjects: async () => ({ success: true, data: [project({ skills })] }) },
       api: { get: async () => ({ success: true, data: [] }) },
     } });
     harness.mount(loadWithMocks(source('app/(site)/projects/page.tsx'), mocks).default);
-    await harness.flush();
-    intervals.at(-1)();
     await harness.flush();
     const card = nodes(harness.tree(), node => node.type === 'article')[0];
     assert.match(textContent(card), /React/);

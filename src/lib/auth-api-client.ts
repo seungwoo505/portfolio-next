@@ -196,6 +196,7 @@ export class AuthenticatedApiClient {
       typeof window !== "undefined" &&
       window.location.pathname.startsWith("/admin")
     ) {
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 인증 실패 시 기존 관리자 상태를 폐기하도록 전체 문서를 다시 로드한다.
       window.location.href = "/admin-login";
     }
   }

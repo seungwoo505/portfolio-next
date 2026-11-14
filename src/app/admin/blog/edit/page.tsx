@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
@@ -49,6 +49,7 @@ function EditBlogPostContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const originalPublication = useRef<{ isPublished: boolean; publishedAt: string | null }>({ isPublished: false, publishedAt: null });
 
   useEffect(() => {
     const checkDarkMode = () => {
@@ -73,7 +74,7 @@ function EditBlogPostContent() {
     try {
       setIsLoading(true);
       setLoadError(null);
-      const response = await authApi.get(`/admin/blog/posts/slug/${postSlug}`);
+      const response = await authApi.get(`/admin/blog/posts/slug/${encodeURIComponent(postSlug)}`);
       ensureApiSuccess(response, "포스트를 불러오는데 실패했습니다.");
       const post = response.data as {
         id: string;
@@ -88,6 +89,7 @@ function EditBlogPostContent() {
         meta_keywords: string;
         featured_image: string;
         is_published: boolean;
+        published_at?: string | null;
         featured: boolean;
         tags: {
           id: string | number;
@@ -97,6 +99,7 @@ function EditBlogPostContent() {
         }[];
       };
 
+      originalPublication.current = { isPublished: post.is_published, publishedAt: post.published_at ?? null };
       setFormData({
         title: post.title || "",
         content: post.content || "",
@@ -222,11 +225,15 @@ function EditBlogPostContent() {
         category_id: null,
         reading_time: null,
         author_id: null,
-        published_at: publish ? new Date().toISOString() : null,
+        published_at: publish
+          ? originalPublication.current.isPublished
+            ? originalPublication.current.publishedAt
+            : new Date().toISOString()
+          : null,
       };
 
       const response = await authApi.put(
-        `/admin/blog/posts/slug/${postSlug}`,
+        `/admin/blog/posts/slug/${encodeURIComponent(postSlug)}`,
         postData
       );
       ensureApiSuccess(response, "포스트 수정에 실패했습니다.");

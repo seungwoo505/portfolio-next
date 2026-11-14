@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -34,6 +34,7 @@ export default function PersonalInfoPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const draftRevision = useRef(0);
   /**
    * @description 개인정보를 서버에서 불러옵니다.
    * @returns {Promise<void>}
@@ -69,6 +70,7 @@ export default function PersonalInfoPage() {
    * @returns {void}
    */
   const handleInputChange = (field: keyof PersonalInfo, value: string) => {
+    draftRevision.current += 1;
     setPersonalInfo(prev => ({
       ...prev,
       [field]: value
@@ -89,6 +91,7 @@ export default function PersonalInfoPage() {
       return;
     }
     setSaving(true);
+    const savedRevision = draftRevision.current;
     try {
       const payload: Record<string, unknown> = { ...personalInfo };
       const response = await authApi.put<PersonalInfo>('/admin/personal-info', payload);
@@ -97,9 +100,11 @@ export default function PersonalInfoPage() {
         duration: 3000,
         icon: '✅',
       });
-      setHasChanges(false);
-      if (response.data) {
-        setPersonalInfo(response.data);
+      if (draftRevision.current === savedRevision) {
+        setHasChanges(false);
+        if (response.data) {
+          setPersonalInfo(response.data);
+        }
       }
     } catch (error) {
       toast.error(getErrorMessage(error, '개인정보 저장 중 오류가 발생했습니다.'), {
@@ -151,7 +156,7 @@ export default function PersonalInfoPage() {
         className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
       >
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                 개인정보 관리
@@ -160,7 +165,7 @@ export default function PersonalInfoPage() {
                 포트폴리오에 표시될 개인정보를 관리합니다.
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex max-w-full flex-wrap items-center gap-3 sm:justify-end">
               {hasChanges && (
                 <span className="text-sm text-orange-600 dark:text-orange-400">
                   저장되지 않은 변경사항이 있습니다
@@ -169,7 +174,7 @@ export default function PersonalInfoPage() {
               <button
                 type="submit"
                 disabled={!hasChanges || saving}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-lg font-medium transition-colors ${
                   hasChanges && !saving
                     ? 'bg-blue-600 hover:bg-blue-700 text-white'
                     : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'

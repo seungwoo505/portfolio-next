@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { shouldBypassImageOptimization } from "@/lib/image-policy";
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -143,7 +144,7 @@ export default function BlogManagement() {
   const deletePost = async () => {
     if (!deleteModal.postSlug) return;
     try {
-      const response = await authApi.delete(`/admin/blog/posts/slug/${deleteModal.postSlug}`);
+      const response = await authApi.delete(`/admin/blog/posts/slug/${encodeURIComponent(deleteModal.postSlug)}`);
       ensureApiSuccess(response, '포스트 삭제에 실패했습니다.');
       setPosts(prev => prev.filter(post => post.slug !== deleteModal.postSlug));
       toast.success('포스트가 삭제되었습니다.');
@@ -159,7 +160,7 @@ export default function BlogManagement() {
    */
   const togglePublishStatus = async (postSlug: string, currentStatus: boolean) => {
     try {
-      const response = await authApi.put(`/admin/blog/posts/slug/${postSlug}/publish`, {
+      const response = await authApi.put(`/admin/blog/posts/slug/${encodeURIComponent(postSlug)}/publish`, {
         is_published: !currentStatus
       });
       ensureApiSuccess(response, '포스트 상태 변경에 실패했습니다.');
@@ -179,7 +180,7 @@ export default function BlogManagement() {
    */
   const toggleFeaturedStatus = async (postSlug: string, currentStatus: boolean) => {
     try {
-      const response = await authApi.put(`/admin/blog/posts/slug/${postSlug}/featured`, {
+      const response = await authApi.put(`/admin/blog/posts/slug/${encodeURIComponent(postSlug)}/featured`, {
         is_featured: !currentStatus
       });
       ensureApiSuccess(response, '추천 상태 변경에 실패했습니다.');
@@ -315,6 +316,7 @@ export default function BlogManagement() {
                       {post.featured_image && (
                         <Image
                           src={post.featured_image}
+                          unoptimized={shouldBypassImageOptimization(post.featured_image)}
                           alt={post.title}
                           width={60}
                           height={60}
@@ -371,7 +373,7 @@ export default function BlogManagement() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Link
-                          href={`/admin/blog/edit?slug=${post.slug}`}
+                          href={`/admin/blog/edit?slug=${encodeURIComponent(post.slug)}`}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                           title="수정"
                           aria-label={`${post.title} 수정`}
@@ -426,6 +428,7 @@ export default function BlogManagement() {
                           {post.featured_image && (
                             <Image
                               src={post.featured_image}
+                              unoptimized={shouldBypassImageOptimization(post.featured_image)}
                               alt={post.title}
                               width={48}
                               height={48}
@@ -517,7 +520,7 @@ export default function BlogManagement() {
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <Link
-                            href={`/admin/blog/edit?slug=${post.slug}`}
+                            href={`/admin/blog/edit?slug=${encodeURIComponent(post.slug)}`}
                             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-200"
                             aria-label={`${post.title} 수정`}
                           >

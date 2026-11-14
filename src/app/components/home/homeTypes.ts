@@ -1,16 +1,20 @@
-import type { BlogPost } from "@/types";
+export interface HomePost {
+  id: string;
+  title: string;
+  excerpt?: string;
+  slug: string;
+  created_at: string;
+  view_count?: number;
+}
 
 export interface HomeProject {
   id: string;
   title: string;
   description: string;
-  detailed_description?: string;
   excerpt?: string;
-  meta_description?: string;
   slug: string;
   featured: boolean;
   image_url?: string;
-  created_at: string;
   tags?: string[];
   skills?: string[];
   view_count?: number;
@@ -19,7 +23,6 @@ export interface HomeProject {
 export interface HomeSkill {
   id: string;
   name: string;
-  proficiency_level: number;
   category_name?: string;
 }
 
@@ -30,8 +33,15 @@ export interface HomePersonalInfo {
   about?: string;
 }
 
+export interface HomePageData {
+  blogPosts: HomePost[];
+  projects: HomeProject[];
+  skills: HomeSkill[];
+  personalInfo?: HomePersonalInfo;
+}
+
 export interface ClientHomeProps {
-  blogPosts?: BlogPost[];
+  blogPosts?: HomePost[];
   projects?: HomeProject[];
   skills?: HomeSkill[];
   loading?: boolean;

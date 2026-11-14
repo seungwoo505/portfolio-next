@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { shouldBypassImageOptimization } from "@/lib/image-policy";
 /**
  * @interface OptimizedImageProps
  * @description 최적화된 반응형 이미지를 구성하기 위한 속성입니다.
@@ -70,6 +71,7 @@ export default function OptimizedImage({
       )}
       <Image
         src={src}
+        unoptimized={shouldBypassImageOptimization(src)}
         alt={alt}
         width={width}
         height={height}

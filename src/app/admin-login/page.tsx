@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { AdminProvider, useAdmin } from '@/contexts/AdminContext';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Heading } from '@/components/ui/heading';
+import { Text } from '@/components/ui/text';
 /**
  * @component AdminLoginContent
  * @description 관리자 인증을 위한 로그인 폼을 제공하는 페이지 컴포넌트.
@@ -91,117 +94,23 @@ function AdminLoginContent() {
     }));
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-포트폴리오
-            </h1>
-          </Link>
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
-            관리자 로그인
-          </p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
-          <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-6">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                사용자명
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={credentials.username}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
-                  placeholder="사용자명을 입력하세요"
-                  required
-                  autoComplete="username"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                비밀번호
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={credentials.password}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
-                  placeholder="비밀번호를 입력하세요"
-                  required
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-600 dark:hover:text-slate-300"
-                  aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold rounded-lg transition-colors duration-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>로그인 중...</span>
-                </>
-              ) : (
-                <span>로그인</span>
-              )}
-            </button>
+    <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-5 py-16 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <div className="w-full max-w-md">
+        <Link href="/" className="text-lg font-semibold tracking-tight">승우<span className="text-teal-700 dark:text-teal-400">.dev</span></Link>
+        <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 sm:p-9 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-8"><p className="section-label">관리자</p><Heading className="mt-3">다시 오신 것을 환영합니다.</Heading><Text className="mt-3">계정으로 로그인해 콘텐츠를 관리하세요.</Text></div>
+          <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-6" aria-busy={isLoading}>
+            <div><label htmlFor="username" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">사용자명</label><div className="relative"><User className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-zinc-400" /><input type="text" id="username" name="username" value={credentials.username} onChange={handleChange} className="field-input pl-10" placeholder="사용자명을 입력하세요" required autoComplete="username" /></div></div>
+            <div><label htmlFor="password" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">비밀번호</label><div className="relative"><Lock className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-zinc-400" /><input type={showPassword ? 'text' : 'password'} id="password" name="password" value={credentials.password} onChange={handleChange} className="field-input pl-10 pr-12" placeholder="비밀번호를 입력하세요" required autoComplete="current-password" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200" aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div></div>
+            <Button type="submit" disabled={isLoading} color="teal" className="w-full">{isLoading ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" /><span>로그인 중...</span></> : '로그인'}</Button>
           </form>
-          <div className="mt-6 text-center">
-            <Link 
-              href="/" 
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              ← 메인 사이트로 돌아가기
-            </Link>
-          </div>
-        </div>
-        <div className="mt-6 text-center">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            이 페이지는 관리자 전용입니다. 승인된 사용자만 접근할 수 있습니다.
-          </p>
-        </div>
+        </section>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4"><Link href="/" className="text-sm text-zinc-500 transition-colors hover:text-teal-700 dark:text-zinc-400 dark:hover:text-teal-400">← 메인 사이트로 돌아가기</Link><span className="text-xs text-zinc-400 dark:text-zinc-500">승인된 관리자 전용</span></div>
       </div>
-    </div>
+    </main>
   );
 }
 
-/**
- * @component AdminLogin
- * @description 관리자 로그인 페이지에서 필요한 관리자 컨텍스트 범위를 페이지 내부로 제한합니다.
- * @returns {JSX.Element} 관리자 로그인 페이지.
- */
 export default function AdminLogin() {
-  return (
-    <AdminProvider>
-      <AdminLoginContent />
-    </AdminProvider>
-  );
+  return <AdminProvider><AdminLoginContent /></AdminProvider>;
 }

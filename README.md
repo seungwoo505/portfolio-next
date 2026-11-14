@@ -1,8 +1,14 @@
 # 🎨 Portfolio Frontend (Next.js)
 
-**Next.js 15 기반의 현대적이고 반응형 포트폴리오 프론트엔드 애플리케이션**
+**Next.js 16 기반의 반응형 포트폴리오 프론트엔드 애플리케이션**
 
 개인 포트폴리오 웹사이트를 위한 고성능, SEO 최적화된 Next.js 애플리케이션입니다. Next 서버 실행 방식을 기준으로 관리자 대시보드, 블로그, 프로젝트 포트폴리오 등 완전한 기능을 제공합니다.
+
+2026-11-13 기준 Node.js 26.13.1 LTS와 npm 12.2.2를 사용하며 Node 버전은 `.nvmrc`에 기록합니다. TypeScript 7.0.2 native `tsc`가 `typecheck`와 빌드 선행 검사를 실행합니다. `typescript` 이름에는 Microsoft의 `@typescript/typescript6` 호환 패키지를 alias로 설치해 Next 타입 검사, ESLint와 테스트 변환에 필요한 기존 JavaScript API도 유지합니다.
+
+실제 린트 실행기는 `eslint10` alias의 ESLint 10.14.0입니다. Next의 기존 플러그인이 요구하는 `eslint` 9 API/peer와 공식 `@eslint/compat`를 함께 두며 기존 규칙을 유지합니다. ESLint 9 자체는 지원이 종료된 호환 의존성으로, 주 실행기 버전과 구분합니다. `npm run lint`가 명시된 10 실행기를 사용하므로 직접 `npx eslint`를 실행하는 것과 다릅니다.
+
+Dev/Live 서버에 접속하지 않는 검증에는 `npm run isolated:build`, `npm run isolated:preview -- --start`, `npm run isolated:smoke`를 사용합니다. 격리 빌드도 TypeScript 7 검사를 먼저 실행하며, 합성 API와 외부 통신 차단을 유지합니다. 패키지 설치는 공식 레지스트리 접근이 필요합니다.
 
 ## 📋 목차
 
@@ -64,14 +70,14 @@
 
 ### **Frontend Framework**
 
-- **Next.js 15** - React 기반 풀스택 프레임워크
-- **React 19** - 사용자 인터페이스 라이브러리
-- **TypeScript** - 타입 안전성
+- **Next.js 16.4.6** - React 기반 풀스택 프레임워크
+- **React 19.3.1** - 사용자 인터페이스 라이브러리
+- **TypeScript 7.0.2** - native 타입 검사와 6 API 호환 패키지 병행
 
 ### **스타일링**
 
-- **Tailwind CSS 4** - 유틸리티 우선 CSS 프레임워크
-- **Framer Motion** - 애니메이션 라이브러리
+- **Tailwind CSS 4.3.5** - 유틸리티 우선 CSS 프레임워크
+- **Web Animations API** - 목록과 페이지 전환 애니메이션
 - **Lucide React** - 아이콘 라이브러리
 
 ### **상태 관리**
@@ -81,14 +87,14 @@
 
 ### **폼 및 유효성 검사**
 
-- **React Hook Form** - 폼 관리
+- **Custom Hooks와 React 상태** - 폼 관리
 - **Custom Validation** - 유효성 검사
 
 ### **UI/UX**
 
 - **React Hot Toast** - 토스트 알림
-- **React Spring** - 애니메이션
-- **Markdown Editor** - 마크다운 에디터
+- **BlockNote / Mantine** - 블록 편집기와 UI
+- **marked / DOMPurify** - Markdown 변환과 HTML 정화
 
 ### **개발 도구**
 

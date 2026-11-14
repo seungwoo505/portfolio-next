@@ -1,7 +1,9 @@
 import ClientHome from "../components/ClientHome";
 import { Metadata } from "next";
 import { serverFetch } from "@/lib/server-fetch";
+import { toHomePersonalInfo, toHomePost, toHomeProject, toHomeSkill } from "@/lib/home-payload";
 import type { ApiResponse, BlogPost } from "@/types";
+import type { HomePageData } from "../components/home/homeTypes";
 
 export const metadata: Metadata = {
   title: "승우의 포트폴리오 | 프론트엔드 개발자",
@@ -52,67 +54,6 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * @interface HomePageData
- * @description 홈 페이지에 필요한 모든 데이터를 포함합니다.
- * @property {BlogPost[]} blogPosts 대표 블로그 포스트 목록
- * @property {Array} projects 대표 프로젝트 목록
- * @property {Array} skills 대표 기술 스택 목록
- * @property {Object} personalInfo 개인 정보
- */
-interface HomePageData {
-  blogPosts: BlogPost[];
-  projects: Array<{
-    id: string;
-    title: string;
-    description: string;
-    detailed_description?: string;
-    excerpt?: string;
-    meta_description?: string;
-    slug: string;
-    featured: boolean;
-    image_url?: string;
-    created_at: string;
-    tags?: string[];
-    skills?: string[];
-    view_count?: number;
-  }>;
-  skills: Array<{
-    id: string;
-    name: string;
-    proficiency_level: number;
-    category_name?: string;
-  }>;
-  personalInfo?: {
-    full_name?: string;
-    name?: string;
-    bio?: string;
-    about?: string;
-  };
-}
-
-/**
- * @function normalizeProjectTags
- * @description 프로젝트 태그를 문자열 배열로 정규화합니다.
- * @param tags 태그 배열 (문자열 또는 객체)
- * @returns {string[]} 정규화된 태그 문자열 배열
- */
-function normalizeProjectTags(tags: unknown): string[] {
-  if (!tags || !Array.isArray(tags)) return [];
-  return tags.map(tag => typeof tag === 'string' ? tag : (tag as { name?: string }).name || String(tag));
-}
-
-/**
- * @function normalizeProjectSkills
- * @description 프로젝트 스킬을 문자열 배열로 정규화합니다.
- * @param skills 스킬 배열 (문자열 또는 객체)
- * @returns {string[]} 정규화된 스킬 문자열 배열
- */
-function normalizeProjectSkills(skills: unknown): string[] {
-  if (!skills || !Array.isArray(skills)) return [];
-  return skills.map(skill => typeof skill === 'string' ? skill : (skill as { name?: string }).name || String(skill));
-}
-
 function getSettledData<T>(
   result: PromiseSettledResult<ApiResponse<T>>,
   fallback: T
@@ -141,31 +82,10 @@ async function getHomeData(): Promise<HomePageData> {
       serverFetch<HomePageData['personalInfo']>('/public/profile')
     ]);
 
-    const blogPosts = getSettledData(blogResponse, []);
-    const rawProjects = getSettledData(projectResponse, []);
-
-    // 프로젝트 데이터 정규화
-    const projects: HomePageData['projects'] = rawProjects.map((project: unknown) => {
-      const p = project as Record<string, unknown>;
-      return {
-        id: String(p.id || ''),
-        title: String(p.title || ''),
-        description: String(p.description || ''),
-        detailed_description: p.detailed_description ? String(p.detailed_description) : undefined,
-        excerpt: p.excerpt ? String(p.excerpt) : undefined,
-        meta_description: p.meta_description ? String(p.meta_description) : undefined,
-        slug: String(p.slug || ''),
-        featured: Boolean(p.featured || p.is_featured),
-        image_url: p.image_url || p.featured_image ? String(p.image_url || p.featured_image) : undefined,
-        created_at: String(p.created_at || new Date().toISOString()),
-        tags: normalizeProjectTags(p.tags),
-        skills: normalizeProjectSkills(p.skills),
-        view_count: typeof p.view_count === 'number' ? p.view_count : undefined
-      };
-    });
-
-    const skills = getSettledData(skillsResponse, []);
-    const personalInfo = getSettledData(personalResponse, undefined);
+    const blogPosts = getSettledData(blogResponse, []).map(toHomePost);
+    const projects = getSettledData(projectResponse, []).map(toHomeProject);
+    const skills = getSettledData(skillsResponse, []).map(toHomeSkill);
+    const personalInfo = toHomePersonalInfo(getSettledData(personalResponse, undefined));
 
     return {
       blogPosts,

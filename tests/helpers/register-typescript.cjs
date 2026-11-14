@@ -1,6 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
+// TypeScript 7 native tsc는 API가 없으므로 공식 6 API 호환 alias로 변환한다.
+// 프로젝트 타입 검사는 typecheck 및 build에서 별도로 7 컴파일러를 실행한다.
 const ts = require('typescript');
 
 const rootDir = path.resolve(__dirname, '../..');
@@ -30,3 +32,5 @@ const loadTypeScript = (module, filename) => {
 
 require.extensions['.ts'] = loadTypeScript;
 require.extensions['.tsx'] = loadTypeScript;
+// 스타일의 실제 적용은 격리 브라우저에서 검증한다.
+require.extensions['.css'] = () => {};
