@@ -201,20 +201,25 @@ test('빈 서버 데이터의 대체 API 응답도 홈 DTO로 투영하고 이�
   assert.doesNotMatch(html, /미대표 작업/);
 });
 
-test('전체 응답으로 조회수를 갱신해도 기존 경량 본문과 카드 표시를 보존하고 조회수 0을 반영한다', async t => {
-  const initial = fixture();
-  const refreshed = fixture();
-  refreshed.blogPosts[1] = { ...refreshed.blogPosts[1], title: '갱신 제목 미반영', content: '갱신 본문 미반영', view_count: 0 };
-  refreshed.projects[0] = { ...refreshed.projects[0], id: '27', title: '갱신 프로젝트 미반영', view_count: 42 };
-  const env = await client(t, initial, refreshed);
-  await env.focus();
-  const output = env.output();
-  assertLeanPayload(output);
-  assert.deepEqual(serialized(output.blogPosts), [expectedPosts[0], { ...expectedPosts[1], view_count: 0 }]);
-  assert.deepEqual(serialized(output.projects), [{ ...expectedProjects[0], view_count: 42 }]);
-  assert.equal(env.calls.posts.length, 2);
-  assert.equal(env.calls.projects.length, 2);
-});
+for (const [label, id] of [['숫자', 27], ['문자열', '27']]) {
+  for (const viewCount of [42, 0]) {
+    test(`${label} 프로젝트 ID의 조회수 ${viewCount} 갱신 시 기존 경량 본문과 카드를 보존한다`, async t => {
+      const initial = fixture();
+      initial.projects[0].view_count = 17;
+      const refreshed = fixture();
+      refreshed.blogPosts[1] = { ...refreshed.blogPosts[1], title: '갱신 제목 미반영', content: '갱신 본문 미반영', view_count: 0 };
+      refreshed.projects[0] = { ...refreshed.projects[0], id, title: '갱신 프로젝트 미반영', view_count: viewCount };
+      const env = await client(t, initial, refreshed);
+      await env.focus();
+      const output = env.output();
+      assertLeanPayload(output);
+      assert.deepEqual(serialized(output.blogPosts), [expectedPosts[0], { ...expectedPosts[1], view_count: 0 }]);
+      assert.deepEqual(serialized(output.projects), [{ ...expectedProjects[0], view_count: viewCount }]);
+      assert.equal(env.calls.posts.length, 2);
+      assert.equal(env.calls.projects.length, 2);
+    });
+  }
+}
 
 test('빈 서버 프로필은 기존 대체조회를 유지하고 표시 이름과 소개를 복구한다', async t => {
   const env = await client(t, fixture(), undefined, {

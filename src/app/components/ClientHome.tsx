@@ -63,7 +63,13 @@ export default function ClientHome({ blogPosts: initialBlogPosts = EMPTY_POSTS, 
         const [blogs, work] = await Promise.all([blogApi.getPosts({ limit: 2, featured: true }), projectApi.getProjects({ limit: 2, featured: true })]);
         if (!active) return;
         if (blogs.success && Array.isArray(blogs.data)) setBlogPosts(previous => previous.map(item => { const fresh = blogs.data!.find(post => post.id === item.id); return fresh ? { ...item, view_count: fresh.view_count } : item; }));
-        if (work.success && Array.isArray(work.data)) setProjects(previous => previous.map(item => { const fresh = work.data!.find(project => project.id === item.id); return fresh ? { ...item, view_count: fresh.view_count } : item; }));
+        if (work.success && Array.isArray(work.data)) {
+          const refreshedProjects = work.data.map(toHomeProject);
+          setProjects(previous => previous.map(item => {
+            const fresh = refreshedProjects.find(project => project.id === item.id);
+            return fresh ? { ...item, view_count: fresh.view_count } : item;
+          }));
+        }
       } catch { /* A view count refresh does not replace visible content. */ }
       finally { refreshing.current = false; }
     }
