@@ -16,17 +16,31 @@ type ApiResponseErrorBody = ApiResponse<unknown> & {
 type AuthTokenSnapshot = {
   token: string | null;
   refreshToken: string | null;
+  sessionVersion: number;
+};
+
+type PendingAuthResponse = {
+  snapshot: AuthTokenSnapshot;
+  completed: Promise<void>;
+  finish: () => void;
 };
 
 export class AuthenticatedApiClient {
   private baseURL: string;
   private token: string | null = null;
+  private sessionVersion = 0;
+  private pendingResponses = new Set<PendingAuthResponse>();
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
   }
 
   setToken(token: string) {
+    this.sessionVersion += 1;
+    this.storeToken(token);
+  }
+
+  private storeToken(token: string) {
     this.token = token;
     if (typeof window !== "undefined") {
       localStorage.setItem("admin_token", token);
@@ -48,6 +62,7 @@ export class AuthenticatedApiClient {
   }
 
   clearToken() {
+    this.sessionVersion += 1;
     this.token = null;
     if (typeof window !== "undefined") {
       localStorage.removeItem("admin_token");
@@ -64,10 +79,15 @@ export class AuthenticatedApiClient {
     return null;
   }
 
+  getSessionVersion(): number {
+    return this.sessionVersion;
+  }
+
   private getTokenSnapshot(): AuthTokenSnapshot {
     return {
       token: this.getToken(),
       refreshToken: this.getRefreshToken(),
+      sessionVersion: this.sessionVersion,
     };
   }
 
@@ -82,38 +102,57 @@ export class AuthenticatedApiClient {
   private async waitForConcurrentTokenRefresh(
     snapshot: AuthTokenSnapshot
   ): Promise<boolean> {
-    if (this.haveTokensChanged(snapshot)) {
-      return true;
+    while (this.sessionVersion === snapshot.sessionVersion) {
+      if (this.haveTokensChanged(snapshot)) return true;
+      const pending = [...this.pendingResponses].filter(({ snapshot: other }) =>
+        other.sessionVersion === snapshot.sessionVersion &&
+        other.token === snapshot.token && other.refreshToken === snapshot.refreshToken
+      );
+      if (pending.length === 0) return false;
+      // 응답 처리를 마친 요청은 대기 집합에서 먼저 빠지므로 서로 401을 기다리지 않는다.
+      await Promise.race(pending.map(({ completed }) => completed));
     }
-
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    const timeoutMs = 250;
-    const pollMs = 25;
-    const startedAt = Date.now();
-
-    while (Date.now() - startedAt < timeoutMs) {
-      await new Promise((resolve) => setTimeout(resolve, pollMs));
-      if (this.haveTokensChanged(snapshot)) {
-        return true;
-      }
-    }
-
     return false;
   }
 
-  private applyResponseTokens(response: Response) {
+  private trackResponse(snapshot: AuthTokenSnapshot): () => void {
+    let complete!: () => void;
+    const completed = new Promise<void>((resolve) => { complete = resolve; });
+    const pending = { snapshot, completed, finish: complete };
+    this.pendingResponses.add(pending);
+    return () => {
+      this.pendingResponses.delete(pending);
+      pending.finish();
+    };
+  }
+
+  private canApplyTokens(snapshot: AuthTokenSnapshot): boolean {
+    return this.sessionVersion === snapshot.sessionVersion && !this.haveTokensChanged(snapshot);
+  }
+
+  private applyResponseTokens(response: Response, snapshot: AuthTokenSnapshot) {
+    if (!this.canApplyTokens(snapshot)) return;
     const newToken = response.headers.get("X-New-Token");
     const newRefreshToken = response.headers.get("X-New-Refresh-Token");
 
     if (newToken) {
-      this.setToken(newToken);
+      this.storeToken(newToken);
     }
 
     if (newRefreshToken) {
       this.setRefreshToken(newRefreshToken);
+    }
+  }
+
+  private async send<T>(url: string, options: RequestInit, snapshot: AuthTokenSnapshot) {
+    const finish = this.trackResponse(snapshot);
+    try {
+      const response = await fetch(url, this.buildRequestConfig(options, snapshot));
+      this.applyResponseTokens(response, snapshot);
+      const data = await readApiResponse<T>(response);
+      return { response, data };
+    } finally {
+      finish();
     }
   }
 
@@ -153,21 +192,19 @@ export class AuthenticatedApiClient {
     }
 
     const tokenSnapshot = this.getTokenSnapshot();
-    const config = this.buildRequestConfig(options, tokenSnapshot);
 
     try {
-      let response = await fetch(url, config);
-      this.applyResponseTokens(response);
-      let data = await readApiResponse<T>(response);
+      let { response, data } = await this.send<T>(url, options, tokenSnapshot);
+      let responseSnapshot = tokenSnapshot;
 
       if (
         response.status === 401 &&
-        (await this.waitForConcurrentTokenRefresh(tokenSnapshot))
+        (await this.waitForConcurrentTokenRefresh(tokenSnapshot)) &&
+        this.sessionVersion === tokenSnapshot.sessionVersion
       ) {
         const retrySnapshot = this.getTokenSnapshot();
-        response = await fetch(url, this.buildRequestConfig(options, retrySnapshot));
-        this.applyResponseTokens(response);
-        data = await readApiResponse<T>(response);
+        ({ response, data } = await this.send<T>(url, options, retrySnapshot));
+        responseSnapshot = retrySnapshot;
       }
 
       if (shouldThrowApiResponse(response)) {
@@ -181,7 +218,7 @@ export class AuthenticatedApiClient {
       }
 
       if (response.status === 401) {
-        await this.handleTokenExpiration();
+        await this.handleTokenExpiration(responseSnapshot);
       }
 
       return data;
@@ -190,11 +227,13 @@ export class AuthenticatedApiClient {
     }
   }
 
-  private async handleTokenExpiration() {
+  private async handleTokenExpiration(snapshot?: AuthTokenSnapshot) {
+    if (snapshot && !this.canApplyTokens(snapshot)) return;
     this.clearToken();
     if (
       typeof window !== "undefined" &&
-      window.location.pathname.startsWith("/admin")
+      window.location.pathname.startsWith("/admin") &&
+      window.location.pathname !== "/admin-login"
     ) {
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 인증 실패 시 기존 관리자 상태를 폐기하도록 전체 문서를 다시 로드한다.
       window.location.href = "/admin-login";
@@ -202,45 +241,43 @@ export class AuthenticatedApiClient {
   }
 
   async refreshToken(): Promise<boolean> {
+    const snapshot = this.getTokenSnapshot();
+    if (!snapshot.refreshToken) return false;
+    const finish = this.trackResponse(snapshot);
+    let status: number | undefined;
+    let refreshed = false;
     try {
-      const refreshToken = this.getRefreshToken();
-
-      if (!refreshToken) {
-        return false;
-      }
-
       const response = await fetch(`${this.baseURL}/admin/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken: snapshot.refreshToken }),
       });
-
-      if (!response.ok) {
-        this.clearToken();
-        return false;
-      }
-
+      status = response.status;
       const data = await readApiResponse<{
         token: string;
         refreshToken?: string;
       }>(response);
 
-      if (data.success && data.data?.token) {
-        this.setToken(data.data.token);
+      if (response.ok && data.success && data.data?.token && this.canApplyTokens(snapshot)) {
+        this.storeToken(data.data.token);
         if (data.data.refreshToken) {
           this.setRefreshToken(data.data.refreshToken);
         }
-        return true;
+        refreshed = true;
       }
-
-      this.clearToken();
-      return false;
     } catch {
-      this.clearToken();
-      return false;
+      // 네트워크·응답 유실은 토큰 무효의 증거가 아니므로 재시도할 자격 증명을 보존한다.
+    } finally {
+      finish();
     }
+    if (refreshed) return true;
+    if (status === 401) {
+      if (await this.waitForConcurrentTokenRefresh(snapshot)) return true;
+      await this.handleTokenExpiration(snapshot);
+    }
+    return false;
   }
 
   async validateToken(): Promise<boolean> {
